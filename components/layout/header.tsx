@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import Container from "./container";
+import UserMenu from "../ui/user-menu";
+import { users } from "@/mocks/users";
 
 export default function Header() {
     return (
@@ -24,7 +26,7 @@ export default function Header() {
                 <div className="flex items-center gap-[49px] min-w-0">
                     {/* SearchBar */}
                     <div className="min-w-[48px] w-[448px] h-[48px] bg-black/30 rounded">
-                        {/* поиск */}
+                        {/* тут будет поиск */}
                     </div>
 
                     {/* Navigation */}
@@ -36,12 +38,12 @@ export default function Header() {
                                 </Link>
                             </li>
                             <li>
-                                <Link href={"/"} className="whitespace-nowrap">
+                                <Link href={"/teams"} className="whitespace-nowrap">
                                     <span className="text-[#000150] text-[17px]">Команды</span>
                                 </Link>
                             </li>
                             <li>
-                                <Link href={"/"} className="whitespace-nowrap">
+                                <Link href={"/on-review"} className="whitespace-nowrap">
                                     <span className="text-[#000150] text-[17px]">На рассмотрении</span>
                                 </Link>
                             </li>
@@ -49,23 +51,7 @@ export default function Header() {
                     </nav>
 
                     {/* UserMenu */}
-                    <div className="flex gap-[6px] items-center min-w-[100px]">
-                        <div className="user-info py-[5px] flex flex-col">
-                            <p className="whitespace-nowrap text-[#000150] text-[13.5px] font-semibold">Алексей Г.</p>
-                            <button className="logout-btn text-[#333333] text-[10.5px] text-right">
-                                Выход
-                            </button>
-                        </div>
-                        <div className="min-w-[32px] w-[39px]">
-                            <Image
-                                src="/default_avatar.jpg"
-                                alt="Аватар пользователя"
-                                width={39}
-                                height={39}
-                                className="w-full h-auto rounded-full"
-                            />
-                        </div>
-                    </div>
+                    <UserMenu user={users[1]} />
                 </div>
             </div>
         </Container>

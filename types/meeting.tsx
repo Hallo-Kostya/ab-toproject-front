@@ -4,6 +4,13 @@ export type Meeting = {
     name: string;
     resume: string;
     date: string;
-    meeting_status: string;
+    meeting_status: 'planned' | 'complited' | 'cancelled';
     meeting_artifacts: string;
+}
+
+export interface MeetingCardProps {
+    teamName: string;
+    name: string;
+    resume: string;
+    date: string;
 }

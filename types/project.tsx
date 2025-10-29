@@ -7,5 +7,11 @@ export type Project = {
     criteria: string;
     year: string;
     semester: string;
-    status: string;
+    status: 'Working' | 'Under review' | 'Not started';
+}
+
+export interface ProjectCardProps {
+    name: string;
+    teamsCnt: number;
+    placesCnt: number;
 }

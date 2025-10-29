@@ -1,6 +1,8 @@
-export const Projects = [
+import { Project } from "@/types/project";
+
+export const projects: Project[] = [
     {
-        id: 101,
+        id: "101",
         name: "Project 1",
         description: "Project 1 description",
         goal: "Some text... project 1",
@@ -11,7 +13,7 @@ export const Projects = [
         status: "Working",
     },
     {
-        id: 102,
+        id: "102",
         name: "Project 2",
         description: "Project 2 description",
         goal: "Some text... project 2",
@@ -22,7 +24,7 @@ export const Projects = [
         status: "Under review",
     },
     {
-        id: 103,
+        id: "103",
         name: "Project 3",
         description: "Project 3 description",
         goal: "Some text... project 3",
