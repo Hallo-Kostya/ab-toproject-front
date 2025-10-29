@@ -1,4 +1,4 @@
-import Image from "next/image";
+// import Image from "next/image";
 import Link from "next/link";
 import { projects } from "@/mocks/projects";
 import MeetingList from "@/components/features/meeting-list";
@@ -22,11 +22,13 @@ export default function Home() {
         <ul className="flex gap-6">
           {projects.map((project) =>
             <li key={project.id}>
-              <ProjectCard 
-                name={project.name} 
-                teamsCnt={2} 
-                placesCnt={8} 
-              />
+              <Link href={`/projects/${project.id}`}>
+                <ProjectCard 
+                  name={project.name} 
+                  teamsCnt={2} 
+                  placesCnt={8} 
+                />
+              </Link>
             </li>
           )}
         </ul>
