@@ -24,13 +24,13 @@ export const users: User[] = [
     {
         id: "3",
         firstName: "Grigory",
-        lastName: "Profitroly",
+        lastName: "Vorontsov",
         email: "goshap@gmail.com"
     },
     {
         id: "4",
         firstName: "Alexander",
-        lastName: "Goalmacowl",
+        lastName: "Goalmakov",
         email: "alexk@gmail.com"
     }
 ]

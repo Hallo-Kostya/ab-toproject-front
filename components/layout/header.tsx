@@ -6,7 +6,7 @@ import { users } from "@/mocks/users";
 
 export default function Header() {
     return (
-        <header className="bg-[#F4F3F3]">
+        <header className="bg-[#F4F3F3] shadow-xl">
         <Container className="py-[23px]">
             <div className="flex items-center justify-between">
                 {/* Logo */}

@@ -7,6 +7,8 @@ import Link from "next/link";
 
 const usersMap = new Map(users.map((user) => [user.id, user]));
 
+{/* ДЛЯ СТРАНИЦ ProjectsPage (Home) и TeamsPage - СОЗДАТЬ КОМПОНЕНТ */}
+
 export default function TeamsPage() {
     return (
         <div>
