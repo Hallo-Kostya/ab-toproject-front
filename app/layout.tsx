@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Header from "@/components/layout/header";
-import Footer from "@/components/layout/footer";
-import Container from "@/components/layout/container";
+import Header from "@/components/layout/header/header";
+import Footer from "@/components/layout/footer/footer";
+import Container from "@/components/layout/container/container";
 
 export const metadata: Metadata = {
   title: "ToProject",

@@ -1,5 +1,5 @@
-import MeetingCard from "../ui/meeting-card";
-import { meetings } from "@/mocks/meetings";
+import MeetingCard from "@/components/ui/cards/meeting-card";
+import { meetings } from "@/mocks/meetings/meetings";
 
 export default function MeetingList() {
     return (

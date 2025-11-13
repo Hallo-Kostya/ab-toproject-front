@@ -1,8 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
-import Container from "./container";
-import UserMenu from "../ui/user-menu";
-import { users } from "@/mocks/users";
+import Container from "../container/container";
+import UserMenu from "@/components/ui/user-menu";
+import { users } from "@/mocks/users/users";
 
 export default function Header() {
     return (

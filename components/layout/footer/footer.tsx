@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import Container from "./container";
+import Container from "../container/container";
 
 export default function Footer() {
     return (

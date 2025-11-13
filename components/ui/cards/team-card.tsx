@@ -1,4 +1,5 @@
-import { TeamCardProps } from "@/types/team";
+import { TeamCardProps } from "@/types/teams/team";
+
 
 export default function TeamCard({ name, teamNumber, participants }: TeamCardProps) {
     return (

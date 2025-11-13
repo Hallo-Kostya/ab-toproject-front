@@ -1,7 +1,7 @@
-import { teams } from "@/mocks/teams";
-import { Team } from "@/types/team";
+import { teams } from "@/mocks/teams/teams";
+import { Team } from "@/types/teams/team";
 import { notFound } from "next/navigation";
-import { users } from "@/mocks/users";
+import { users } from "@/mocks/users/users";
 import { buildTeamWithParticipants } from "@/utils/team";
 
 const usersMap = new Map(users.map((user) => [user.id, user]));

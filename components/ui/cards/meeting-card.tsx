@@ -1,4 +1,4 @@
-import { MeetingCardProps } from "@/types/meeting";
+import { MeetingCardProps } from "@/types/meetings/meeting";
 
 export default function MeetingCard({ teamName, name, resume, date}: MeetingCardProps) {
     return (

@@ -1,4 +1,4 @@
-import { Meeting } from "@/types/meeting";
+import { Meeting } from "@/types/meetings/meeting";
 
 export const meetings: Meeting[] = [
     {

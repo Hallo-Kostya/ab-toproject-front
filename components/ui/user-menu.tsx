@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { formatShortName } from "@/utils/formatName";
-import { User } from "@/types/user";
+import { User } from "@/types/users/user";
 
 interface UserMenuProps {
     user: User,

@@ -1,44 +1,34 @@
-import MeetingList from "@/components/features/meeting-list";
-import TeamCard from "@/components/ui/team-card";
-import { teams } from "@/mocks/teams";
-import { users } from "@/mocks/users";
+import MeetingList from "@/components/features/meetings/meeting-list";
+import TeamCard from "@/components/ui/cards/team-card";
+import { teams } from "@/mocks/teams/teams";
+import { Team } from "@/types/teams/team";
+import { users } from "@/mocks/users/users";
 import { buildTeamWithParticipants } from "@/utils/team";
-import Link from "next/link";
+import PageContainer from "@/components/containers/page-container";
 
 const usersMap = new Map(users.map((user) => [user.id, user]));
 
-{/* ДЛЯ СТРАНИЦ ProjectsPage (Home) и TeamsPage - СОЗДАТЬ КОМПОНЕНТ */}
-
 export default function TeamsPage() {
-    return (
-        <div>
-            <div>
-                <h2>Предстоящие встречи</h2>
-                <MeetingList />
-            </div>
-            <div className="mt-[90px]">
-                <div className="">
-                    <p>Всего команд найдено: {teams.length}</p>
-                </div>
-                <ul className="flex gap-6">
-                    {teams.map((team, index) => {
-                        const enriched = buildTeamWithParticipants(team, usersMap)
+    const renderTeamCard = (team: Team, index: number) => {
+        const enriched = buildTeamWithParticipants(team, usersMap);
 
-                        return (
-                            <li key={team.id}>
-                                <Link href={`/teams/${team.id}`}>
-                                    <TeamCard 
-                                        name={enriched.name} 
-                                        teamNumber={index + 1} 
-                                        participants={enriched.participants}                            
-                                    />
-                                </Link>
-                            </li>
-                        )
-                    }
-                    )}
-                </ul>
-            </div>
-        </div>
+        return (
+            <TeamCard 
+                name={team.name}
+                teamNumber={index + 1}
+                participants={enriched.participants}                            
+            />
+        );
+    };
+
+    return (
+        <PageContainer
+            pageTag="teams"
+            meetingsTitle="Предстоящие встречи"
+            meetingsListComponent={<MeetingList />}
+            listHeader="Всего команд найдено: "
+            list={teams}
+            cardComponent={renderTeamCard}
+        />
     )
 }

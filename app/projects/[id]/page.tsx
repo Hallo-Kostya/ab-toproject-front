@@ -1,5 +1,5 @@
-import { Project } from "@/types/project";
-import { projects } from "@/mocks/projects";
+import { Project } from "@/types/projects/project";
+import { projects } from "@/mocks/projects/projects";
 import { notFound } from "next/navigation";
 
 export default async function ProjectPage({ params }: { params: Promise<{ id: string }> } ) {
