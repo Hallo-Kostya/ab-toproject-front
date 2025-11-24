@@ -11,7 +11,7 @@ export default function Header() {
             <div className="flex items-center justify-between">
                 {/* Logo */}
                 <div className="min-w-[100px] w-[135px]">
-                    <Link href={"/"}>
+                    <Link href={"/projects"}>
                         <Image
                             src="/logo.svg"
                             alt="ToProject"
@@ -33,7 +33,7 @@ export default function Header() {
                     <nav>
                         <ul className="flex gap-[32px] flex-wrap justify-center md:justify-start">
                             <li>
-                                <Link href={"/"} className="whitespace-nowrap">
+                                <Link href={"/projects"} className="whitespace-nowrap">
                                     <span className="text-[#000150] text-[17px]">Проекты</span>
                                 </Link>
                             </li>

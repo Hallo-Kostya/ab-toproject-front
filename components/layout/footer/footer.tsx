@@ -8,7 +8,7 @@ export default function Footer() {
             <Container className="py-[39.5px]">
                 <div className="">
                     <div className="min-w-[100px] w-[135px]">
-                        <Link href={"/"}>
+                        <Link href={"/projects"}>
                             <Image
                                 src="/footer-logo.svg"
                                 alt="ToProject"

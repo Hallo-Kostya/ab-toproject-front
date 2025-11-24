@@ -4,7 +4,7 @@ import { Project } from "@/types/projects/project";
 import ProjectCard from "@/components/ui/cards/project-card";
 import PageContainer from "@/components/containers/page-container";
 
-export default function Home() {
+export default function ProjectsPage() {
   const renderProjectCard = (project: Project) => (
     <ProjectCard 
       name={project.name} 
