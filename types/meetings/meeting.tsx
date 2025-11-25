@@ -4,6 +4,7 @@ export type Meeting = {
     name: string;
     resume: string;
     date: string;
+    time: string;
     meeting_status: 'planned' | 'complited' | 'cancelled';
     meeting_artifacts: string;
 }

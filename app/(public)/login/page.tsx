@@ -1,53 +1,63 @@
+import Image from "next/image";
+
 export default function LoginPage() {
   return (
-    <div className="max-w-md mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Вход</h1>
-      <p className="mb-6">Введите данные для входа в личный кабинет</p>
+    <div className="max-w-[560px] mx-auto p-6">
+      <h1 className="text-3xl text-[#000150] font-bold mb-2">Вход</h1>
+      <p className="mb-6">Введите данные, чтобы войти в личный кабинет</p>
 
-      <form className="space-y-4">
-        <div>
-          <label htmlFor="email" className="block mb-1 font-medium">
+      <form className="mb-[18px]">
+        <div className="mb-6">
+          <label htmlFor="email" className="block mb-2 text-[18px] font-semibold text-[#000150]">
             Почта
           </label>
           <div className="relative">
+            <span className="absolute left-3 top-1/2 transform -translate-y-1/2">
+              <Image src={"/mail.svg"} alt={"Пароль"} width={27} height={27}/>
+            </span>
             <input
               type="email"
               id="email"
               name="email"
               required
-              className="w-full pl-10 pr-4 py-2 border rounded-lg"
-              placeholder="К примеру, командировка в Москве"
+              className="w-full pl-[47px] pr-4 py-[14px] rounded-[16px] border-[2px] border-gray-300"
+              placeholder="Введите почту"
             />
           </div>
         </div>
 
-        <div>
-          <label htmlFor="password" className="block mb-1 font-medium">
+        <div className="mb-[16px]">
+          <label htmlFor="password" className="block mb-2 text-[18px] font-semibold text-[#000150]">
             Пароль
           </label>
           <div className="relative">
+            <span className="absolute left-3 top-1/2 transform -translate-y-1/2">
+              <Image src={"/key.svg"} alt={"Пароль"} width={27} height={27}/>
+            </span>
             <input
               type="password"
               id="password"
               name="password"
               required
-              className="w-full pl-10 pr-4 py-2 border rounded-lg"
-              placeholder="К примеру, командировка в Москве"
+              className="w-full pl-[47px] pr-4 py-[14px] rounded-[16px] border-[2px] border-gray-300"
+              placeholder="Введите пароль"
             />
           </div>
         </div>
 
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
-        >
-          Войти
-        </button>
+        <div className="flex justify-center">
+          <button
+            type="submit"
+            className="max-w-[201px] bg-[#000150] text-white font-bold text-xl py-[11.5px] px-[29.5px] rounded-[16px] hover:bg-blue-900"
+          >
+            Войти
+          </button>
+        </div>
       </form>
 
-      <p className="mt-4 text-center text-sm">
+      <p className="text-center text-[16px] font-semibold">
         Нет аккаунта?{' '}
-        <a href="/register" className="text-blue-600 hover:underline">
+        <a href="/register" className="text-[#000150] hover:underline">
           Зарегистрироваться
         </a>
       </p>

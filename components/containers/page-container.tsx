@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ReactNode } from "react";
 
-{/* НАСТРОЙКА ТИПИЗАЦИИ */}
+{/* НУЖНА НАСТРОЙКА ТИПИЗАЦИИ */}
 
 interface PageContainerProps {
     pageTag: string;

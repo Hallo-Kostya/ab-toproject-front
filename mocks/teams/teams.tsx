@@ -5,8 +5,8 @@ export const teams: Team[] = [
         id: "0",
         project_id: "101",
         name: "RadikUlitki",
-        curator: "Curator 1",
-        team_group_link: "Link...",
+        curator: "RadikUlitki Curator 1",
+        team_group_link: "Team Group Link",
         team_artifacts: "Some artifacts...",
         participantIds: [
             "0",
@@ -19,8 +19,8 @@ export const teams: Team[] = [
         id: "1",
         project_id: "102",
         name: "Team 2",
-        curator: "Curator 2",
-        team_group_link: "Link...",
+        curator: "Team 2 Curator 1",
+        team_group_link: "Team Group Link",
         team_artifacts: "Some artifacts...",
         participantIds: [
             "4",
@@ -33,8 +33,8 @@ export const teams: Team[] = [
         id: "2",
         project_id: "103",
         name: "Team 3",
-        curator: "Curator 3",
-        team_group_link: "Link...",
+        curator: "Team 3 Curator 1",
+        team_group_link: "Team Group Link",
         team_artifacts: "Some artifacts...",
         participantIds: [
             "1",

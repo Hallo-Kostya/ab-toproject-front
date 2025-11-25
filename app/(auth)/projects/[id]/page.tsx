@@ -14,7 +14,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
         <div>
             <div>
                 <div className="flex justify-between mb-3">
-                    <h1 className="text-[#000150] text-[26px] font-semibold">{project.name} Lorem ipsum dolor sit amet consectetur adipisicing elit. Obcaecati, eligendi.</h1>
+                    <h1 className="text-[#000150] text-[26px] font-semibold">{project.name}</h1>
 
                     {/* Форма редактирования информации о проекте */}
                     <div className="flex items-center border-1 border-[#000150] px-4 py-3 rounded text-[#000150] text-[19px] font-semibold max-h-[47px]">

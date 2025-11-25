@@ -4,7 +4,7 @@ export const users: User[] = [
     {
         id: "0",
         firstName: "Alexey",
-        lastName: "Gromov",
+        lastName: "Komov",
         patronymic: "Evgenievich",
         email: "akomov@gmail.com"
     },
@@ -30,7 +30,7 @@ export const users: User[] = [
     {
         id: "4",
         firstName: "Alexander",
-        lastName: "Goalmakov",
+        lastName: "Kolmakov",
         email: "alexk@gmail.com"
     }
 ]
