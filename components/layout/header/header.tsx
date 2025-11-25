@@ -25,7 +25,7 @@ export default function Header() {
                 {/* Right section */}
                 <div className="flex items-center gap-[49px] min-w-0">
                     {/* SearchBar */}
-                    <div className="min-w-[48px] w-[448px] h-[48px] bg-black/30 rounded">
+                    <div className="min-w-[48px] w-[448px] h-[48px] bg-black/30 rounded-[12px]">
                         {/* тут будет поиск */}
                     </div>
 

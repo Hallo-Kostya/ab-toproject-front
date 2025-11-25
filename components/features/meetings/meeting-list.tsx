@@ -13,7 +13,8 @@ export default function MeetingList() {
                         teamName={team.name} 
                         name={meeting.name} 
                         resume={meeting.resume} 
-                        date={meeting.date} 
+                        date={meeting.date}
+                        time={meeting.time}
                     />
                 </li>
             )}

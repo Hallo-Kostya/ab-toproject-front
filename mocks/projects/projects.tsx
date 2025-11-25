@@ -3,7 +3,7 @@ import { Project } from "@/types/projects/project";
 export const projects: Project[] = [
     {
         id: "101",
-        name: "Project 1 Name",
+        name: "Project 1 Name Lorem ipsum dolor sit amet.",
         description: "Project 1 Description",
         goal: "Project 1 Goal. Lorem ipsum dolor sit amet consectetur adipisicing elit. Nam, neque?",
         requirements: "Project 1 Requirements. Lorem ipsum dolor sit amet consectetur adipisicing elit. Nam, neque?",
@@ -14,7 +14,7 @@ export const projects: Project[] = [
     },
     {
         id: "102",
-        name: "Project 2 Name",
+        name: "Project 2 Name Lorem ipsum dolor sit amet consectetur adipisicing elit. Iure, harum!",
         description: "Project 2 Description",
         goal: "Project 2 Goal. Lorem ipsum dolor sit amet consectetur adipisicing elit. Nam, neque?",
         requirements: "Project 2 Requirements. Lorem ipsum dolor sit amet consectetur adipisicing elit. Nam, neque?",
@@ -25,7 +25,7 @@ export const projects: Project[] = [
     },
     {
         id: "103",
-        name: "Project 3 Name",
+        name: "Project 3 Name Lorem ipsum dolor sit amet consectetur adipisicing elit. Nulla eum natus hic architecto eveniet minima reiciendis?",
         description: "Project 3 Description",
         goal: "Project 3 Goal. Lorem ipsum dolor sit amet consectetur adipisicing elit. Nam, neque?",
         requirements: "Project 3 Requirements. Lorem ipsum dolor sit amet consectetur adipisicing elit. Nam, neque?",

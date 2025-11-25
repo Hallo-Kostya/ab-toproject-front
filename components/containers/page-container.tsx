@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ReactNode } from "react";
+import Image from "next/image";
 
 {/* НУЖНА НАСТРОЙКА ТИПИЗАЦИИ */}
 
@@ -38,7 +39,7 @@ export default function PageContainer<T extends { id: string }>( {
                     year={year} 
                     semester={semester} 
                 />
-                <ul className="flex gap-6 mt-4">
+                <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-4 w-full">
                 {list.map((item) =>
                     <li key={item.id}>
                     <Link href={`/${pageTag}/${item.id}`}>
@@ -82,11 +83,17 @@ interface FilterComponentProps {
 function SortingComponent( {filterYear, filterSemester}: FilterComponentProps ) {
     return (
         <div className="flex gap-[18px]">
-            <p className="text-[18px] text-[#353535]">
-                Сортировать по году: <span className="text-[18px] text-[#000150] font-semibold">{filterYear}</span>
+            <p className="flex gap-1 text-[18px] text-[#353535]">
+                Сортировать по году: <span className="text-[18px] text-[#000150] font-semibold">{filterYear}
+                </span>
+                <Image src={"/chevron-down.svg"} alt={"Сортировка"} width={24} height={24}
+                className=""/>
             </p>
-            <p className="text-[18px] text-[#353535]">
-                Семестр: <span className="text-[18px] text-[#000150] font-semibold">{filterSemester}</span>
+            <p className="flex gap-1 text-[18px] text-[#353535]">
+                Семестр: <span className="text-[18px] text-[#000150] font-semibold">{filterSemester}
+                </span>
+                <Image src={"/chevron-down.svg"} alt={"Сортировка"} width={24} height={24}
+                className=""/>
             </p>
         </div>
     )

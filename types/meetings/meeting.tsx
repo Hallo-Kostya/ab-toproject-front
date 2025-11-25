@@ -14,4 +14,5 @@ export interface MeetingCardProps {
     name: string;
     resume: string;
     date: string;
+    time: string;
 }

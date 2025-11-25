@@ -15,7 +15,7 @@ export default function TeamsPage() {
         return (
             <TeamCard 
                 name={team.name}
-                teamNumber={index + 1}
+                teamNumber={+index+1}
                 participants={enriched.participants}                            
             />
         );
