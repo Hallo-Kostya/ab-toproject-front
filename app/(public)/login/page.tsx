@@ -1,12 +1,55 @@
+'use client'
+
 import Image from "next/image";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+
+    setIsLoading(true);
+
+    {/* RESPONSE BLOCK */}
+    try {
+      console.log('Login:', {
+        email,
+        password: '[HIDDEN]'
+      });
+
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      {/* RESPONSE */}
+        
+      router.push('/projects');
+
+    } catch (err) {
+      setError('Incorrect email or password');
+      console.error('Login error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="max-w-[560px] mx-auto p-6">
       <h1 className="text-3xl text-[#000150] font-bold mb-2">Вход</h1>
       <p className="mb-6">Введите данные, чтобы войти в личный кабинет</p>
 
-      <form className="mb-[18px]">
+      {error && (
+        <div className="">
+          {error}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="mb-[18px]">
         <div className="mb-6">
           <label htmlFor="email" className="block mb-2 text-[18px] font-semibold text-[#000150]">
             Почта
@@ -19,6 +62,8 @@ export default function LoginPage() {
               type="email"
               id="email"
               name="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
               className="w-full pl-[47px] pr-4 py-[14px] rounded-[16px] border-[2px] border-gray-300"
               placeholder="Введите почту"
@@ -38,6 +83,8 @@ export default function LoginPage() {
               type="password"
               id="password"
               name="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               required
               className="w-full pl-[47px] pr-4 py-[14px] rounded-[16px] border-[2px] border-gray-300"
               placeholder="Введите пароль"
@@ -48,9 +95,10 @@ export default function LoginPage() {
         <div className="flex justify-center">
           <button
             type="submit"
+            disabled={isLoading}
             className="max-w-[201px] bg-[#000150] text-white font-bold text-xl py-[11.5px] px-[29.5px] rounded-[16px] hover:bg-blue-900"
           >
-            Войти
+            {isLoading ? 'Вход...' : 'Вход'}
           </button>
         </div>
       </form>
