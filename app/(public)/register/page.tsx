@@ -34,7 +34,6 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     {/* RESPONSE BLOCK */}
-
     try {
       console.log('Registration:', {
         email,
@@ -43,9 +42,11 @@ export default function RegisterPage() {
 
       await new Promise(resolve => setTimeout(resolve, 1500));
 
+      localStorage.setItem('registration-step1', JSON.stringify({ email, password }));
+
       {/* RESPONSE */}
 
-      router.push('/login');
+      router.push('/register/details');
 
     } catch (err) {
       setError('Registration failed. Try again later.');
@@ -56,98 +57,100 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="max-w-[560px] mx-auto p-6">
-      <h1 className="text-3xl text-[#000150] font-bold mb-2">Регистрация</h1>
-      <p className="mb-6">Введите данные для регистрации нового аккаунта</p>
+    <div className="min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat" style={{ backgroundImage: 'url(/register-background.jpg)' }}>
+      <div className="w-[560px] min-w-[180px] mx-auto p-6 bg-white rounded-[24px] shadow-lg">
+        <h1 className="text-3xl text-[#000150] font-bold mb-2">Регистрация</h1>
+        <p className="mb-6">Введите данные для регистрации нового аккаунта</p>
 
-      {error && (
-        <div className="">
-          {error}
-        </div>
-      )}
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg">
+              {error}
+            </div>
+          )}
 
-      <form onSubmit={handleSubmit} className="mb-[18px]">
-        <div className="mb-6">
-          <label htmlFor="email" className="block mb-2 text-[18px] font-semibold text-[#000150]">
-            Почта
-          </label>
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 transform -translate-y-1/2">
-              <Image src={"/mail.svg"} alt={"Пароль"} width={27} height={27}/>
-            </span>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full pl-[47px] pr-4 py-[14px] rounded-[16px] border-[2px] border-gray-300"
-              placeholder="Введите почту"
-            />
+        <form onSubmit={handleSubmit} className="mb-[18px]">
+          <div className="mb-6">
+            <label htmlFor="email" className="block mb-2 text-[18px] font-semibold text-[#000150]">
+              Почта
+            </label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 transform -translate-y-1/2">
+                <Image src={"/mail.svg"} alt={"Пароль"} width={27} height={27}/>
+              </span>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="w-full pl-[47px] pr-4 py-[12px] rounded-[16px] border-[2px] border-gray-300"
+                placeholder="Введите почту"
+              />
+            </div>
           </div>
-        </div>
 
-        <div className="mb-[16px]">
-          <label htmlFor="password" className="block mb-2 text-[18px] font-semibold text-[#000150]">
-            Пароль
-          </label>
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 transform -translate-y-1/2">
-              <Image src={"/key.svg"} alt={"Пароль"} width={27} height={27}/>
-            </span>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full pl-[47px] pr-4 py-[14px] rounded-[16px] border-[2px] border-gray-300"
-              placeholder="Введите пароль"
-              minLength={8}
-            />
+          <div className="mb-[16px]">
+            <label htmlFor="password" className="block mb-2 text-[18px] font-semibold text-[#000150]">
+              Пароль
+            </label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 transform -translate-y-1/2">
+                <Image src={"/key.svg"} alt={"Пароль"} width={27} height={27}/>
+              </span>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="w-full pl-[47px] pr-4 py-[12px] rounded-[16px] border-[2px] border-gray-300"
+                placeholder="Введите пароль"
+                minLength={8}
+              />
+            </div>
           </div>
-        </div>
 
-        <div className="mb-[18px]">
-          <label htmlFor="confirmPassword" className="block mb-2 text-[18px] font-semibold text-[#000150]">
-            Повторите пароль
-          </label>
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 transform -translate-y-1/2">
-              <Image src={"/key.svg"} alt={"Пароль"} width={27} height={27}/>
-            </span>
-            <input
-              type="password"
-              id="confirmPassword"
-              name="confirmPassword"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-              className="w-full pl-[47px] pr-4 py-[14px] rounded-[16px] border-[2px] border-gray-300"
-              placeholder="Повторите ваш пароль"
-            />
+          <div className="">
+            <label htmlFor="confirmPassword" className="block mb-2 text-[18px] font-semibold text-[#000150]">
+              Повторите пароль
+            </label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 transform -translate-y-1/2">
+                <Image src={"/key.svg"} alt={"Пароль"} width={27} height={27}/>
+              </span>
+              <input
+                type="password"
+                id="confirmPassword"
+                name="confirmPassword"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                className="w-full pl-[47px] pr-4 py-[12px] rounded-[16px] border-[2px] border-gray-300"
+                placeholder="Повторите ваш пароль"
+              />
+            </div>
           </div>
-        </div>
 
-        <div className="flex justify-center">
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="max-w-[201px] bg-[#000150] text-white font-bold text-xl py-[11.5px] px-[29.5px] rounded-[16px] hover:bg-blue-900"
-          >
-            {isLoading ? 'Регистрация...' : 'Регистрация'}
-          </button>
-        </div>
-      </form>
+          <div className="flex justify-center mt-[18px]">
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="max-w-[201px] bg-[#000150] text-white font-bold text-xl py-[11.5px] px-[29.5px] rounded-[16px] hover:bg-blue-900"
+            >
+              {isLoading ? 'Сохранение...' : 'Продолжить'}
+            </button>
+          </div>
+        </form>
 
-      <p className="text-center text-[16px] font-semibold">
-        У вас уже есть аккаунт?{' '}
-        <a href="/login" className="text-[#000150] hover:underline">
-          Войти
-        </a>
-      </p>
+        <p className="text-center text-[16px] font-semibold">
+          У вас уже есть аккаунт?{' '}
+          <a href="/login" className="text-[#000150] hover:underline">
+            Войти
+          </a>
+        </p>
+      </div>
     </div>
   );
 }

@@ -19,7 +19,7 @@ export default function UserMenu({ user }: UserMenuProps) {
             </div>
             <div className="min-w-[32px] w-[39px]">
                 <Image
-                    src="/default_avatar.jpg"
+                    src="/avatarka.jpg"
                     alt={`${displayName} avatar`}
                     width={39}
                     height={39}
