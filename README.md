@@ -1,6 +1,8 @@
-# AB-ToProject - Frontend
+# AB-ToPlan - Frontend
 
 **Next.js 16**
+---
+
 Frontend системы автоматического управления ВУЗами для Alfa-Bank. 
 
 ---
