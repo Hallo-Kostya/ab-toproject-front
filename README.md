@@ -1,6 +1,7 @@
 # AB-ToProject - Frontend
 
-Frontend системы AB, построен на **Next.js 16**
+**Next.js 16**
+Frontend системы автоматического управления ВУЗами для Alfa-Bank. 
 
 ---
 

@@ -1,14 +1,14 @@
-# сборка
-FROM node:20-alpine AS base
+# Сборка приложения
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# устанавливается pnpm
-RUN npm install -g pnpm
-
 # копируются зависимости
 COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile
+
+# устанавливается pnpm и зависимости
+RUN npm install -g pnpm && \
+    pnpm install --frozen-lockfile
 
 # копируется исходный код
 COPY . .
@@ -24,16 +24,15 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 # создание непривилегированного пользователя
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
 
 # необходимое копирование из сборки
-COPY --from=base /app/public ./public
-COPY --from=base /app/.next/standalone ./
-COPY --from=base /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# меняется владелец
-RUN chown -R nextjs:nodejs /app
+# переключение на непривилегированного пользователя
 USER nextjs
 
 # порт

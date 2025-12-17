@@ -3,14 +3,19 @@ import { ReactNode } from "react";
 import Image from "next/image";
 
 {/* НУЖНА НАСТРОЙКА ТИПИЗАЦИИ */}
+interface BaseListItem {
+    id: string;
+}
 
-interface PageContainerProps {
+type CardComponent<T extends BaseListItem> = (item: T, index: number) => ReactNode;
+
+interface PageContainerProps<T extends BaseListItem> {
     pageTag: string;
     meetingsTitle: string;
     meetingsListComponent: ReactNode;
     listHeader: string;
     list: T[];
-    cardComponent: (item: T, index: number) => ReactNode;
+    cardComponent: CardComponent<T>;
     year?: string;
     semester?: string;
 }
@@ -24,7 +29,7 @@ export default function PageContainer<T extends { id: string }>( {
     cardComponent, 
     year, 
     semester
-}: PageContainerProps ) {
+}: PageContainerProps<T> ) {
     return (
         <div>
             <div>
@@ -40,10 +45,10 @@ export default function PageContainer<T extends { id: string }>( {
                     semester={semester} 
                 />
                 <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-4 w-full">
-                {list.map((item) =>
+                {list.map((item, index) =>
                     <li key={item.id}>
                     <Link href={`/${pageTag}/${item.id}`}>
-                        <>{cardComponent(item, item.id)}</>
+                        <>{cardComponent(item, index)}</>
                     </Link>
                     </li>
                 )}
