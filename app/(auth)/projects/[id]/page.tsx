@@ -1,6 +1,7 @@
 import { Project } from "@/types/projects/project";
 import { projects } from "@/mocks/projects/projects";
 import { notFound } from "next/navigation";
+import EditProjectModalButton from "@/components/clientModal/project/editProjectModalButton";
 
 export default async function ProjectPage({ params }: { params: Promise<{ id: string }> } ) {
     const { id } = await params;
@@ -16,10 +17,8 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
                 <div className="flex gap-2 mb-3">
                     <h1 className="text-[#000150] text-[26px] font-semibold">{project.name}</h1>
 
-                    {/* Форма редактирования информации о проекте */}
-                    <button className="flex items-center ml-auto border-1 border-[#000150] px-4 py-3 rounded-[8px] text-[#000150] text-[19px] font-semibold max-h-[47px]">
-                        Редактировать
-                    </button>
+                    {/* Клиентский компонент для управления модальным окном */}
+                   <EditProjectModalButton />
                 </div>
                 <div className="flex items-center gap-[24px]">
                     <p><span className="text-[24px] text-[#000150] font-md">{project.year} year, {project.semester} semester</span></p>
