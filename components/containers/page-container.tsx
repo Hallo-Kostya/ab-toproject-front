@@ -36,7 +36,7 @@ export default function PageContainer<T extends { id: string }>( {
                 <h2 className="text-[20px] text-[#000150] font-semibold mb-4">{meetingsTitle}</h2>
                 <>{meetingsListComponent}</>
             </div>
-            <div className="mt-[90px]">
+            <div className="mt-[42px]">
                 <ListHeaderComponent 
                     pageTag={pageTag} 
                     counterTitle={listHeader} 

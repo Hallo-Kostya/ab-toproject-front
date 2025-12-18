@@ -25,8 +25,20 @@ export default function Header() {
                 {/* Right section */}
                 <div className="flex items-center gap-[49px] min-w-0">
                     {/* SearchBar */}
-                    <div className="min-w-[48px] w-[448px] h-[48px] bg-black/30 rounded-[12px]">
-                        {/* тут будет поиск */}
+                    <div className="min-w-[48px] w-[448px] h-[48px] bg-[#DBDFFF]/30 border-1 border-[#DBDFFF] rounded-[12px] flex items-center px-3">
+                        <span className="flex items-center justify-center mr-[10px]">
+                            <Image 
+                                src="/search.svg" 
+                                alt={"Поиск"}
+                                width={24}
+                                height={24}                                
+                            />
+                        </span>
+                        <input 
+                            type="text" 
+                            placeholder="Поиск" 
+                            className="bg-transparent border-none focus:outline-none text-[#6B7280] w-full placeholder:text-[#6B7280]" 
+                        />
                     </div>
 
                     {/* Navigation */}
@@ -51,7 +63,7 @@ export default function Header() {
                     </nav>
 
                     {/* UserMenu */}
-                    <UserMenu user={users[1]} />
+                    <UserMenu user={users[16]} />
                 </div>
             </div>
         </Container>

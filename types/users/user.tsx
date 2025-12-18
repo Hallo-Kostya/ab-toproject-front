@@ -4,5 +4,8 @@ export type User = {
     lastName: string;
     patronymic?: string;
     email: string;
+    group?: string;
+    role?: string;
+    attendance?: 'present' | 'absent' | 'not_confirmed';
 }
 

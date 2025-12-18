@@ -10,7 +10,7 @@ interface EditProjectFormProps {
 export default function EditProjectForm({ isOpen, onClose }: EditProjectFormProps) {
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <div className="p-6">
+      <div className="px-8 py-6">
         <h2 className="text-2xl font-bold text-[#000150] mb-4">Редактирование проекта</h2>
         
         <form>
@@ -22,9 +22,6 @@ export default function EditProjectForm({ isOpen, onClose }: EditProjectFormProp
               className="w-full p-3 rounded-[16px] border-2 border-gray-300"
               placeholder="Расскажите о ваших впечатлениях"
             />
-            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-red-500">
-              !
-            </div>
           </div>
 
           {/* Цель */}
@@ -35,9 +32,6 @@ export default function EditProjectForm({ isOpen, onClose }: EditProjectFormProp
               className="w-full p-3 rounded-[16px] border-2 border-gray-300"
               placeholder="Расскажите о ваших впечатлениях"
             />
-            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-red-500">
-              !
-            </div>
           </div>
 
           {/* Семестр */}
@@ -45,16 +39,13 @@ export default function EditProjectForm({ isOpen, onClose }: EditProjectFormProp
             <div>
               <label className="block text-[18px] font-semibold text-[#000150] mb-2">Год</label>
               <select 
-              title="year"
-              id="year"
-              className="w-full p-3 rounded-[16px] border-2 border-gray-300">
+                title="year"
+                id="year"
+                className="w-full p-3 rounded-[16px] border-2 border-gray-300">
                 <option>2023</option>
                 <option>2024</option>
                 <option>2025</option>
               </select>
-              <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-red-500">
-                !
-              </div>
             </div>
             <div>
               <label className="block text-[18px] font-semibold text-[#000150] mb-2">Семестр</label>
@@ -65,9 +56,6 @@ export default function EditProjectForm({ isOpen, onClose }: EditProjectFormProp
                 <option>Весенний</option>
                 <option>Осенний</option>
               </select>
-              <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-red-500">
-                !
-              </div>
             </div>
           </div>
 
@@ -79,9 +67,6 @@ export default function EditProjectForm({ isOpen, onClose }: EditProjectFormProp
               className="w-full p-3 rounded-[16px] border-2 border-gray-300"
               placeholder="Расскажите о ваших впечатлениях"
             />
-            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-red-500">
-              !
-            </div>
           </div>
 
           {/* Требования */}
@@ -92,15 +77,12 @@ export default function EditProjectForm({ isOpen, onClose }: EditProjectFormProp
               className="w-full p-3 rounded-[16px] border-2 border-gray-300"
               placeholder="Расскажите о ваших впечатлениях"
             />
-            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-red-500">
-              !
-            </div>
           </div>
 
           {/* Общее сообщение об ошибке */}
-          <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-center">
+          {/* <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-center">
             Проверьте, все ли обязательные поля заполнены.
-          </div>
+          </div> */}
 
           <div className="flex justify-end gap-4">
             <button
@@ -114,7 +96,7 @@ export default function EditProjectForm({ isOpen, onClose }: EditProjectFormProp
               type="button"
               className="px-6 py-2 bg-[#000150] text-white rounded-[16px] hover:bg-blue-900"
             >
-              Опубликовать
+              Сохранить
             </button>
           </div>
         </form>

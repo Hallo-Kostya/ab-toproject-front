@@ -8,6 +8,7 @@ export type Team = {
     team_group_link: string;
     team_artifacts: string;
     participantIds: string[];
+    projectsIds: string[];
 }
 
 export interface TeamCardProps {

@@ -4,44 +4,46 @@ export const teams: Team[] = [
     {
         id: "0",
         project_id: "101",
-        name: "RadikUlitki",
-        curator: "RadikUlitki Curator 1",
-        team_group_link: "Team Group Link",
-        team_artifacts: "Some artifacts...",
+        name: "nuggets",
+        curator: "Иванов Алексей Степанович",
+        team_group_link: "https://t.me/",
+        team_artifacts: "https://github.com/Hallo-Kostya/ab-toproject-front",
         participantIds: [
-            "0",
-            "1",
-            "2",
-            "3"
-        ]
+            "8",
+            "15",
+            "14",
+            "13"
+        ],
+        projectsIds: ["101"]
     },
     {
         id: "1",
         project_id: "102",
-        name: "Team 2",
-        curator: "Team 2 Curator 1",
-        team_group_link: "Team Group Link",
-        team_artifacts: "Some artifacts...",
+        name: "nitro",
+        curator: "Алексеев Вячеслав Тимофеевич",
+        team_group_link: "https://t.me/",
+        team_artifacts: "https://github.com/Hallo-Kostya/Alpha_CRM_Backend",
         participantIds: [
             "4",
-            "2",
-            "0",
-            "3"
-        ]
+            "5",
+            "6",
+            "7"
+        ],
+        projectsIds: ["103"]
     },
     {
         id: "2",
         project_id: "103",
-        name: "Team 3",
-        curator: "Team 3 Curator 1",
-        team_group_link: "Team Group Link",
-        team_artifacts: "Some artifacts...",
+        name: "dreamers",
+        curator: "Ломачев Степан Игоревич",
+        team_group_link: "https://t.me/",
+        team_artifacts: "",
         participantIds: [
-            "1",
-            "0",
-            "3",
-            "4",
-            "2"
-        ]
+            "9",
+            "10",
+            "11",
+            "12"
+        ],
+        projectsIds: ["101", "102"]
     }
 ]

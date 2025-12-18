@@ -10,7 +10,7 @@ export default function EditProjectModalButton() {
     <>
         <button 
             onClick={() => setIsEditModalOpen(true)}
-            className="flex items-center ml-auto border-1 border-[#000150] px-4 py-3 rounded-[8px] text-[#000150] text-[19px] font-semibold max-h-[47px]"
+            className="flex items-center ml-auto bg-[#000150]/20 px-4 py-3 rounded-[8px] text-[#000150] text-[19px] font-semibold max-h-[47px]"
         >
             Редактировать
         </button>

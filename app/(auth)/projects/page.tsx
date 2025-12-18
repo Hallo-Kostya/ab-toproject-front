@@ -8,8 +8,8 @@ export default function ProjectsPage() {
   const renderProjectCard = (project: Project) => (
     <ProjectCard 
       name={project.name} 
-      teamsCnt={2} 
-      placesCnt={8} 
+      teamsCnt={project.teamsCnt} 
+      placesCnt={project.placesCnt} 
     />
   );
 
@@ -21,8 +21,8 @@ export default function ProjectsPage() {
       listHeader="Всего проектов найдено: "
       list={projects}
       cardComponent={renderProjectCard}
-      year="2025/2026"
-      semester="весенний"
+      year="не указан"
+      semester="не указан"
     />
   );
 }

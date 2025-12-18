@@ -28,14 +28,15 @@ export default function Modal({ isOpen, onClose, children }: ModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/25 bg-opacity-50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/25 bg-opacity-50">
       <div 
         className="absolute inset-0"
         onClick={onClose}
       />
       <div 
-        className="relative bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+        className="relative bg-white rounded-[24px] shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:hidden"
         onClick={e => e.stopPropagation()}
+
       >
         {children}
       </div>

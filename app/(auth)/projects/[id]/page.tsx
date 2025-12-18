@@ -2,6 +2,14 @@ import { Project } from "@/types/projects/project";
 import { projects } from "@/mocks/projects/projects";
 import { notFound } from "next/navigation";
 import EditProjectModalButton from "@/components/clientModal/project/editProjectModalButton";
+import { teams } from "@/mocks/teams/teams";
+import Link from "next/link";
+import { users } from "@/mocks/users/users";
+// import { Team } from "@/types/teams/team";
+import TeamCard from "@/components/ui/cards/team-card";
+import { buildTeamWithParticipants } from "@/utils/team";
+
+const usersMap = new Map(users.map((user) => [user.id, user]));
 
 export default async function ProjectPage({ params }: { params: Promise<{ id: string }> } ) {
     const { id } = await params;
@@ -10,6 +18,11 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
     if (!project) {
         notFound();
     }
+
+    // Фильтрация команд только для данного проекта
+    const projectTeams = teams.filter(team =>
+        project.teamsIds?.includes(team.id) || false
+    );
 
     return (
         <div>
@@ -21,9 +34,9 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
                    <EditProjectModalButton />
                 </div>
                 <div className="flex items-center gap-[24px]">
-                    <p><span className="text-[24px] text-[#000150] font-md">{project.year} year, {project.semester} semester</span></p>
-                    <div className="px-3 py-1 border-1 border-[#E79E00] rounded-[8px]">
-                        <span className="text-[#E79E00]">
+                    <p><span className="text-[24px] text-[#000150] font-md">{project.year} год, {project.semester} семестр</span></p>
+                    <div className="px-3 py-[1px] bg-[#E79E00]/20 rounded-[8px]">
+                        <span className="text-[#E79E00] text-[20px] font-medium">
                             {project.status}
                         </span>
                     </div>
@@ -36,14 +49,33 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
                 <Section title={"Критерии"} content={project.criteria} />
             </div>
             <div className="mt-[36px]">
-                <h2 className="mb-[16px] text-[24px] text-[#000000] font-md">Команды-исполнители</h2>
+                <h2 className="mb-[16px] text-[24px] text-[#000000] font-medium">Команды-исполнители</h2>
                 <div className="flex items-center mb-[24px]">
-                    <p className="text-[18px] text-[#353535]">Команд найдено: <span className="text-[18px] text-[#000150] font-semibold">{"teamsCnt"}</span></p>
+                    <p className="text-[18px] text-[#353535]">Команд найдено: <span className="text-[18px] text-[#000150] font-semibold">{projectTeams.length}</span></p>
                 </div>
                 {/* Список команд текущего проекта */}
-                <ul className="w-full h-[400px] border-1 border-black rounded">
-                    <li></li>
-                </ul>
+                <div>
+                    {projectTeams.length > 0 ? (
+                        <ul className="flex gap-[25px]">
+                            {projectTeams.map((team) => {
+                                const enrichedTeam = buildTeamWithParticipants(team, usersMap);
+
+                                return (
+                                    <li key={team.id} className="w-[402px]">
+                                        <Link href={`/teams/${team.id}`}>
+                                            <TeamCard 
+                                            name={enrichedTeam.name} 
+                                            teamNumber={enrichedTeam.teamNumber} 
+                                            participants={enrichedTeam.participants} />
+                                        </Link>
+                                    </li>
+                                )} 
+                            )}
+                        </ul>
+                    ) : (
+                        <p>В данном проекте не принимало участие ни одна команда</p>
+                    )}
+                </div>
             </div>
         </div>
     )
@@ -52,8 +84,8 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
 function Section({ title, content }: { title: string; content: string }) {
     return (
         <div>
-            <h2 className="text-[24px] text-[#000000] font-md mb-[28px]">{title}</h2>
-            <p className="text-[18px]">{content}</p>
+            <h2 className="text-[24px] text-[#000000] font-medium mb-[28px]">{title}</h2>
+            <p className="text-[22px]">{content}</p>
         </div>
     )
 }
