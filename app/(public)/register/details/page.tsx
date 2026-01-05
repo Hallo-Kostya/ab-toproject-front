@@ -18,11 +18,10 @@ export default function RegistrationDetailsPage() {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const { login } = useAuth();
 
-    // Load data from first step
     useEffect(() => {
         const firstStepData = localStorage.getItem('registration-step1');
         if (!firstStepData) {
-        router.push('/register');
+            router.push('/register');
         }
     }, [router]);
 
@@ -51,7 +50,6 @@ export default function RegistrationDetailsPage() {
                 return;
             }
             setAvatar(file);
-            // Preview
             const reader = new FileReader();
             reader.onloadend = () => {
                 setAvatarPreview(reader.result as string);
@@ -62,47 +60,46 @@ export default function RegistrationDetailsPage() {
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!validateForm()) return;
+      e.preventDefault();
+      if (!validateForm()) return;
 
-        setIsLoading(true);
-        setError('');
+      setIsLoading(true);
+      setError('');
 
-        try {
-            const firstStepData = localStorage.getItem('registration-step1');
-            if (!firstStepData) {
-                throw new Error('Registration data not found. Please start over.');
-            }
-
-            const { email, password } = JSON.parse(firstStepData);
-
-            const registerData = {
-                email,
-                password,
-                first_name: name,
-                last_name: surname,
-                patronymic: patronymic || undefined,
-                tg_link: tgLink || undefined,
-                avatar: avatar || undefined  // Это будет обработано отдельно
-            };
-
-            // Вызов register с обновленной логикой
-            const authResponse = await register(registerData);
-
-            // Сохраняем токены и очищаем данные
-            login(authResponse);
-            localStorage.removeItem('registration-step1');
-            localStorage.removeItem('registration-step2');
-
-            router.push('/projects');
-
-        } catch (err: any) {
-            setError(err.message || 'Ошибка регистрации. Попробуйте еще раз.');
-            console.error('Registration error:', err);
-        } finally {
-            setIsLoading(false);
+      try {
+        const firstStepData = localStorage.getItem('registration-step1');
+        if (!firstStepData) {
+            throw new Error('Registration data not found. Please start over.');
         }
-    };
+
+        const { email, password } = JSON.parse(firstStepData);
+
+        const registerData = {
+          email,
+          password,
+          first_name: name,
+          last_name: surname,
+          patronymic: patronymic || undefined,
+          tg_link: tgLink || undefined
+        };
+
+        const authResponse = await register(registerData);
+        console.log('Ответ от сервера:', authResponse);
+        await login(authResponse);
+        
+        // Очищаем данные регистрации
+        localStorage.removeItem('registration-step1');
+        
+        // Перенаправляем на страницу с благодарностью или профилем
+        router.push('/projects');
+        
+    } catch (err: any) {
+        setError(err.message || 'Ошибка регистрации. Попробуйте еще раз.');
+        console.error('Registration error:', err);
+    } finally {
+        setIsLoading(false);
+    }
+  };
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -236,6 +233,9 @@ export default function RegistrationDetailsPage() {
                 </div>
               )}
             </div>
+            <p className="text-center text-xs text-gray-500 mt-2">
+              Аватар будет установлен позже, после регистрации
+            </p>
           </div>
           <div className="flex justify-center mt-[18px]">
             <button

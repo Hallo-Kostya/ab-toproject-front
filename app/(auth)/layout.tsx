@@ -10,12 +10,14 @@ export default async function AuthLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ProtectedRoute requireAuth={true}>
+    //<ProtectedRoute requireAuth={true}>
+    <>
       <Header />
       <Container className="mt-14 mb-28">
         <main>{children}</main>
       </Container>
       <Footer />
-    </ProtectedRoute>
+    </>
+    //</ProtectedRoute>
   );
 }

@@ -1,5 +1,5 @@
 // app/(public)/layout.tsx
-import ProtectedRoute from "@/components/auth/ProtectedRoute";
+// import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 export default function PublicLayout({
   children,
@@ -7,8 +7,10 @@ export default function PublicLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ProtectedRoute requireAuth={false}>
+    // <ProtectedRoute requireAuth={false}>
+    <>
       {children}
-    </ProtectedRoute>
+    </>
+    // </ProtectedRoute>
   );
 }

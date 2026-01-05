@@ -1,4 +1,5 @@
-// components/auth/ProtectedRoute.tsx
+// components/auth/ProtectedRoute.tsx - ИСПРАВЛЕННАЯ ВЕРСИЯ
+
 'use client';
 
 import { useEffect } from 'react';
@@ -7,27 +8,37 @@ import { useAuth } from '@/context/AuthContext';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  redirectPath?: string;
-  requireAuth?: boolean; // true если нужна аутентификация, false если нужна аутентификация (для страниц входа/регистрации)
+  requireAuth?: boolean;
+  redirectUnauthenticatedTo?: string;
+  redirectAuthenticatedTo?: string;
 }
 
 export default function ProtectedRoute({ 
   children, 
-  redirectPath = '/login', 
-  requireAuth = true 
+  requireAuth = true,
+  redirectUnauthenticatedTo = '/login',
+  redirectAuthenticatedTo = '/projects'
 }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, refreshTokens } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!isLoading) {
+    const checkAuth = async () => {
+      if (isLoading) return;
+
       if (requireAuth && !isAuthenticated) {
-        router.push(redirectPath);
+        // Пытаемся обновить токены
+        const refreshed = await refreshTokens();
+        if (!refreshed) {
+          router.push(redirectUnauthenticatedTo);
+        }
       } else if (!requireAuth && isAuthenticated) {
-        router.push('/projects');
+        router.push(redirectAuthenticatedTo);
       }
-    }
-  }, [isAuthenticated, isLoading, router, redirectPath, requireAuth]);
+    };
+
+    checkAuth();
+  }, [isAuthenticated, isLoading, requireAuth, router, refreshTokens]);
 
   if (isLoading) {
     return (
@@ -35,6 +46,16 @@ export default function ProtectedRoute({
         <div className="text-xl text-[#000150]">Загрузка...</div>
       </div>
     );
+  }
+
+  // Если требуется аутентификация и пользователь не авторизован - показываем загрузку до завершения проверки
+  if (requireAuth && !isAuthenticated) {
+    return null;
+  }
+
+  // Если не требуется аутентификация и пользователь авторизован - показываем загрузку до редиректа
+  if (!requireAuth && isAuthenticated) {
+    return null;
   }
 
   return <>{children}</>;

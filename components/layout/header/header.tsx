@@ -1,4 +1,5 @@
-// components/layout/header/header.tsx
+// components/layout/header/header.tsx - ИСПРАВЛЕННАЯ ВЕРСИЯ
+
 'use client';
 
 import Image from "next/image";
@@ -15,6 +16,45 @@ export default function Header() {
 
   if (!isBrowser) {
     return null;
+  }
+
+  // Если пользователь не авторизован, не показываем UserMenu
+  if (!user) {
+    return (
+      <header className="bg-[#F4F3F3] shadow-xl">
+        <Container className="py-[23px]">
+          <div className="flex items-center justify-between">
+            {/* Logo */}
+            <div className="min-w-[100px] w-[135px]">
+              <Link href={"/projects"}>
+                <Image
+                  src="/logo.svg"
+                  alt="ToPlan"
+                  width={135}
+                  height={43}
+                  className="w-full h-auto"
+                />
+              </Link>
+            </div>
+            {/* Navigation для неавторизованных пользователей */}
+            <nav>
+              <ul className="flex gap-[32px] flex-wrap justify-center md:justify-start">
+                <li>
+                  <Link href={"/login"} className="whitespace-nowrap">
+                    <span className="text-[#000150] text-[17px]">Войти</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link href={"/register"} className="whitespace-nowrap">
+                    <span className="text-[#000150] text-[17px]">Регистрация</span>
+                  </Link>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </Container>
+      </header>
+    );
   }
 
   return (
@@ -72,20 +112,18 @@ export default function Header() {
               </ul>
             </nav>
             {/* UserMenu - только если пользователь аутентифицирован */}
-            {user && (
-              <UserMenu 
-                user={{
-                  id: user.id,
-                  firstName: user.first_name,
-                  lastName: user.last_name,
-                  patronymic: user.patronymic,
-                  tgLink: user.tg_link,
-                  email: user.email,
-                  avatar: user.avatar_s3_path
-                }} 
-                onLogout={logout}
-              />
-            )}
+            <UserMenu 
+              user={{
+                id: user.id,
+                firstName: user.first_name,
+                lastName: user.last_name,
+                patronymic: user.patronymic || null,  // <-- Безопасное преобразование
+                tgLink: user.tg_link || null,          // <-- Безопасное преобразование
+                email: user.email,
+                avatar: user.avatar_s3_path || null    // <-- Безопасное преобразование
+              }} 
+              onLogout={logout}
+            />
           </div>
         </div>
       </Container>

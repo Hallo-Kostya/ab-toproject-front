@@ -1,4 +1,5 @@
-// components/ui/user-menu.tsx
+// components/ui/user-menu.tsx - ИСПРАВЛЕННАЯ ВЕРСИЯ С КОРРЕКТНЫМИ ТИПАМИ
+
 'use client';
 
 import Image from "next/image";
@@ -9,25 +10,39 @@ interface UserMenuProps {
     id: string;
     firstName: string;
     lastName: string;
-    patronymic?: string;
-    tgLink: string;
+    patronymic?: string | null;
+    tgLink?: string | null;  // <-- ИЗМЕНЕНО: теперь может быть null или undefined
     email: string;
-    avatar?: string;
+    avatar?: string | null;  // <-- ИЗМЕНЕНО: теперь может быть null
   };
   onLogout?: () => Promise<void>;
 }
 
 export default function UserMenu({ user, onLogout }: UserMenuProps) {
-    const displayName = formatShortName(user.firstName, user.lastName);
-    const avatarUrl = user.avatar || "/default_user.png";
+  const displayName = formatShortName(user.firstName, user.lastName);
+  // Безопасное получение URL аватара с fallback на default
+  const avatarUrl = user.avatar && user.avatar.trim() !== '' 
+    ? user.avatar 
+    : "/default_user.png";
 
-    const handleLogout = async (e: React.MouseEvent) => {
+  const handleLogout = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (onLogout) {
+    
+    try {
+      if (onLogout) {
         await onLogout();
+      }
+    } catch (error) {
+      console.error('Logout failed, clearing tokens locally:', error);
+      // Принудительная очистка на клиенте
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
     }
-    };
+  };
 
   return (
     <div className="flex gap-[6px] items-center min-w-[100px]">
