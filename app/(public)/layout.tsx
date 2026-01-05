@@ -1,11 +1,14 @@
-export default async function PublicLayout({
+// app/(public)/layout.tsx
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
+
+export default function PublicLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <div className="">
+    <ProtectedRoute requireAuth={false}>
       {children}
-    </div>
+    </ProtectedRoute>
   );
 }
