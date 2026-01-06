@@ -1,4 +1,5 @@
 const API_BASE_URL = 'http://51.250.12.183:8001/api/v1/auth';
+// const API_BASE_URL = 'http://localhost:8001/api/v1/auth';
 
 export interface AuthResponse {
   access_token: string;
@@ -151,4 +152,32 @@ export const refreshToken = async (refreshToken: string): Promise<AuthResponse> 
   }
 
   return processAuthResponse(await response.json());
+};
+
+// Загрузка аватара пользователя
+export const uploadAvatar = async (file: File): Promise<User> => {
+  const accessToken = localStorage.getItem('access_token');
+  
+  if (!accessToken) {
+    throw new Error('No access token');
+  }
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await fetch(`${API_BASE_URL}/avatar`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${accessToken}`
+      // Content-Type не устанавливаем - браузер сам установит multipart/form-data с boundary
+    },
+    body: formData
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || 'Failed to upload avatar');
+  }
+
+  return response.json();
 };

@@ -23,6 +23,16 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+    images: {
+    remotePatterns: [
+      {
+        protocol: 'http',
+        hostname: '51.250.12.183',
+        port: '9000',
+        pathname: '/curators/avatars/**',
+      },
+    ],
+  },
 };
 
 export default nextConfig;

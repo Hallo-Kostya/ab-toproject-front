@@ -1,5 +1,3 @@
-// components/layout/header/header.tsx - ИСПРАВЛЕННАЯ ВЕРСИЯ
-
 'use client';
 
 import Image from "next/image";
@@ -11,14 +9,12 @@ import { useAuth } from "@/context/AuthContext";
 export default function Header() {
   const { user, logout } = useAuth();
 
-  // Проверяем, что мы в браузере (для избежания проблем с SSR)
   const isBrowser = typeof window !== 'undefined';
 
   if (!isBrowser) {
     return null;
   }
 
-  // Если пользователь не авторизован, не показываем UserMenu
   if (!user) {
     return (
       <header className="bg-[#F4F3F3] shadow-xl">
