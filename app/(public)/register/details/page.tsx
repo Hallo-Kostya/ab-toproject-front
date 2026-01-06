@@ -90,7 +90,7 @@ export default function RegistrationDetailsPage() {
         // Очищаем данные регистрации
         localStorage.removeItem('registration-step1');
         
-        // Перенаправляем на страницу с благодарностью или профилем
+        // Перенаправляем на главную страницу
         router.push('/projects');
         
     } catch (err: any) {
@@ -123,7 +123,10 @@ export default function RegistrationDetailsPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat" style={{ backgroundImage: 'url(/register-background.jpg)' }}>
+    <div 
+      className="min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat" 
+      style={{ backgroundImage: 'url(/register-background.jpg)' }}
+    >
       <div className="w-[560px] min-w-[180px] mx-auto p-6 bg-white rounded-[24px] shadow-lg">
         <h1 className="text-3xl text-[#000150] font-bold mb-1">Регистрация</h1>
         <p className="mb-6 text-[16px] text-gray-600">Введите данные, чтобы завершить регистрацию</p>

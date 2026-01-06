@@ -1,5 +1,3 @@
-// context/AuthContext.tsx - ИСПРАВЛЕННАЯ ВЕРСИЯ С ОБНОВЛЕНИЕМ ДАННЫХ
-
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';

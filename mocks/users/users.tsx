@@ -8,7 +8,8 @@ export const users: User[] = [
         patronymic: "Евгеньевич",
         email: "akomov@gmail.com",
         group: "РИ-330947",
-        role: "TEAM-LEAD"
+        role: "TEAM-LEAD",
+        tgLink: ""
     },
     {
         id: "1",
@@ -17,7 +18,8 @@ export const users: User[] = [
         patronymic: "Исаакович",
         email: "eiperl@gmail.com",
         group: "РИ-330947",
-        role: "FRONTEND"
+        role: "FRONTEND",
+        tgLink: ""
     },
     {
         id: "2",
@@ -26,7 +28,8 @@ export const users: User[] = [
         patronymic: "Дмитриевич",
         email: "prud@gmail.com",
         group: "РИ-330948",
-        role: "BACKEND"
+        role: "BACKEND",
+        tgLink: ""
     },
     {
         id: "3",
@@ -35,7 +38,8 @@ export const users: User[] = [
         patronymic: "Тимофеевич",
         email: "goshap@gmail.com",
         group: "РИ-330943",
-        role: "DESIGNER"
+        role: "DESIGNER",
+        tgLink: ""
     },
     {
         id: "4",
@@ -44,7 +48,8 @@ export const users: User[] = [
         patronymic: "Степанович",
         email: "rusiks@gmail.com",
         group: "РИ-330943",
-        role: "TEAM-LEAD"
+        role: "TEAM-LEAD",
+        tgLink: ""
     },
     {
         id: "5",
@@ -53,7 +58,8 @@ export const users: User[] = [
         patronymic: "Тимурович",
         email: "atimovv@gmail.com",
         group: "РИ-330947",
-        role: "FRONTEND"
+        role: "FRONTEND",
+        tgLink: ""
     },
     {
         id: "6",
@@ -62,7 +68,8 @@ export const users: User[] = [
         patronymic: "Андреевич",
         email: "aakuzya@gmail.com",
         group: "РИ-330946",
-        role: "BACKEND"
+        role: "BACKEND",
+        tgLink: ""
     },
     {
         id: "7",
@@ -71,7 +78,8 @@ export const users: User[] = [
         patronymic: "Алексеевич",
         email: "rumyashka@gmail.com",
         group: "РИ-330948",
-        role: "DESIGNER"
+        role: "DESIGNER",
+        tgLink: ""
     },
     {
         id: "8",
@@ -80,7 +88,8 @@ export const users: User[] = [
         patronymic: "Степанович",
         email: "nikidol@gmail.com",
         group: "РИ-330943",
-        role: "TEAM-LEAD"
+        role: "TEAM-LEAD",
+        tgLink: ""
     },
     {
         id: "9",
@@ -89,7 +98,8 @@ export const users: User[] = [
         patronymic: "Максимович",
         email: "stepanizhnikk@gmail.com",
         group: "РИ-330947",
-        role: "FRONTEND"
+        role: "FRONTEND",
+        tgLink: ""
     },
     {
         id: "10",
@@ -98,7 +108,8 @@ export const users: User[] = [
         patronymic: "Иванович",
         email: "bobrovova@gmail.com",
         group: "РИ-330948",
-        role: "BACKEND"
+        role: "BACKEND",
+        tgLink: ""
     },
         {
         id: "11",
@@ -107,7 +118,8 @@ export const users: User[] = [
         patronymic: "Евгениевич",
         email: "ebelden@gmail.com",
         group: "РИ-330946",
-        role: "DESIGNER"
+        role: "DESIGNER",
+        tgLink: ""
     },
     {
         id: "12",
@@ -116,7 +128,8 @@ export const users: User[] = [
         patronymic: "Александрович",
         email: "valodarch1ks@gmail.com",
         group: "РИ-330948",
-        role: "TEAM-LEAD"
+        role: "TEAM-LEAD",
+        tgLink: ""
     },
     {
         id: "13",
@@ -125,7 +138,8 @@ export const users: User[] = [
         patronymic: "Дмитриевна",
         email: "stepanovaad@gmail.com",
         group: "РИ-330947",
-        role: "FRONTEND"
+        role: "FRONTEND",
+        tgLink: ""
     },
     {
         id: "14",
@@ -134,7 +148,8 @@ export const users: User[] = [
         patronymic: "Алексеевич",
         email: "timaryzhiy@gmail.com",
         group: "РИ-330944",
-        role: "BACKEND"
+        role: "BACKEND",
+        tgLink: ""
     },
     {
         id: "15",
@@ -142,12 +157,14 @@ export const users: User[] = [
         lastName: "Феллерман",
         email: "fellermn@gmail.com",
         group: "РИ-330945",
-        role: "DESIGNER"
+        role: "DESIGNER",
+        tgLink: ""
     },
     {
         id: "16",
         firstName: "Константин",
         lastName: "Бурдук",
-        email: "kburduk@gmail.com"
+        email: "kburduk@gmail.com",
+        tgLink: "@jf5768"
     }
 ]

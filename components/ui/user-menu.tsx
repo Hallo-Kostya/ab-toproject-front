@@ -1,5 +1,3 @@
-// components/ui/user-menu.tsx - ИСПРАВЛЕННАЯ ВЕРСИЯ С КОРРЕКТНЫМИ ТИПАМИ
-
 'use client';
 
 import Image from "next/image";
@@ -11,9 +9,9 @@ interface UserMenuProps {
     firstName: string;
     lastName: string;
     patronymic?: string | null;
-    tgLink?: string | null;  // <-- ИЗМЕНЕНО: теперь может быть null или undefined
+    tgLink?: string | null;
     email: string;
-    avatar?: string | null;  // <-- ИЗМЕНЕНО: теперь может быть null
+    avatar?: string | null;
   };
   onLogout?: () => Promise<void>;
 }

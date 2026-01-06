@@ -117,10 +117,10 @@ export default function Header() {
                 id: user.id,
                 firstName: user.first_name,
                 lastName: user.last_name,
-                patronymic: user.patronymic || null,  // <-- Безопасное преобразование
-                tgLink: user.tg_link || null,          // <-- Безопасное преобразование
+                patronymic: user.patronymic || null,
+                tgLink: user.tg_link || null,
                 email: user.email,
-                avatar: user.avatar_s3_path || null    // <-- Безопасное преобразование
+                avatar: user.avatar_s3_path || null
               }} 
               onLogout={logout}
             />
