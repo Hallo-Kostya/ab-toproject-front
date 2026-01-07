@@ -88,3 +88,23 @@ export const getProjectById = async (projectId: string): Promise<Project> => {
 
   return response.json();
 };
+
+export const deleteProject = async (projectId: string): Promise<void> => {
+  const accessToken = localStorage.getItem('access_token');
+  
+  if (!accessToken) {
+    throw new Error('No access token');
+  }
+
+  const response = await fetch(`${API_BASE_URL}/projects/${projectId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${accessToken}`
+    }
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || 'Failed to delete project');
+  }
+};
