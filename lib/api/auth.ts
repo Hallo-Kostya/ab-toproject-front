@@ -102,8 +102,8 @@ export const logout = async (refreshToken: string): Promise<void> => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${accessToken}`
         },
-        // Тело запроса может быть пустым или содержать дополнительные данные
-        body: JSON.stringify({}) // или можно убрать body полностью
+        // Тело запроса может быть пустым или содержать дополнительные данные, можно убрать
+        body: JSON.stringify({})
       });
 
       if (!response.ok) {
