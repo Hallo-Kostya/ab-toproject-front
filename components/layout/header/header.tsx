@@ -7,12 +7,14 @@ import UserMenu from "@/components/ui/user-menu";
 import { useAuth } from "@/context/AuthContext";
 import { useState, useEffect, useRef } from "react";
 import ProjectFormModal from "@/components/ui/projectFormModal";
+import StudentFormModal from "@/components/ui/studentFormModal";
 
 export default function Header() {
   const { user, logout } = useAuth();
   const [mounted, setMounted] = useState(false);
   const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
+  const [isStudentModalOpen, setIsStudentModalOpen] = useState(false);
   const addMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -156,18 +158,20 @@ export default function Header() {
                       Проект
                     </button>
                     <button
-                      onClick={() => setIsAddMenuOpen(false)}
-                      className="block w-full text-left px-4 py-2 hover:bg-gray-100 rounded-[8px] text-gray-400 font-medium cursor-not-allowed"
-                      disabled
+                      onClick={() => {
+                        setIsAddMenuOpen(false);
+                        setIsStudentModalOpen(true);
+                      }}
+                      className="block w-full text-left px-4 py-2 hover:bg-gray-100 rounded-[8px] text-[#000150] font-medium"
                     >
-                      Команда
+                      Студент
                     </button>
                     <button
                       onClick={() => setIsAddMenuOpen(false)}
                       className="block w-full text-left px-4 py-2 hover:bg-gray-100 rounded-[8px] text-gray-400 font-medium cursor-not-allowed"
                       disabled
                     >
-                      Студент
+                      Команда
                     </button>
                   </div>
                 )}
@@ -208,6 +212,11 @@ export default function Header() {
       <ProjectFormModal 
         isOpen={isProjectModalOpen} 
         onClose={() => setIsProjectModalOpen(false)} 
+      />
+      
+      <StudentFormModal 
+        isOpen={isStudentModalOpen} 
+        onClose={() => setIsStudentModalOpen(false)} 
       />
     </>
   );
