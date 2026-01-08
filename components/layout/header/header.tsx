@@ -8,6 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useState, useEffect, useRef } from "react";
 import ProjectFormModal from "@/components/ui/projectFormModal";
 import StudentFormModal from "@/components/ui/studentFormModal";
+import TeamFormModal from "@/components/ui/teamFormModal";
 
 export default function Header() {
   const { user, logout } = useAuth();
@@ -15,9 +16,9 @@ export default function Header() {
   const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [isStudentModalOpen, setIsStudentModalOpen] = useState(false);
+  const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
   const addMenuRef = useRef<HTMLDivElement>(null);
 
-  {/* ПРОБЛЕМА SSR рендеринга пока не устранена */}
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -168,9 +169,11 @@ export default function Header() {
                       Студент
                     </button>
                     <button
-                      onClick={() => setIsAddMenuOpen(false)}
-                      className="block w-full text-left px-4 py-2 hover:bg-gray-100 rounded-[8px] text-gray-400 font-medium cursor-not-allowed"
-                      disabled
+                      onClick={() => {
+                        setIsAddMenuOpen(false);
+                        setIsTeamModalOpen(true);
+                      }}
+                      className="block w-full text-left px-4 py-2 hover:bg-gray-100 rounded-[8px] text-[#000150] font-medium"
                     >
                       Команда
                     </button>
@@ -218,6 +221,11 @@ export default function Header() {
       <StudentFormModal 
         isOpen={isStudentModalOpen} 
         onClose={() => setIsStudentModalOpen(false)} 
+      />
+      
+      <TeamFormModal 
+        isOpen={isTeamModalOpen} 
+        onClose={() => setIsTeamModalOpen(false)} 
       />
     </>
   );
