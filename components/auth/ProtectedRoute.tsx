@@ -1,5 +1,3 @@
-// components/auth/ProtectedRoute.tsx - ИСПРАВЛЕННАЯ ВЕРСИЯ
-
 'use client';
 
 import { useEffect } from 'react';

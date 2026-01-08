@@ -82,6 +82,7 @@ export default async function TeamPage({ params }: { params: Promise<{id: string
               {teamProjects.map((project) =>
                 <li key={project.id} className="w-[402px]">
                   <Link href={`/projects/${project.id}`}>
+                    {/* Пока что сюда не передаются команды и участники... */}
                     <ProjectCard name={project.name} teamsCnt={project.teamsCnt} placesCnt={project.placesCnt} />
                   </Link>
                 </li>

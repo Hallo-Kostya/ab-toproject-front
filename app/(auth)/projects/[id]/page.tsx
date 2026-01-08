@@ -6,11 +6,11 @@ import { getProjectById } from "@/lib/api/projects";
 import { useAuth } from "@/context/AuthContext";
 import { useParams, useRouter } from 'next/navigation';
 import DeleteProjectModal from '@/components/ui/deleteProjectModal';
-import Image from "next/image";
+// import Image from "next/image";
 
 export default function ProjectPage() {
   const params = useParams();
-  const router = useRouter();
+  // const router = useRouter();
   const { id } = params as { id: string };
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);

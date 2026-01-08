@@ -42,6 +42,7 @@ export default function ProjectFormModal({ isOpen, onClose }: { isOpen: boolean,
       
       // Обновляем токены для следующих запросов
       // await refreshTokens();
+      
       setTimeout(() => {
         window.location.reload();
       }, 300);

@@ -17,6 +17,7 @@ export default function Header() {
   const [isStudentModalOpen, setIsStudentModalOpen] = useState(false);
   const addMenuRef = useRef<HTMLDivElement>(null);
 
+  {/* ПРОБЛЕМА SSR рендеринга пока не устранена */}
   useEffect(() => {
     setMounted(true);
   }, []);

@@ -169,7 +169,7 @@ export const uploadAvatar = async (file: File): Promise<User> => {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${accessToken}`
-      // Content-Type не устанавливаем - браузер сам установит multipart/form-data с boundary
+      // Content-Type multipart/form-data с boundary устанавливается в браузере автоматически
     },
     body: formData
   });

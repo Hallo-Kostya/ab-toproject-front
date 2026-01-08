@@ -31,7 +31,7 @@ export default function PageContainer<T extends { id: string }>({
 }: PageContainerProps<T>) {
   return (
     <div className="space-y-8">
-      <div className="bg-white p-6 rounded-[16px] shadow-sm">
+      <div className="">
         <h2 className="text-[20px] text-[#000150] font-semibold mb-4">{meetingsTitle}</h2>
         {meetingsListComponent}
       </div>

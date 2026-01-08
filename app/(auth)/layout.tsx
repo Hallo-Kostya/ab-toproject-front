@@ -2,7 +2,7 @@
 import Header from "@/components/layout/header/header";
 import Footer from "@/components/layout/footer/footer";
 import Container from "@/components/layout/container/container";
-import ProtectedRoute from "@/components/auth/ProtectedRoute";
+// import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 export default async function AuthLayout({
   children,
