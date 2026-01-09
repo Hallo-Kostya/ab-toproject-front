@@ -2,39 +2,22 @@
 
 import { useState, useEffect } from 'react';
 import Modal from "@/components/ui/modal";
-import { updateMeeting, Meeting } from "@/lib/api/meetings";
+import { createMeeting } from "@/lib/api/meetings";
 import { getTeams, Team } from "@/lib/api/teams";
 import { useAuth } from "@/context/AuthContext";
 
-interface EditMeetingFormProps {
-  isOpen: boolean;
-  onClose: () => void;
-  meetingId: string;
-  initialData: Meeting;
-}
-
-export default function EditMeetingForm({ isOpen, onClose, meetingId, initialData }: EditMeetingFormProps) {
-  const [name, setName] = useState(initialData.name);
-  const [resume, setResume] = useState(initialData.resume);
-  const [date, setDate] = useState(new Date(initialData.date).toISOString().slice(0, 16));
-  const [selectedTeamId, setSelectedTeamId] = useState<string>(initialData.team_id); // ИСПРАВЛЕНО: убран null
-  const [status, setStatus] = useState(initialData.status);
-  const [previousMeetingId, setPreviousMeetingId] = useState<string | null>(initialData.previous_meeting_id);
+export default function MeetingFormModal({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
+  const [name, setName] = useState('');
+  const [resume, setResume] = useState('');
+  const [date, setDate] = useState('');
+  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
+  const [status, setStatus] = useState('SCHEDULED');
+  const [previousMeetingId, setPreviousMeetingId] = useState<string | null>(null);
   const [teams, setTeams] = useState<Team[]>([]);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [loadingTeams, setLoadingTeams] = useState(true);
   const { isAuthenticated } = useAuth();
-
-  useEffect(() => {
-    // Обновляем данные формы при изменении initialData
-    setName(initialData.name);
-    setResume(initialData.resume);
-    setDate(new Date(initialData.date).toISOString().slice(0, 16));
-    setSelectedTeamId(initialData.team_id);
-    setStatus(initialData.status);
-    setPreviousMeetingId(initialData.previous_meeting_id);
-  }, [initialData]);
 
   useEffect(() => {
     if (isOpen && isAuthenticated) {
@@ -57,11 +40,15 @@ export default function EditMeetingForm({ isOpen, onClose, meetingId, initialDat
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!selectedTeamId) {
+      setError('Пожалуйста, выберите команду');
+      return;
+    }
+
     setError('');
     setIsLoading(true);
 
     try {
-      // ИСПРАВЛЕНО: team_id теперь всегда string
       const meetingData = {
         name,
         resume,
@@ -71,39 +58,28 @@ export default function EditMeetingForm({ isOpen, onClose, meetingId, initialDat
         previous_meeting_id: previousMeetingId
       };
 
-      await updateMeeting(meetingId, meetingData);
+      await createMeeting(meetingData);
       
+      // Закрываем модальное окно
       onClose();
       
+      // Обновляем страницу
       setTimeout(() => {
         window.location.reload();
       }, 300);
       
     } catch (err: any) {
-      setError(err.message || 'Ошибка при редактировании встречи');
-      console.error('Meeting update error:', err);
+      setError(err.message || 'Ошибка при создании встречи');
+      console.error('Meeting creation error:', err);
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  // ИСПРАВЛЕНО: Функция для конвертации статуса API в отображаемый статус
-  const getDisplayStatus = (apiStatus: string): 'planned' | 'completed' | 'cancelled' => {
-    switch (apiStatus) {
-      case 'SCHEDULED':
-        return 'planned';
-      case 'COMPLETED':
-        return 'completed';
-      case 'CANCELLED':
-        return 'cancelled';
-      default:
-        return 'planned';
     }
   };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <div className="p-6 bg-white rounded-[24px]">
+        {/* Кнопка закрытия */}
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-colors"
@@ -114,8 +90,8 @@ export default function EditMeetingForm({ isOpen, onClose, meetingId, initialDat
           </svg>
         </button>
         
-        <h2 className="text-2xl text-[#000150] font-bold mb-2 text-center">Редактировать встречу</h2>
-        <p className="mb-6 text-center text-gray-600">Измените необходимые поля</p>
+        <h2 className="text-2xl text-[#000150] font-bold mb-2 text-center">Создать встречу</h2>
+        <p className="mb-6 text-center text-gray-600">Заполните все обязательные поля</p>
         
         {error && (
           <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg">
@@ -166,7 +142,7 @@ export default function EditMeetingForm({ isOpen, onClose, meetingId, initialDat
             <label htmlFor="team" className="block mb-1 text-[16px] font-medium text-[#000150]">Выберите команду *</label>
             <select
               id="team"
-              value={selectedTeamId}
+              value={selectedTeamId || ''}
               onChange={(e) => setSelectedTeamId(e.target.value)}
               required
               className="w-full px-4 py-2 rounded-[12px] border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
@@ -222,7 +198,7 @@ export default function EditMeetingForm({ isOpen, onClose, meetingId, initialDat
               disabled={isLoading || loadingTeams}
               className="flex-1 py-2 px-4 bg-[#000150] text-white rounded-[16px] font-medium hover:bg-blue-900 transition-colors disabled:opacity-50"
             >
-              {isLoading ? 'Сохранение...' : 'Сохранить'}
+              {isLoading ? 'Создание...' : 'Создать'}
             </button>
           </div>
         </form>

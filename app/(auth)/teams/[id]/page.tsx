@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Team } from "@/types/teams/team";
 import { getTeamById, deleteTeam, removeStudentFromTeam, getTeamProjectsWithDetails, TeamProjectWithDetails } from "@/lib/api/teams";
 import { getFullTeamStudents, TeamStudent } from "@/lib/api/students";
+import { getMeetingsByTeamId, Meeting } from "@/lib/api/meetings";
 import { useAuth } from "@/context/AuthContext";
 import { useParams, useRouter } from 'next/navigation';
 import DeleteTeamModal from '@/components/ui/deleteTeamModal';
@@ -12,6 +13,7 @@ import EditTeamModalButton from '@/components/clientModal/team/editTeamModalButt
 import Link from 'next/link';
 import ProjectCard from '@/components/ui/cards/project-card';
 import DeleteStudentFromTeamModal from '@/components/ui/deleteStudentFromTeamModal';
+import MeetingCard from '@/components/ui/cards/meeting-card';
 
 export default function TeamPage() {
   const params = useParams();
@@ -20,6 +22,7 @@ export default function TeamPage() {
   const [team, setTeam] = useState<Team | null>(null);
   const [students, setStudents] = useState<TeamStudent[]>([]);
   const [projects, setProjects] = useState<TeamProjectWithDetails[]>([]);
+  const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -40,9 +43,12 @@ export default function TeamPage() {
         const studentsData = await getFullTeamStudents(id);
         setStudents(studentsData);
 
-        // Получаем проекты с полными данными
         const projectsData = await getTeamProjectsWithDetails(id);
         setProjects(projectsData);
+
+        // Получаем встречи для команды
+        const meetingsData = await getMeetingsByTeamId(id);
+        setMeetings(meetingsData);
       } catch (err: any) {
         setError(err.message || 'Ошибка загрузки данных команды');
         console.error('Team data fetch error:', err);
@@ -90,6 +96,7 @@ export default function TeamPage() {
           <div className="space-y-4">
             <div className="h-7 bg-gray-200 rounded w-1/4 animate-pulse"></div>
             <div className="h-4 bg-gray-200 rounded w-full animate-pulse"></div>
+            <div className="h-4 bg-gray-200 rounded w-3/4 animate-pulse"></div>
           </div>
           
           <div className="space-y-4">
@@ -101,6 +108,11 @@ export default function TeamPage() {
           <div className="space-y-4">
             <div className="h-7 bg-gray-200 rounded w-1/4 animate-pulse"></div>
             <div className="h-4 bg-gray-200 rounded w-full animate-pulse"></div>
+          </div>
+          
+          <div className="space-y-4">
+            <div className="h-7 bg-gray-200 rounded w-1/4 animate-pulse"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/2 animate-pulse"></div>
           </div>
         </div>
       </div>
@@ -124,6 +136,19 @@ export default function TeamPage() {
       </div>
     );
   }
+
+  const getMeetingCardStatus = (apiStatus: string): 'planned' | 'completed' | 'cancelled' => {
+    switch (apiStatus) {
+      case 'SCHEDULED':
+        return 'planned';
+      case 'COMPLETED':
+        return 'completed';
+      case 'CANCELLED':
+        return 'cancelled';
+      default:
+        return 'planned';
+    }
+  };
 
   return (
     <>
@@ -209,6 +234,40 @@ export default function TeamPage() {
           ) : (
             <div className="text-gray-500">
               <p>В этой команде пока нет участников</p>
+            </div>
+          )}
+        </div>
+
+        {/* Блок встреч команды */}
+        <div className="mt-[36px]">
+          <div className="flex items-center justify-between mb-[16px]">
+            <h2 className="text-[24px] text-[#000000] font-medium">Встречи команды</h2>
+          </div>
+          
+          <div className="flex items-center mb-[24px]">
+            <p className="text-[18px] text-[#353535]">Встреч найдено: <span className="text-[18px] text-[#000150] font-semibold">{meetings.length}</span></p>
+          </div>
+          
+          {meetings.length > 0 ? (
+            <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {meetings.map((meeting) => (
+                <li key={meeting.id}>
+                  <Link href={`/meeting/${meeting.id}`}>
+                    <MeetingCard 
+                      teamName={team.name}
+                      name={meeting.name}
+                      resume={meeting.resume}
+                      date={new Date(meeting.date).toLocaleDateString()}
+                      time={new Date(meeting.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                      status={getMeetingCardStatus(meeting.status)} // ИСПРАВЛЕНО: конвертация статуса
+                    />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="text-gray-500">
+              <p>У этой команды пока нет запланированных встреч</p>
             </div>
           )}
         </div>

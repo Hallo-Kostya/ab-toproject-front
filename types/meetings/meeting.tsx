@@ -6,21 +6,17 @@ export type Task = {
     due_date?: string;
 };
 
+// ИСПРАВЛЕНО: Убрано meeting_status, добавлен status с правильными значениями
 export type Meeting = {
     id: string;
     team_id: string;
-    project_id: string;
     name: string;
     resume: string;
     date: string;
-    time: string;
-    meeting_status: 'planned' | 'completed' | 'cancelled';
-    meeting_artifacts: string[];
-    notes?: string;
-    tasks: Task[];
-    meeting_link?: string;
-    duration?: string;
-    location?: string;
+    status: 'SCHEDULED' | 'COMPLETED' | 'CANCELLED';
+    previous_meeting_id: string | null;
+    next_meeting_id: string | null;
+    // Удалены неиспользуемые поля, которые нет в API
 }
 
 export interface MeetingCardProps {
@@ -29,5 +25,5 @@ export interface MeetingCardProps {
     resume: string;
     date: string;
     time: string;
-    status: 'planned' | 'completed' | 'cancelled';
+    status: 'planned' | 'completed' | 'cancelled'; // Для отображения используем lowercase
 }

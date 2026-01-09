@@ -1,287 +1,324 @@
-import { meetings } from "@/mocks/meetings/meetings";
-import { Meeting } from "@/types/meetings/meeting";
-// import { Project } from "@/types/projects/project";
-import { Team } from "@/types/teams/team";
-import { teams } from "@/mocks/teams/teams";
-// import { projects } from "@/mocks/projects/projects";
-import { users } from "@/mocks/users/users";
-import { notFound } from "next/navigation";
-import { buildTeamWithParticipants } from "@/utils/team";
-import Image from "next/image";
-import Link from "next/link";
-import EditMeetingModalButton from "@/components/clientModal/meeting/editMeetingModalButton";
+'use client';
 
-const usersMap = new Map(users.map((user) => [user.id, user]));
+import { useState, useEffect } from 'react';
+import { Meeting, getMeetingById, deleteMeeting, updateMeeting } from "@/lib/api/meetings";
+import { Team, getTeamById } from "@/lib/api/teams";
+import { TeamStudent, getFullTeamStudents } from "@/lib/api/students";
+import { Task, getTasksByMeetingId, createTask, deleteTask } from "@/lib/api/meetings";
+import { useAuth } from "@/context/AuthContext";
+import { useParams, useRouter } from 'next/navigation';
+import Modal from "@/components/ui/modal";
+import EditMeetingForm from '@/components/forms/editMeetingForm';
+import DeleteMeetingModal from '@/components/ui/deleteMeetingModal';
+import TaskFormModal from '@/components/ui/taskFormModal';
+import DeleteTaskModal from '@/components/ui/deleteTaskModal';
 
-export default async function MeetingPage( { params }: { params: Promise<{ id: string }> } ) {
-    const { id } = await params;
+export default function MeetingPage() {
+  const params = useParams();
+  const router = useRouter();
+  const { id } = params as { id: string };
+  const [meeting, setMeeting] = useState<Meeting | null>(null);
+  const [team, setTeam] = useState<Team | null>(null);
+  const [students, setStudents] = useState<TeamStudent[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [isDeleteTaskModalOpen, setIsDeleteTaskModalOpen] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
+  const { isAuthenticated } = useAuth();
 
-    const meeting: Meeting | undefined = meetings.find((m) => m.id === id);
+  useEffect(() => {
+    if (!isAuthenticated || !id) return;
 
-    if (!meeting) {
-        notFound();
+    const fetchMeetingData = async () => {
+      try {
+        setLoading(true);
+        const meetingData = await getMeetingById(id);
+        setMeeting(meetingData);
+        
+        // Получаем данные о команде
+        const teamData = await getTeamById(meetingData.team_id);
+        setTeam(teamData);
+        
+        // Получаем участников команды
+        const studentsData = await getFullTeamStudents(meetingData.team_id);
+        setStudents(studentsData);
+        
+        // Получаем задачи для встречи
+        const tasksData = await getTasksByMeetingId(id);
+        setTasks(tasksData);
+      } catch (err: any) {
+        setError(err.message || 'Ошибка загрузки данных встречи');
+        console.error('Meeting data fetch error:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMeetingData();
+  }, [isAuthenticated, id]);
+
+  const handleDeleteMeeting = async () => {
+    try {
+      await deleteMeeting(id);
+      router.push('/teams');
+    } catch (err: any) {
+      console.error('Meeting deletion error:', err);
+      setError(err.message || 'Ошибка при удалении встречи');
     }
+  };
 
-    // const project: Project | undefined = projects.find((p) => p.id === meeting.project_id);
-    const team: Team | undefined = teams.find((t) => t.id === meeting.team_id);
-
-    if (!team) {
-        notFound();
+  const handleAddTask = async (description: string) => {
+    try {
+      const newTask = await createTask(id, { description });
+      setTasks(prev => [...prev, newTask]);
+    } catch (err: any) {
+      console.error('Task creation error:', err);
+      setError(err.message || 'Ошибка при создании задачи');
     }
+  };
 
-    const enrichedTeam = buildTeamWithParticipants(team, usersMap);
+  const handleDeleteTask = async () => {
+    if (!taskToDelete) return;
+    
+    try {
+      await deleteTask(id, taskToDelete.id);
+      setTasks(prev => prev.filter(task => task.id !== taskToDelete.id));
+      setIsDeleteTaskModalOpen(false);
+      setTaskToDelete(null);
+    } catch (err: any) {
+      console.error('Task deletion error:', err);
+      setError(err.message || 'Ошибка при удалении задачи');
+    }
+  };
 
+  if (loading) {
     return (
-        <div className="">
-            <div className="flex justify-between items-start mb-3 ">
-                <div>
-                    <h1 className="mb-3 font-semibold text-[#000150] text-[24px]">
-                        {`${meeting.name}`}. {meeting.resume}
-                    </h1>
-                    <p className="mb-[12px] text-black text-[18px]">
-                        Команда: <span className="font-bold text-[20px]">{team.name}</span>
-                    </p>
-
-                    {/* НЕКОТОРЫЙ БЛОК РЕНДЕРИНГА ДОПОЛНИТЕЛЬНЫХ ПЕРЕМЕННЫХ ВСТРЕЧИ */}
-
-                    {/* <div className="flex gap-6 text-[18px]">
-                        <div>
-                            <p className="text-gray-500">Дата</p>
-                            <p className="font-medium">{meeting.date}</p>
-                        </div>
-                        <div>
-                            <p className="text-gray-500">Время</p>
-                            <p className="font-medium">{meeting.time}</p>
-                        </div>
-                        <div>
-                            <p className="text-gray-500">Длительность</p>
-                            <p className="font-medium">{meeting.duration || '1 час'}</p>
-                        </div>
-                        <div>
-                            <p className="text-gray-500">Место</p>
-                            <p className="font-medium">{meeting.location || 'Онлайн'}</p>
-                        </div>
-                    </div> */}
-                </div>
-                    
-                <div className="flex gap-3">
-
-                    <EditMeetingModalButton />
-
-                    <div className="flex items-center ml-auto px-4 py-3 rounded-[8px] text-[#000150] text-[19px] font-semibold max-h-[47px]">
-                        <span className="font-medium">Оценка:</span>
-
-                        {/* РЕАЛИЗАЦИЯ ОЦЕНИВАНИЯ */}
-                        {/* <span className="text-center ml-3 text-gray text-[14px] font-semibold bg-gray-400/20 rounded-[8px] px-2 py-[2px]">
-                            {meeting.meeting_status === 'completed' ? '95' : 'не указана'}
-                        </span> */}
-
-                        {/* ЗАГЛУШКА ОЦЕНКИ */}
-                        <span className="text-center ml-3 text-gray text-[14px] font-semibold bg-gray-400/20 rounded-[8px] px-2 py-[2px]">не указана</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div className="flex gap-9 mb-9">
-                <button className="px-4 py-2 bg-yellow-600/20 text-yellow-600 rounded-[8px] font-medium">
-                    Перенести встречу
-                </button>
-                <button className="px-4 py-2 bg-red-600/20 text-red-600 rounded-[8px] font-medium">
-                    Отменить встречу
-                </button>
-
-                {/* БЛОК ССЫЛКИ НА ВСТРЕЧУ */}
-                {meeting.meeting_link && (
-                    <Link
-                        href={meeting.meeting_link} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="px-4 py-2 bg-blue-600/20 text-blue-600 rounded-[8px] font-medium ml-auto"
-                    >
-                        Перейти на встречу
-                    </Link>
-                )}
-            </div>
-            
-            {/* ПОРУЧЕНИЯ */}
-
-            {/* ЗАГЛУШКА */}
-            {/* <div className="mb-9">
-                <h2 className="text-[24px] font-medium mb-3">Поручения</h2>
-                <div className="w-full h-25 bg-black/20">
-
-                </div>
-            </div> */}
-
-            {/* ВАРИАНТ РЕАЛИЗАЦИИ */}
-            <div className="mb-9">
-                <h2 className="text-[24px] font-medium mb-3">Поручения</h2>
-                {meeting.tasks.length > 0 ? (
-                    <ul className="space-y-3">
-                        {meeting.tasks.map((task) => (
-                            <li 
-                                key={task.id} 
-                                className="flex items-start gap-4 p-4 bg-white rounded-[12px] border border-gray-200"
-                            >
-                                <div className="mt-1">
-                                    {task.status === 'completed' ? (
-                                        <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
-                                            <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
-                                            </svg>
-                                        </div>
-                                    ) : task.status === 'in_progress' ? (
-                                        <div className="w-6 h-6 rounded-full bg-yellow-500 flex items-center justify-center">
-                                            <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                            </svg>
-                                        </div>
-                                    ) : (
-                                        <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center">
-                                            <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                            </svg>
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="flex-1">
-                                    <div className="flex justify-between items-start">
-                                        <p className="text-[18px] font-medium">{task.description}</p>
-                                        {task.due_date && (
-                                            <span className={`text-[14px] px-2 py-1 rounded-[6px] ${
-                                                task.status === 'completed' 
-                                                    ? 'bg-green-100 text-green-700' 
-                                                    : task.status === 'in_progress'
-                                                        ? 'bg-yellow-100 text-yellow-700'
-                                                        : 'bg-gray-100 text-gray-700'
-                                            }`}>
-                                                до {task.due_date}
-                                            </span>
-                                        )}
-                                    </div>
-                                    {task.assignee_id && (
-                                        <p className="text-[14px] text-gray-500 mt-1">
-                                            Исполнитель: {usersMap.get(task.assignee_id)?.lastName} {usersMap.get(task.assignee_id)?.firstName}
-                                        </p>
-                                    )}
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
-                ) : (
-                    <div className="p-6 bg-gray-50 rounded-[12px] border border-gray-200">
-                        <p className="text-[18px] text-gray-500 italic">Нет поручений для этой встречи</p>
-                    </div>
-                )}
-            </div>
-            
-
-            {/* ЗАМЕТКИ */}
-
-            {/* ЗАГЛУШКА */}
-            {/* <div className="mb-9">
-                <h2 className="text-[24px] font-medium mb-3">Заметки</h2>
-                <div className="w-full h-25 bg-black/20">
-
-                </div>
-            </div> */}
-
-            {/* ВАРИАНТ РЕАЛИЗАЦИИ */}
-            <div className="mb-9">
-                <h2 className="text-[24px] font-medium mb-3">Заметки</h2>
-                {meeting.notes ? (
-                    <div className="p-5 bg-gray-50 rounded-[12px] border border-gray-200">
-                        <p className="text-[18px] whitespace-pre-line">{meeting.notes}</p>
-                    </div>
-                ) : (
-                    <div className="p-6 bg-gray-50 rounded-[12px] border border-gray-200">
-                        <p className="text-[18px] text-gray-500 italic">Нет заметок для этой встречи</p>
-                    </div>
-                )}
-            </div>
-            
-            {/* АРТЕФАКТЫ */}
-
-            {/* ЗАГЛУШКА */}
-            {/* <div className="mb-9">
-                <h2 className="text-[24px] font-medium mb-3">Артефакты</h2>
-                <div className="w-full h-25 bg-black/20">
-
-                </div>
-            </div> */}
-
-            {/* ВАРИАНТ РЕАЛИЗАЦИИ */}
-            <div className="mb-9">
-                <h2 className="text-[24px] font-medium mb-3">Артефакты</h2>
-                {meeting.meeting_artifacts.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {meeting.meeting_artifacts.map((artifact, index) => (
-                            <div 
-                                key={index} 
-                                className="bg-white p-4 rounded-[12px] border border-gray-200 hover:border-blue-400 transition-all cursor-pointer"
-                            >
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                                        <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2m-2 4h.01M19 11H5"></path>
-                                        </svg>
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-[16px] font-medium truncate">
-                                            {artifact.split('/').pop() || `Артефакт_${index + 1}`}
-                                        </p>
-                                        <p className="text-[14px] text-gray-500 truncate">
-                                            {artifact}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                ) : (
-                    <div className="p-6 bg-gray-50 rounded-[12px] border border-gray-200">
-                        <p className="text-[18px] text-gray-500 italic">Нет артефактов для этой встречи</p>
-                    </div>
-                )}
-            </div>
-            
-            <div className="">
-                <h2 className="text-[24px] font-medium mb-6">Участники встречи</h2>
-                
-                <div className="mb-12">
-                    <h3 className="text-[22px] font-medium mb-8">Куратор</h3>
-                    <div className="flex items-center gap-3">
-                        <span className="w-9 h-9 flex items-center justify-center bg-[#000150]/10 rounded-full text-[#000150] text-[20px] mb-[2px]">
-                            1
-                        </span>
-                        <span className="text-[20px]">{team.curator}</span>
-                    </div>
-                </div>
-                
-                <div>
-                    <h3 className="text-[22px] font-medium mb-8">Участники команды</h3>
-                    <ul className="space-y-2">
-                        {enrichedTeam.participants.map((participant, index) => (
-                            <li key={participant.id} className="flex items-center gap-4">
-                                <span className="w-9 h-9 flex items-center justify-center bg-[#000150]/10 rounded-full text-[#000150] text-[20px] mb-[2px]">
-                                    {index + 1}
-                                </span>
-                                <span className="text-[20px]">{participant.lastName} {participant.firstName} {participant.patronymic}</span>
-                                <div className="flex gap-[43px] ml-auto items-center">
-                                    <span className="font-semibold text-center w-[124px] px-3 py-1 bg-[#000150]/30 rounded-[8px] text-[#000150]">{participant.group}</span>
-                                    <span className="font-semibold text-center w-[135px] px-3 py-1 bg-[#000150]/30 rounded-[8px] text-[#000150]">{participant.role}</span>
-                                    <button className="bg-green-600/20 text-green-600 rounded-[8px] px-3 py-1">
-                                        Отметить посещение
-                                    </button>
-                                    <span className="ml-[69px]">
-                                        <Image src={"/circle-x.svg"} width={24} height={24} alt="Отметить посещение" />
-                                    </span>
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            </div>
+      <div className="min-h-screen flex flex-col gap-6">
+        {/* Ghost загрузки */}
+        <div className="space-y-4">
+          <div className="h-8 bg-gray-200 rounded w-1/3 animate-pulse"></div>
+          <div className="h-6 bg-gray-200 rounded w-1/4 animate-pulse"></div>
         </div>
-    )
+        
+        <div className="space-y-6 mt-8">
+          <div className="space-y-4">
+            <div className="h-7 bg-gray-200 rounded w-1/4 animate-pulse"></div>
+            <div className="h-4 bg-gray-200 rounded w-full animate-pulse"></div>
+            <div className="h-4 bg-gray-200 rounded w-3/4 animate-pulse"></div>
+          </div>
+          
+          <div className="space-y-4">
+            <div className="h-7 bg-gray-200 rounded w-1/4 animate-pulse"></div>
+            <div className="h-4 bg-gray-200 rounded w-full animate-pulse"></div>
+            <div className="h-4 bg-gray-200 rounded w-2/3 animate-pulse"></div>
+          </div>
+          
+          <div className="space-y-4">
+            <div className="h-7 bg-gray-200 rounded w-1/4 animate-pulse"></div>
+            <div className="h-4 bg-gray-200 rounded w-full animate-pulse"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="p-4 bg-red-50 text-red-700 rounded-lg">
+          {error}
+        </div>
+      </div>
+    );
+  }
+
+  if (!meeting || !team) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-xl text-[#000150]">Встреча не найдена</div>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div className="space-y-8">
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-4">
+              <h1 className="text-[#000150] text-[26px] font-semibold">{meeting.name}</h1>
+              {isAuthenticated && (
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setIsEditModalOpen(true)}
+                    className="px-4 py-2 bg-[#000150]/20 text-[#000150] rounded-[8px] hover:bg-[#000150]/30 transition-colors"
+                    title="Редактировать встречу"
+                  >
+                    Редактировать
+                  </button>
+                  <button
+                    onClick={() => setIsDeleteModalOpen(true)}
+                    className="p-2 text-gray-500 hover:text-red-500 transition-colors"
+                    title="Удалить встречу"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="flex items-center gap-[24px]">
+            <p><span className="text-[24px] text-[#000150] font-medium">Команда: {team.name}</span></p>
+            <div className="px-3 py-[1px] bg-[#E79E00]/20 rounded-[8px]">
+              <span className="text-[#E79E00] text-[20px] font-medium">
+                {new Date(meeting.date).toLocaleDateString()} в {new Date(meeting.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+              </span>
+            </div>
+          </div>
+        </div>
+        
+        <div className="flex flex-col gap-[36px]">
+          <Section title={"Резюме"} content={meeting.resume} />
+        </div>
+        
+        {/* Блок участников команды */}
+        <div className="mb-12">
+          <h2 className="text-[24px] font-medium mb-8">Участники команды</h2>
+          {students.length > 0 ? (
+            <ul className="flex flex-col gap-4">
+              {students.map((student, index) => (
+                <li 
+                  key={`meeting-student-${student.id}-${index}`} 
+                  className="flex gap-4 items-center"
+                >
+                  <span className="w-9 h-9 flex items-center justify-center bg-[#000150]/10 rounded-full text-[#000150] text-[20px] mb-[2px]">
+                    {index + 1}
+                  </span>
+                  <span className="flex-1 text-[20px]">
+                    {student.last_name} {student.first_name} {student.patronymic || ''}
+                  </span>
+                  <span className="font-semibold text-center w-[124px] ml-auto px-3 py-1 bg-[#000150]/30 rounded-[8px] text-[#000150]">
+                    {student.study_group || 'не указана'}
+                  </span>
+                  <span className="font-semibold text-center w-[135px] ml-[72px] px-3 py-1 bg-[#000150]/30 rounded-[8px] text-[#000150]">
+                    {student.role || 'не указана'}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="text-gray-500">
+              <p>В этой команде пока нет участников</p>
+            </div>
+          )}
+        </div>
+        
+        {/* Блок задач встречи */}
+        <div className="mt-[36px]">
+          <div className="flex items-center justify-between mb-[16px]">
+            <h2 className="text-[24px] text-[#000000] font-medium">Задачи встречи</h2>
+            {isAuthenticated && (
+              <button
+                onClick={() => setIsTaskModalOpen(true)}
+                className="px-4 py-2 bg-[#000150] text-white rounded-[8px] hover:bg-blue-900 transition-colors"
+              >
+                + Добавить
+              </button>
+            )}
+          </div>
+          
+          <div className="flex items-center mb-[24px]">
+            <p className="text-[18px] text-[#353535]">Задач найдено: <span className="text-[18px] text-[#000150] font-semibold">{tasks.length}</span></p>
+          </div>
+          
+          {tasks.length > 0 ? (
+            <ul className="space-y-4">
+              {tasks.map((task) => (
+                <li 
+                  key={task.id} 
+                  className="flex items-center justify-between p-4 bg-white rounded-[12px] border border-gray-200 hover:shadow-md transition-shadow relative group"
+                >
+                    <div className="flex items-start gap-3">
+                        <input
+                            type="checkbox"
+                            checked={task.is_completed}
+                            aria-label={`Задача "${task.description}" ${task.is_completed ? 'выполнена' : 'не выполнена'}`}
+                            className="w-5 h-5 rounded border-gray-300 text-[#000150] focus:ring-[#000150]"
+                            disabled
+                        />
+                        <span className={`text-[18px] ${task.is_completed ? 'line-through text-gray-500' : 'text-gray-800'}`}>
+                            {task.description}
+                        </span>
+                    </div>
+                    <button
+                        onClick={() => {
+                        setTaskToDelete(task);
+                        setIsDeleteTaskModalOpen(true);
+                        }}
+                        className="opacity-0 group-hover:opacity-100 p-1 text-gray-500 hover:text-red-500 transition-colors"
+                        title="Удалить задачу"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="text-gray-500">
+              <p>Для этой встречи еще нет задач</p>
+            </div>
+          )}
+        </div>
+      </div>
+      
+      <EditMeetingForm
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        meetingId={meeting.id}
+        initialData={meeting}
+      />
+      
+      <DeleteMeetingModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        meetingId={meeting.id}
+        meetingName={meeting.name}
+        onConfirm={handleDeleteMeeting}
+      />
+      
+      <TaskFormModal
+        isOpen={isTaskModalOpen}
+        onClose={() => setIsTaskModalOpen(false)}
+        onAddTask={handleAddTask}
+      />
+      
+      <DeleteTaskModal
+        isOpen={isDeleteTaskModalOpen}
+        onClose={() => {
+          setIsDeleteTaskModalOpen(false);
+          setTaskToDelete(null);
+        }}
+        taskId={taskToDelete?.id || ''}
+        taskDescription={taskToDelete?.description || ''}
+        onConfirm={handleDeleteTask}
+      />
+    </>
+  );
+}
+
+function Section({ title, content }: { title: string; content: string }) {
+  return (
+    <div className="bg-white p-6 rounded-[16px] shadow-sm">
+      <h2 className="text-[24px] text-[#000000] font-medium mb-[28px]">{title}</h2>
+      <p className="text-[22px] leading-relaxed whitespace-pre-wrap">{content}</p>
+    </div>
+  );
 }

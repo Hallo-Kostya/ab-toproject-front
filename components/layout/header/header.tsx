@@ -9,6 +9,7 @@ import { useState, useEffect, useRef } from "react";
 import ProjectFormModal from "@/components/ui/projectFormModal";
 import StudentFormModal from "@/components/ui/studentFormModal";
 import TeamFormModal from "@/components/ui/teamFormModal";
+import MeetingFormModal from "@/components/ui/meetingFormModal";
 
 export default function Header() {
   const { user, logout } = useAuth();
@@ -17,6 +18,7 @@ export default function Header() {
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [isStudentModalOpen, setIsStudentModalOpen] = useState(false);
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
+  const [isMeetingModalOpen, setIsMeetingModalOpen] = useState(false);
   const addMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -138,7 +140,7 @@ export default function Header() {
                 />
               </div>
               
-              {/* Блок для добавления проектов, команд, студентов */}
+              {/* Блок для добавления проектов, команд, студентов, встреч */}
               <div className="relative" ref={addMenuRef}>
                 <button
                   onClick={() => setIsAddMenuOpen(!isAddMenuOpen)}
@@ -176,6 +178,15 @@ export default function Header() {
                       className="block w-full text-left px-4 py-2 hover:bg-gray-100 rounded-[8px] text-[#000150] font-medium"
                     >
                       Команда
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsAddMenuOpen(false);
+                        setIsMeetingModalOpen(true);
+                      }}
+                      className="block w-full text-left px-4 py-2 hover:bg-gray-100 rounded-[8px] text-[#000150] font-medium"
+                    >
+                      Встреча
                     </button>
                   </div>
                 )}
@@ -231,6 +242,11 @@ export default function Header() {
       <TeamFormModal 
         isOpen={isTeamModalOpen} 
         onClose={() => setIsTeamModalOpen(false)} 
+      />
+      
+      <MeetingFormModal
+        isOpen={isMeetingModalOpen}
+        onClose={() => setIsMeetingModalOpen(false)}
       />
     </>
   );
