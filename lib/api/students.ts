@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://51.250.12.183:8001/api/v1';
+const API_BASE_URL = 'http://178.154.228.164:8001/api/v1';
 
 export interface Student {
   id: string;
@@ -155,5 +155,25 @@ export const getFullTeamStudents = async (teamId: string): Promise<TeamStudent[]
   } catch (error) {
     console.error('Failed to get full team students:', error);
     throw error;
+  }
+};
+
+export const deleteStudent = async (studentId: string): Promise<void> => {
+  const accessToken = localStorage.getItem('access_token');
+  
+  if (!accessToken) {
+    throw new Error('No access token');
+  }
+
+  const response = await fetch(`${API_BASE_URL}/students/${studentId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${accessToken}`
+    }
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || 'Failed to delete student');
   }
 };

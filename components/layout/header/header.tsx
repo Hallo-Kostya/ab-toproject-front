@@ -193,6 +193,11 @@ export default function Header() {
                       <span className="text-[#000150] text-[17px]">Команды</span>
                     </Link>
                   </li>
+                  <li>
+                    <Link href={"/students"} className="whitespace-nowrap">
+                      <span className="text-[#000150] text-[17px]">Студенты</span>
+                    </Link>
+                  </li>
                 </ul>
               </nav>
               

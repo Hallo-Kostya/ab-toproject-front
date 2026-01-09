@@ -27,7 +27,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'http',
-        hostname: '51.250.12.183',
+        hostname: '178.154.228.164',
         port: '9000',
         pathname: '/curators/avatars/**',
       },

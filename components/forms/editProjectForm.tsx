@@ -1,102 +1,225 @@
 'use client';
 
-import Modal from '../ui/modal';
+import { useState, useEffect } from 'react';
+import Modal from "@/components/ui/modal";
+import { updateProject, Project } from "@/lib/api/projects";
+import { useAuth } from "@/context/AuthContext";
 
 interface EditProjectFormProps {
   isOpen: boolean;
   onClose: () => void;
+  projectId: string;
+  initialData: Project;
 }
 
-export default function EditProjectForm({ isOpen, onClose }: EditProjectFormProps) {
+export default function EditProjectForm({ isOpen, onClose, projectId, initialData }: EditProjectFormProps) {
+  const [name, setName] = useState(initialData.name);
+  const [description, setDescription] = useState(initialData.description);
+  const [goal, setGoal] = useState(initialData.goal);
+  const [requirements, setRequirements] = useState(initialData.requirements);
+  const [evalCriteria, setEvalCriteria] = useState(initialData.eval_criteria);
+  const [year, setYear] = useState(initialData.year);
+  const [semester, setSemester] = useState(initialData.semester);
+  const [status, setStatus] = useState(initialData.status);
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const { refreshTokens } = useAuth();
+
+  useEffect(() => {
+    // Обновляем данные формы при изменении initialData
+    setName(initialData.name);
+    setDescription(initialData.description);
+    setGoal(initialData.goal);
+    setRequirements(initialData.requirements);
+    setEvalCriteria(initialData.eval_criteria);
+    setYear(initialData.year);
+    setSemester(initialData.semester);
+    setStatus(initialData.status);
+  }, [initialData]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setIsLoading(true);
+
+    try {
+      const projectData = {
+        name,
+        description,
+        goal,
+        requirements,
+        eval_criteria: evalCriteria,
+        year: Number(year),
+        semester,
+        status
+      };
+
+      await updateProject(projectId, projectData);
+      
+      // Закрываем модальное окно
+      onClose();
+      
+      // Обновляем страницу
+      setTimeout(() => {
+        window.location.reload();
+      }, 300);
+      
+    } catch (err: any) {
+      setError(err.message || 'Ошибка при редактировании проекта');
+      console.error('Project update error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <div className="px-8 py-6">
-        <h2 className="text-2xl font-bold text-[#000150] mb-4">Редактирование проекта</h2>
+      <div className="p-6 bg-white rounded-[24px]">
+        {/* Кнопка закрытия */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-colors"
+          aria-label="Закрыть"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
         
-        <form>
-          {/* Описание */}
-          <div className="mb-6">
-            <label className="block text-[18px] font-semibold text-[#000150] mb-2">Описание</label>
+        <h2 className="text-2xl text-[#000150] font-bold mb-2 text-center">Редактировать проект</h2>
+        <p className="mb-6 text-center text-gray-600">Измените необходимые поля</p>
+        
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg">
+            {error}
+          </div>
+        )}
+        
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="name" className="block mb-1 text-[16px] font-medium text-[#000150]">Название проекта *</label>
             <input
               type="text"
-              className="w-full p-3 rounded-[16px] border-2 border-gray-300"
-              placeholder="Расскажите о ваших впечатлениях"
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              className="w-full px-4 py-2 rounded-[12px] border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
+              placeholder="Введите название проекта"
             />
           </div>
-
-          {/* Цель */}
-          <div className="mb-6">
-            <label className="block text-[18px] font-semibold text-[#000150] mb-2">Цель</label>
-            <input
-              type="text"
-              className="w-full p-3 rounded-[16px] border-2 border-gray-300"
-              placeholder="Расскажите о ваших впечатлениях"
+          
+          <div>
+            <label htmlFor="description" className="block mb-1 text-[16px] font-medium text-[#000150]">Описание *</label>
+            <textarea
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              required
+              rows={3}
+              className="w-full px-4 py-2 rounded-[12px] border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
+              placeholder="Опишите проект"
             />
           </div>
-
-          {/* Семестр */}
-          <div className="mb-6 grid grid-cols-2 gap-4">
+          
+          <div>
+            <label htmlFor="goal" className="block mb-1 text-[16px] font-medium text-[#000150]">Цель *</label>
+            <textarea
+              id="goal"
+              value={goal}
+              onChange={(e) => setGoal(e.target.value)}
+              required
+              rows={2}
+              className="w-full px-4 py-2 rounded-[12px] border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
+              placeholder="Укажите цель проекта"
+            />
+          </div>
+          
+          <div>
+            <label htmlFor="requirements" className="block mb-1 text-[16px] font-medium text-[#000150]">Требования *</label>
+            <textarea
+              id="requirements"
+              value={requirements}
+              onChange={(e) => setRequirements(e.target.value)}
+              required
+              rows={2}
+              className="w-full px-4 py-2 rounded-[12px] border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
+              placeholder="Введите требования к проекту"
+            />
+          </div>
+          
+          <div>
+            <label htmlFor="evalCriteria" className="block mb-1 text-[16px] font-medium text-[#000150]">Критерии оценки *</label>
+            <textarea
+              id="evalCriteria"
+              value={evalCriteria}
+              onChange={(e) => setEvalCriteria(e.target.value)}
+              required
+              rows={2}
+              className="w-full px-4 py-2 rounded-[12px] border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
+              placeholder="Введите критерии оценки"
+            />
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-[18px] font-semibold text-[#000150] mb-2">Год</label>
-              <select 
-                title="year"
+              <label htmlFor="year" className="block mb-1 text-[16px] font-medium text-[#000150]">Год *</label>
+              <input
+                type="number"
                 id="year"
-                className="w-full p-3 rounded-[16px] border-2 border-gray-300">
-                <option>2023</option>
-                <option>2024</option>
-                <option>2025</option>
-              </select>
+                value={year}
+                onChange={(e) => setYear(Number(e.target.value))}
+                required
+                min="2000"
+                max={new Date().getFullYear() + 5}
+                className="w-full px-4 py-2 rounded-[12px] border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
+              />
             </div>
+            
             <div>
-              <label className="block text-[18px] font-semibold text-[#000150] mb-2">Семестр</label>
-              <select 
-              title="semester"
-              id="semester"
-              className="w-full p-3 rounded-[16px] border-2 border-gray-300">
-                <option>Весенний</option>
-                <option>Осенний</option>
+              <label htmlFor="semester" className="block mb-1 text-[16px] font-medium text-[#000150]">Семестр *</label>
+              <select
+                id="semester"
+                value={semester}
+                onChange={(e) => setSemester(e.target.value)}
+                required
+                className="w-full px-4 py-2 rounded-[12px] border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
+              >
+                <option value="AUTUMN">Осенний</option>
+                <option value="SPRING">Весенний</option>
               </select>
             </div>
           </div>
-
-          {/* Критерии оценки */}
-          <div className="mb-6">
-            <label className="block text-[18px] font-semibold text-[#000150] mb-2">Критерии оценки</label>
-            <input
-              type="text"
-              className="w-full p-3 rounded-[16px] border-2 border-gray-300"
-              placeholder="Расскажите о ваших впечатлениях"
-            />
+          
+          <div>
+            <label htmlFor="status" className="block mb-1 text-[16px] font-medium text-[#000150]">Статус *</label>
+            <select
+              id="status"
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              required
+              className="w-full px-4 py-2 rounded-[12px] border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
+            >
+              <option value="PLANNED">Планируется</option>
+              <option value="IN_PROGRESS">В работе</option>
+              <option value="COMPLETED">Завершен</option>
+            </select>
           </div>
-
-          {/* Требования */}
-          <div className="mb-6">
-            <label className="block text-[18px] font-semibold text-[#000150] mb-2">Требования</label>
-            <input
-              type="text"
-              className="w-full p-3 rounded-[16px] border-2 border-gray-300"
-              placeholder="Расскажите о ваших впечатлениях"
-            />
-          </div>
-
-          {/* Общее сообщение об ошибке */}
-          {/* <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-center">
-            Проверьте, все ли обязательные поля заполнены.
-          </div> */}
-
-          <div className="flex justify-end gap-4">
+          
+          <div className="flex gap-4 mt-6">
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-2 bg-gray-200 text-[#000150] rounded-[16px] hover:bg-gray-300"
+              className="flex-1 py-2 px-4 bg-gray-200 text-gray-800 rounded-[16px] font-medium hover:bg-gray-300 transition-colors"
             >
-              Отменить
+              Отмена
             </button>
             <button
-              type="button"
-              className="px-6 py-2 bg-[#000150] text-white rounded-[16px] hover:bg-blue-900"
+              type="submit"
+              disabled={isLoading}
+              className="flex-1 py-2 px-4 bg-[#000150] text-white rounded-[16px] font-medium hover:bg-blue-900 transition-colors disabled:opacity-50"
             >
-              Сохранить
+              {isLoading ? 'Сохранение...' : 'Сохранить'}
             </button>
           </div>
         </form>

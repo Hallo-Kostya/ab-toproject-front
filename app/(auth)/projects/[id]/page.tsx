@@ -1,41 +1,69 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Project } from "@/types/projects/project";
-import { getProjectById } from "@/lib/api/projects";
+import { Project, getProjectById, deleteProject, getProjectTeams, ProjectTeam } from "@/lib/api/projects";
+import { Team } from "@/lib/api/teams";
 import { useAuth } from "@/context/AuthContext";
 import { useParams, useRouter } from 'next/navigation';
 import DeleteProjectModal from '@/components/ui/deleteProjectModal';
-// import Image from "next/image";
+import EditProjectForm from '@/components/forms/editProjectForm';
+import AssignTeamToProjectModal from '@/components/ui/assignTeamToProjectModal';
+import ProjectTeamCard from '@/components/ui/cards/projectTeamCard';
 
 export default function ProjectPage() {
   const params = useParams();
-  // const router = useRouter();
+  const router = useRouter();
   const { id } = params as { id: string };
   const [project, setProject] = useState<Project | null>(null);
+  const [projectTeams, setProjectTeams] = useState<ProjectTeam[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isAssignTeamModalOpen, setIsAssignTeamModalOpen] = useState(false);
   const { isAuthenticated, user } = useAuth();
 
   useEffect(() => {
     if (!isAuthenticated || !id) return;
 
-    const fetchProject = async () => {
+    const fetchProjectData = async () => {
       try {
         setLoading(true);
-        const data = await getProjectById(id);
-        setProject(data);
+        const projectData = await getProjectById(id);
+        setProject(projectData);
+        
+        const teamsData = await getProjectTeams(id);
+        setProjectTeams(teamsData);
       } catch (err: any) {
-        setError(err.message || 'Ошибка загрузки проекта');
-        console.error('Project fetch error:', err);
+        setError(err.message || 'Ошибка загрузки данных проекта');
+        console.error('Project data fetch error:', err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProject();
+    fetchProjectData();
   }, [isAuthenticated, id]);
+
+  const handleTeamAssigned = async () => {
+    try {
+      const teamsData = await getProjectTeams(id);
+      setProjectTeams(teamsData);
+    } catch (err: any) {
+      console.error('Failed to refresh project teams:', err);
+      setError('Ошибка обновления списка команд проекта');
+    }
+  };
+
+  const handleTeamRemoved = async () => {
+    try {
+      const teamsData = await getProjectTeams(id);
+      setProjectTeams(teamsData);
+    } catch (err: any) {
+      console.error('Failed to refresh project teams after removal:', err);
+      setError('Ошибка обновления списка команд проекта');
+    }
+  };
 
   if (loading) {
     return (
@@ -91,6 +119,9 @@ export default function ProjectPage() {
     );
   }
 
+  // Фильтрация - показываем только команды со статусом 'ACTIVE'
+  const activeProjectTeams = projectTeams.filter(team => team.status === 'ACTIVE');
+
   return (
     <>
       <div className="space-y-8">
@@ -98,17 +129,26 @@ export default function ProjectPage() {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-4">
               <h1 className="text-[#000150] text-[26px] font-semibold">{project.name}</h1>
-              {/* Иконка удаления - видна только авторизованным пользователям */}
+              {/* Кнопки редактирования и удаления - видны только авторизованным пользователям */}
               {isAuthenticated && user && (
-                <button
-                  onClick={() => setIsDeleteModalOpen(true)}
-                  className="p-2 text-gray-500 hover:text-red-500 transition-colors"
-                  title="Удалить проект"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setIsEditModalOpen(true)}
+                    className="px-4 py-2 bg-[#000150]/20 text-[#000150] rounded-[8px] hover:bg-[#000150]/30 transition-colors"
+                    title="Редактировать проект"
+                  >
+                    Редактировать
+                  </button>
+                  <button
+                    onClick={() => setIsDeleteModalOpen(true)}
+                    className="p-2 text-gray-500 hover:text-red-500 transition-colors"
+                    title="Удалить проект"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
               )}
             </div>
           </div>
@@ -130,14 +170,45 @@ export default function ProjectPage() {
           <Section title={"Критерии оценки"} content={project.eval_criteria} />
         </div>
         
-        {/* Закомментировано, так как пока не реализовано в API */}
-        {/* <div className="mt-[36px]">
-          <h2 className="mb-[16px] text-[24px] text-[#000000] font-medium">Команды-исполнители</h2>
-          <div className="flex items-center mb-[24px]">
-            <p className="text-[18px] text-[#353535]">Команд найдено: <span className="text-[18px] text-[#000150] font-semibold">0</span></p>
+        {/* Блок с командами проекта - показываем только активные */}
+        <div className="mt-[36px]">
+          <div className="flex items-center justify-between mb-[16px]">
+            <h2 className="text-[24px] text-[#000000] font-medium">Команды-исполнители</h2>
+            {isAuthenticated && user && (
+              <button
+                onClick={() => setIsAssignTeamModalOpen(true)}
+                className="px-4 py-2 bg-[#000150] text-white rounded-[8px] hover:bg-blue-900 transition-colors"
+              >
+                + Команда
+              </button>
+            )}
           </div>
-          <p className="text-gray-500">Функционал отображения команд пока не реализован</p>
-        </div> */}
+          
+          <div className="flex items-center mb-[24px]">
+            <p className="text-[18px] text-[#353535]">Активных команд найдено: <span className="text-[18px] text-[#000150] font-semibold">{activeProjectTeams.length}</span></p>
+          </div>
+          
+          {activeProjectTeams.length > 0 ? (
+            <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {activeProjectTeams.map((projectTeam) => (
+                <li key={projectTeam.id}>
+                  <ProjectTeamCard 
+                    projectTeam={projectTeam} 
+                    projectId={project.id} 
+                    onTeamRemoved={handleTeamRemoved} 
+                  />
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="text-gray-500">
+              <p>К этому проекту еще нет активных команд</p>
+              {isAuthenticated && user && (
+                <p className="mt-2 text-sm">{ 'Нажмите "+ Команда" чтобы назначить команду на проект' }</p>
+              )}
+            </div>
+          )}
+        </div>
       </div>
       
       <DeleteProjectModal
@@ -145,6 +216,22 @@ export default function ProjectPage() {
         onClose={() => setIsDeleteModalOpen(false)}
         projectId={project.id}
         projectName={project.name}
+      />
+      
+      {project && (
+        <EditProjectForm
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          projectId={project.id}
+          initialData={project}
+        />
+      )}
+      
+      <AssignTeamToProjectModal
+        isOpen={isAssignTeamModalOpen}
+        onClose={() => setIsAssignTeamModalOpen(false)}
+        projectId={project.id}
+        onTeamAssigned={handleTeamAssigned}
       />
     </>
   );

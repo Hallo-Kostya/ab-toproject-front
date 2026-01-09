@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://51.250.12.183:8001/api/v1/auth';
+const API_BASE_URL = 'http://178.154.228.164:8001/api/v1/auth';
 // const API_BASE_URL = 'http://localhost:8001/api/v1/auth';
 
 export interface AuthResponse {

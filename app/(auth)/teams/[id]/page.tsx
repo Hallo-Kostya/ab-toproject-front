@@ -2,12 +2,16 @@
 
 import { useState, useEffect } from 'react';
 import { Team } from "@/types/teams/team";
-import { getTeamById, deleteTeam } from "@/lib/api/teams";
+import { getTeamById, deleteTeam, removeStudentFromTeam, getTeamProjectsWithDetails, TeamProjectWithDetails } from "@/lib/api/teams";
 import { getFullTeamStudents, TeamStudent } from "@/lib/api/students";
 import { useAuth } from "@/context/AuthContext";
 import { useParams, useRouter } from 'next/navigation';
 import DeleteTeamModal from '@/components/ui/deleteTeamModal';
 import AddStudentToTeamModal from '@/components/ui/addStudentToTeamModal';
+import EditTeamModalButton from '@/components/clientModal/team/editTeamModalButton';
+import Link from 'next/link';
+import ProjectCard from '@/components/ui/cards/project-card';
+import DeleteStudentFromTeamModal from '@/components/ui/deleteStudentFromTeamModal';
 
 export default function TeamPage() {
   const params = useParams();
@@ -15,10 +19,13 @@ export default function TeamPage() {
   const { id } = params as { id: string };
   const [team, setTeam] = useState<Team | null>(null);
   const [students, setStudents] = useState<TeamStudent[]>([]);
+  const [projects, setProjects] = useState<TeamProjectWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState(false);
+  const [isDeleteStudentModalOpen, setIsDeleteStudentModalOpen] = useState(false);
+  const [studentToDelete, setStudentToDelete] = useState<TeamStudent | null>(null);
   const { isAuthenticated } = useAuth();
 
   useEffect(() => {
@@ -31,7 +38,11 @@ export default function TeamPage() {
         setTeam(teamData);
         
         const studentsData = await getFullTeamStudents(id);
-        setStudents(studentsData); // Теперь типы совместимы
+        setStudents(studentsData);
+
+        // Получаем проекты с полными данными
+        const projectsData = await getTeamProjectsWithDetails(id);
+        setProjects(projectsData);
       } catch (err: any) {
         setError(err.message || 'Ошибка загрузки данных команды');
         console.error('Team data fetch error:', err);
@@ -42,6 +53,29 @@ export default function TeamPage() {
 
     fetchTeamData();
   }, [isAuthenticated, id]);
+
+  const handleRemoveStudent = async (student: TeamStudent) => {
+    setStudentToDelete(student);
+    setIsDeleteStudentModalOpen(true);
+  };
+
+  const handleConfirmRemoveStudent = async () => {
+    if (!studentToDelete || !team) return;
+    
+    try {
+      await removeStudentFromTeam(team.id, studentToDelete.id);
+      
+      // Обновляем список студентов
+      const updatedStudents = await getFullTeamStudents(team.id);
+      setStudents(updatedStudents);
+      
+      setIsDeleteStudentModalOpen(false);
+      setStudentToDelete(null);
+    } catch (err: any) {
+      console.error('Failed to remove student from team:', err);
+      setError(err.message || 'Ошибка при удалении студента из команды');
+    }
+  };
 
   if (loading) {
     return (
@@ -98,7 +132,6 @@ export default function TeamPage() {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-4">
               <h1 className="text-[28px] font-bold text-[#000150]">{`"${team.name}"`}</h1>
-              {/* Исправлено: используем team.number если есть, иначе порядковый номер */}
               <p className="text-[28px] font-bold text-[#000150]">
                 № {team.number || (Number(id.match(/\d+$/)?.[0]) || 1)}
               </p>
@@ -111,6 +144,11 @@ export default function TeamPage() {
               </a>
             </div>
             <div className="flex gap-4">
+              <EditTeamModalButton 
+                teamId={team.id} 
+                teamName={team.name}
+                initialData={team}
+              />
               <button
                 onClick={() => setIsAddStudentModalOpen(true)}
                 className="text-[16px] text-[#000150] font-semibold p-2 px-3 bg-[#000150]/20 rounded-[8px] hover:bg-[#000150]/30 transition-colors"
@@ -137,7 +175,7 @@ export default function TeamPage() {
               {students.map((student, index) => (
                 <li 
                   key={`team-student-${student.id}-${index}`} 
-                  className="flex gap-4 items-center"
+                  className="flex gap-4 items-center relative group"
                 >
                   <span className="w-9 h-9 flex items-center justify-center bg-[#000150]/10 rounded-full text-[#000150] text-[20px] mb-[2px]">
                     {index + 1}
@@ -151,12 +189,54 @@ export default function TeamPage() {
                   <span className="font-semibold text-center w-[135px] ml-[72px] px-3 py-1 bg-[#000150]/30 rounded-[8px] text-[#000150]">
                     {student.role || 'не указана'}
                   </span>
+                  
+                  {/* Кнопка удаления студента появляется при наведении */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRemoveStudent(student);
+                    }}
+                    className="absolute right-0 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity p-2 text-gray-500 hover:text-red-500"
+                    title="Удалить студента из команды"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
                 </li>
               ))}
             </ul>
           ) : (
             <div className="text-gray-500">
               <p>В этой команде пока нет участников</p>
+            </div>
+          )}
+        </div>
+
+        <div className="mt-[36px]">
+          <div className="flex items-center justify-between mb-[16px]">
+            <h2 className="text-[24px] text-[#000000] font-medium">Проекты команды</h2>
+          </div>
+          
+          <div className="flex items-center mb-[24px]">
+            <p className="text-[18px] text-[#353535]">Проектов найдено: <span className="text-[18px] text-[#000150] font-semibold">{projects.length}</span></p>
+          </div>
+          
+          {projects.length > 0 ? (
+            <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {projects.map((projectData) => (
+                <li key={projectData.teamProject.id}>
+                  <Link href={`/projects/${projectData.teamProject.project_id}`}>
+                    <ProjectCard 
+                      name={projectData.project.name || 'Без названия'}
+                    />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="text-gray-500">
+              <p>Эта команда еще не участвует ни в одном проекте</p>
             </div>
           )}
         </div>
@@ -182,6 +262,14 @@ export default function TeamPage() {
             setError('Ошибка обновления списка студентов');
           }
         }}
+      />
+
+      <DeleteStudentFromTeamModal
+        isOpen={isDeleteStudentModalOpen}
+        onClose={() => setIsDeleteStudentModalOpen(false)}
+        studentId={studentToDelete?.id || ''}
+        studentName={`${studentToDelete?.last_name} ${studentToDelete?.first_name}`}
+        onConfirm={handleConfirmRemoveStudent}
       />
     </>
   );
