@@ -2,6 +2,7 @@
 import Header from "@/components/layout/header/header";
 import Footer from "@/components/layout/footer/footer";
 import Container from "@/components/layout/container/container";
+// import TokenRefresher from "@/components/auth/TokenRefresh";
 // import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 export default async function AuthLayout({
@@ -11,13 +12,19 @@ export default async function AuthLayout({
 }>) {
   return (
     //<ProtectedRoute requireAuth={true}>
-    <>
+    <div className="flex flex-col min-h-screen">
       <Header />
-      <Container className="mt-14 mb-28">
-        <main>{children}</main>
-      </Container>
+      
+        <main className=" flex-grow w-full">
+          <Container className="mt-14 mb-28">
+          {children}
+          </Container>
+        </main>
+      
       <Footer />
-    </>
+      {/* Компонент для автоматического рефреша токенов - виден только на клиенте */}
+      {/* <TokenRefresher /> */}
+    </div>
     //</ProtectedRoute>
   );
 }

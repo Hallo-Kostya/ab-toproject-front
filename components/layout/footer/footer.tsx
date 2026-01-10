@@ -4,10 +4,10 @@ import Container from "../container/container";
 
 export default function Footer() {
     return (
-        <footer className="bg-[#000150]">
+        <footer className="bg-[#000150] mt-auto">
             <Container className="py-[39.5px]">
-                <div className="">
-                    <div className="min-w-[100px] w-[135px]">
+                <div className="flex flex-col md:flex-row md:justify-between items-center">
+                    <div className="min-w-[100px] w-[135px] mb-4 md:mb-0">
                         <Link href={"/projects"}>
                             <Image
                                 src="/footer-logo.svg"
@@ -18,7 +18,9 @@ export default function Footer() {
                             />
                         </Link>
                     </div>
-                    <p className="text-white text-[14px] py-[10.5px]">&copy; 2025, Все права защищены</p>
+                    <p className="text-white text-[14px] text-center md:text-left">
+                        &copy; 2026, Все права защищены
+                    </p>
                 </div>
             </Container>
         </footer>

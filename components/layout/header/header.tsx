@@ -56,7 +56,7 @@ export default function Header() {
               </Link>
             </div>
             <nav>
-              <ul className="flex gap-[32px] flex-wrap justify-center md:justify-start">
+              <ul className="flex gap-[32px] justify-start">
                 <li>
                   <span className="text-[#000150] text-[17px] whitespace-nowrap opacity-0">Войти</span>
                 </li>
@@ -88,7 +88,7 @@ export default function Header() {
               </Link>
             </div>
             <nav>
-              <ul className="flex gap-[32px] flex-wrap justify-center md:justify-start">
+              <ul className="flex gap-[32px] justify-start">
                 <li>
                   <Link href={"/login"} className="whitespace-nowrap">
                     <span className="text-[#000150] text-[17px]">Войти</span>
@@ -123,8 +123,10 @@ export default function Header() {
                 />
               </Link>
             </div>
-            <div className="flex items-center gap-[49px] min-w-0">
-              <div className="min-w-[48px] w-[448px] h-[48px] bg-[#DBDFFF]/30 border-1 border-[#DBDFFF] rounded-[12px] flex items-center px-3">
+            
+            {/* Адаптивная поисковая строка */}
+            <div className="flex items-center gap-[32px] min-w-0 flex-1 ml-6">
+              <div className="min-w-[48px] w-full max-w-[448px] h-[48px] bg-[#DBDFFF]/30 border-1 border-[#DBDFFF] rounded-[12px] flex items-center px-3">
                 <span className="flex items-center justify-center mr-[10px]">
                   <Image
                     src="/search.svg"
@@ -136,8 +138,13 @@ export default function Header() {
                 <input
                   type="text"
                   placeholder="Поиск"
-                  className="bg-transparent border-none focus:outline-none text-[#6B7280] w-full placeholder:text-[#6B7280]"
+                  className="bg-transparent border-none focus:outline-none text-[#6B7280] w-full placeholder:text-[#6B7280] hidden md:block"
                 />
+                <button 
+                  className="md:hidden text-[#6B7280] font-medium"
+                >
+                  Поиск
+                </button>
               </div>
               
               {/* Блок для добавления проектов, команд, студентов, встреч */}
@@ -147,7 +154,7 @@ export default function Header() {
                   className="flex items-center gap-2 bg-[#000150] text-white px-4 py-2 rounded-[16px] hover:bg-blue-900 transition-colors"
                 >
                   <span className="text-xl font-bold">+</span>
-                  <span>Добавить</span>
+                  <span className="hidden sm:inline">Добавить</span>
                 </button>
                 
                 {isAddMenuOpen && (
@@ -192,20 +199,21 @@ export default function Header() {
                 )}
               </div>
               
-              <nav>
-                <ul className="flex gap-[32px] flex-wrap justify-center md:justify-start">
+              {/* Навигация в одну строку */}
+              <nav className="hidden md:block">
+                <ul className="flex gap-[24px]">
                   <li>
-                    <Link href={"/projects"} className="whitespace-nowrap">
+                    <Link href={"/projects"} className="">
                       <span className="text-[#000150] text-[17px]">Проекты</span>
                     </Link>
                   </li>
                   <li>
-                    <Link href={"/teams"} className="whitespace-nowrap">
+                    <Link href={"/teams"} className="">
                       <span className="text-[#000150] text-[17px]">Команды</span>
                     </Link>
                   </li>
                   <li>
-                    <Link href={"/students"} className="whitespace-nowrap">
+                    <Link href={"/students"} className="">
                       <span className="text-[#000150] text-[17px]">Студенты</span>
                     </Link>
                   </li>

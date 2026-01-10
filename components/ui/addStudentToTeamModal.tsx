@@ -86,8 +86,8 @@ export default function AddStudentToTeamModal({ isOpen, onClose, teamId, onStude
           </svg>
         </button>
         
-        <h2 className="text-2xl text-[#000150] font-bold mb-2 text-center">Добавить участника в команду</h2>
-        <p className="mb-6 text-center text-gray-600">Выберите студента из списка</p>
+        <h2 className="text-2xl text-[#000150] font-bold mb-4">Добавить участника в команду</h2>
+        <p className="mb-6 text-gray-600">Выберите студента из списка</p>
         
         {error && (
           <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg">
@@ -153,7 +153,7 @@ export default function AddStudentToTeamModal({ isOpen, onClose, teamId, onStude
               />
             </div>
             
-            <div className="flex gap-4 mt-6">
+            <div className="flex ml-auto gap-4 mt-10">
               <button
                 type="button"
                 onClick={onClose}

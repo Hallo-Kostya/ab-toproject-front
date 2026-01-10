@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { Team } from "@/types/teams/team";
 import { getTeamById, deleteTeam, removeStudentFromTeam, getTeamProjectsWithDetails, TeamProjectWithDetails } from "@/lib/api/teams";
 import { getFullTeamStudents, TeamStudent } from "@/lib/api/students";
@@ -157,18 +158,18 @@ export default function TeamPage() {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-4">
               <h1 className="text-[28px] font-bold text-[#000150]">{`"${team.name}"`}</h1>
-              <p className="text-[28px] font-bold text-[#000150]">
+              {/* <p className="text-[28px] font-bold text-[#000150]">
                 № {team.number || (Number(id.match(/\d+$/)?.[0]) || 1)}
-              </p>
-              <a href={team.group_link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[16px] text-[#000150] font-semibold p-2 px-3 bg-blue-400/30 rounded-[9px] hover:bg-blue-500/30 transition-colors"
+              </p> */}
+              <Link href={team.group_link}
+                target=""
+                rel=""
+                className="text-[16px] text-[#000150] font-semibold"
               >
-                Ссылка на группу
-              </a>
+                <Image src="/telegram.png" width={48} height={48} alt="Ссылка на телеграм-канал команды" />
+              </Link>
             </div>
-            <div className="flex gap-4">
+            <div className="flex gap-4 ml-6">
               <EditTeamModalButton 
                 teamId={team.id} 
                 teamName={team.name}
@@ -176,7 +177,7 @@ export default function TeamPage() {
               />
               <button
                 onClick={() => setIsAddStudentModalOpen(true)}
-                className="text-[16px] text-[#000150] font-semibold p-2 px-3 bg-[#000150]/20 rounded-[8px] hover:bg-[#000150]/30 transition-colors"
+                className="text-[19px] text-[#000150] font-semibold py-2 px-4 bg-[#000150]/20 rounded-[20px] hover:bg-[#000150]/30 transition-colors"
               >
                 Добавить участника
               </button>
@@ -194,7 +195,7 @@ export default function TeamPage() {
         </div>
         
         <div className="mb-12">
-          <h2 className="text-[24px] font-medium mb-8">Участники команды</h2>
+          <h2 className="text-[24px] font-medium mb-8 text-[#000150]">Участники команды</h2>
           {students.length > 0 ? (
             <ul className="flex flex-col gap-4">
               {students.map((student, index) => (
@@ -202,16 +203,16 @@ export default function TeamPage() {
                   key={`team-student-${student.id}-${index}`} 
                   className="flex gap-4 items-center relative group"
                 >
-                  <span className="w-9 h-9 flex items-center justify-center bg-[#000150]/10 rounded-full text-[#000150] text-[20px] mb-[2px]">
+                  <span className="w-8 h-8 flex items-center justify-center bg-[#000150]/20 rounded-full text-[#000150] text-[18px] mb-[2px] font-medium">
                     {index + 1}
                   </span>
                   <span className="flex-1 text-[20px]">
                     {student.last_name} {student.first_name} {student.patronymic || ''}
                   </span>
-                  <span className="font-semibold text-center w-[124px] ml-auto px-3 py-1 bg-[#000150]/30 rounded-[8px] text-[#000150]">
+                  <span className="font-semibold text-center w-[124px] ml-auto px-3 py-1 bg-[#000150]/20 rounded-[16px] text-[#000150]">
                     {student.study_group || 'не указана'}
                   </span>
-                  <span className="font-semibold text-center w-[135px] ml-[72px] px-3 py-1 bg-[#000150]/30 rounded-[8px] text-[#000150]">
+                  <span className="font-semibold text-center w-[135px] ml-[72px] px-3 py-1 bg-[#000150]/20 rounded-[16px] text-[#000150] mr-10">
                     {student.role || 'не указана'}
                   </span>
                   
@@ -241,7 +242,7 @@ export default function TeamPage() {
         {/* Блок встреч команды */}
         <div className="mt-[36px]">
           <div className="flex items-center justify-between mb-[16px]">
-            <h2 className="text-[24px] text-[#000000] font-medium">Встречи команды</h2>
+            <h2 className="text-[24px] text-[#000000] font-medium text-[#000150]">Встречи команды</h2>
           </div>
           
           <div className="flex items-center mb-[24px]">
@@ -249,7 +250,7 @@ export default function TeamPage() {
           </div>
           
           {meetings.length > 0 ? (
-            <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <ul className="flex gap-6 flex-wrap">
               {meetings.map((meeting) => (
                 <li key={meeting.id}>
                   <Link href={`/meeting/${meeting.id}`}>
@@ -274,7 +275,7 @@ export default function TeamPage() {
 
         <div className="mt-[36px]">
           <div className="flex items-center justify-between mb-[16px]">
-            <h2 className="text-[24px] text-[#000000] font-medium">Проекты команды</h2>
+            <h2 className="text-[24px] text-[#000000] font-medium text-[#000150]">Проекты команды</h2>
           </div>
           
           <div className="flex items-center mb-[24px]">

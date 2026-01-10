@@ -68,8 +68,8 @@ export default function EditTeamForm({ isOpen, onClose, teamId, initialData }: E
           </svg>
         </button>
         
-        <h2 className="text-2xl text-[#000150] font-bold mb-2 text-center">Редактировать команду</h2>
-        <p className="mb-6 text-center text-gray-600">Измените необходимые поля</p>
+        <h2 className="text-2xl text-[#000150] font-bold mb-2">Редактировать команду</h2>
+        <p className="mb-6 text-gray-500">* Измените необходимые поля</p>
         
         {error && (
           <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg">
@@ -104,7 +104,7 @@ export default function EditTeamForm({ isOpen, onClose, teamId, initialData }: E
             />
           </div>
           
-          <div className="flex gap-4 mt-6">
+          <div className="flex gap-4 mt-10">
             <button
               type="button"
               onClick={onClose}
