@@ -31,15 +31,10 @@ export interface ProjectTeam {
   assigned_at: string;
   status: string;
   role_in_project: string;
-  // team?: {
-  //   id: string;
-  //   name: string;
-  //   group_link: string;
-  // };
 }
 
 export interface ProjectTeamWithTeam extends ProjectTeam {
-  team: Team; // Теперь мы будем добавлять это поле на фронтенде
+  team: Team;
 }
 
 export interface AssignTeamData {

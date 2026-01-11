@@ -1,5 +1,4 @@
 const API_BASE_URL = 'http://178.154.228.164:8001/api/v1/auth';
-// const API_BASE_URL = 'http://localhost:8001/api/v1/auth';
 
 export interface AuthResponse {
   access_token: string;
@@ -95,14 +94,12 @@ export const logout = async (refreshToken: string): Promise<void> => {
     const accessToken = localStorage.getItem('access_token');
     
     if (accessToken) {
-      // refresh_token передается как query параметр
       const response = await fetch(`${API_BASE_URL}/logout?refresh_token=${encodeURIComponent(refreshToken)}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${accessToken}`
         },
-        // Тело запроса может быть пустым или содержать дополнительные данные, можно убрать
         body: JSON.stringify({})
       });
 
@@ -138,20 +135,25 @@ export const getCurrentUser = async (accessToken: string): Promise<User> => {
 };
 
 export const refreshToken = async (refreshToken: string): Promise<AuthResponse> => {
-  const response = await fetch(`${API_BASE_URL}/token/refresh`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ refresh_token: refreshToken })
-  });
+  try {
+    const response = await fetch(`${API_BASE_URL}/token/refresh?refresh_token=${encodeURIComponent(refreshToken)}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({})
+    });
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.detail || 'Token refresh failed');
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.detail || `Token refresh failed with status ${response.status}`);
+    }
+
+    return processAuthResponse(await response.json());
+  } catch (error) {
+    console.error('Refresh token request failed:', error);
+    throw error;
   }
-
-  return processAuthResponse(await response.json());
 };
 
 // Загрузка аватара пользователя
@@ -169,7 +171,6 @@ export const uploadAvatar = async (file: File): Promise<User> => {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${accessToken}`
-      // Content-Type multipart/form-data с boundary устанавливается в браузере автоматически
     },
     body: formData
   });

@@ -13,7 +13,7 @@ export default function LoginPage() {
   const router = useRouter();
   const { login: authLogin, isAuthenticated } = useAuth();
 
-  // Проверка для редиректа авторизованных пользователей
+  // проверка для редиректа авторизованных пользователей
   useEffect(() => {
     if (isAuthenticated) {
       router.push('/projects');

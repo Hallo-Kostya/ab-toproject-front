@@ -74,7 +74,7 @@ export default function AddStudentToTeamModal({ isOpen, onClose, teamId, onStude
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} className="px-20">
       <div className="p-6 bg-white rounded-[24px]">
         <button
           onClick={onClose}

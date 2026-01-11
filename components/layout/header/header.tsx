@@ -125,35 +125,32 @@ export default function Header() {
             </div>
             
             {/* Адаптивная поисковая строка */}
-            <div className="flex items-center gap-[32px] min-w-0 flex-1 ml-6">
+            <div className="flex items-center gap-[32px] min-w-0 flex-1 ml-12">
               <div className="min-w-[48px] w-full max-w-[448px] h-[48px] bg-[#DBDFFF]/30 border-1 border-[#DBDFFF] rounded-[12px] flex items-center px-3">
-                <span className="flex items-center justify-center mr-[10px]">
+                <span className="flex items-center justify-center mr-[10px] w-[24px] h-[24px] flex-shrink-0">
                   <Image
                     src="/search.svg"
                     alt={"Поиск"}
                     width={24}
                     height={24}
+                    className="w-[24px] h-[24px] object-contain"
                   />
                 </span>
                 <input
                   type="text"
                   placeholder="Поиск"
-                  className="bg-transparent border-none focus:outline-none text-[#6B7280] w-full placeholder:text-[#6B7280] hidden md:block"
+                  className="bg-transparent border-none focus:outline-none text-[#6B7280] w-full placeholder:text-[#6B7280] hidden sm:block"
                 />
-                <button 
-                  className="md:hidden text-[#6B7280] font-medium"
-                >
-                  Поиск
-                </button>
+                <div className="sm:hidden w-full h-full" />
               </div>
               
               {/* Блок для добавления проектов, команд, студентов, встреч */}
-              <div className="relative" ref={addMenuRef}>
+              <div className="relative mx-auto " ref={addMenuRef}>
                 <button
                   onClick={() => setIsAddMenuOpen(!isAddMenuOpen)}
                   className="flex items-center gap-2 bg-[#000150] text-white px-4 py-2 rounded-[16px] hover:bg-blue-900 transition-colors"
                 >
-                  <span className="text-xl font-bold">+</span>
+                  <span className="text-xl font-bold pb-[2px]">+</span>
                   <span className="hidden sm:inline">Добавить</span>
                 </button>
                 
@@ -200,8 +197,8 @@ export default function Header() {
               </div>
               
               {/* Навигация в одну строку */}
-              <nav className="hidden md:block">
-                <ul className="flex gap-[24px]">
+              <nav className="mx-auto">
+                <ul className="flex flex-wrap gap-[24px]">
                   <li>
                     <Link href={"/projects"} className="">
                       <span className="text-[#000150] text-[17px]">Проекты</span>

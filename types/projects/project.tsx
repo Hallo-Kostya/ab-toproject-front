@@ -8,15 +8,10 @@ export type Project = {
   semester: string;
   status: string;
   year: number;
-  // Закомментировано, так как пока не реализовано в API
-  // teamsCnt?: number;
-  // placesCnt?: number;
-  // teamsIds?: string[];
 }
 
 export interface ProjectCardProps {
   name: string;
-  // Закомментировано, так как пока не реализовано в API
-  // teamsCnt?: number;
-  // placesCnt?: number;
+  teamsCnt?: number;
+  placesCnt?: number;
 }

@@ -39,15 +39,15 @@ export default function MeetingPage() {
         const meetingData = await getMeetingById(id);
         setMeeting(meetingData);
         
-        // Получаем данные о команде
+        // получаем данные о команде
         const teamData = await getTeamById(meetingData.team_id);
         setTeam(teamData);
         
-        // Получаем участников команды
+        // получаем участников команды
         const studentsData = await getFullTeamStudents(meetingData.team_id);
         setStudents(studentsData);
         
-        // Получаем задачи для встречи
+        // получаем задачи для встречи
         const tasksData = await getTasksByMeetingId(id);
         setTasks(tasksData);
       } catch (err: any) {

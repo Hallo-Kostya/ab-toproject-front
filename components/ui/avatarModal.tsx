@@ -1,5 +1,3 @@
-// components/modals/AvatarModal.tsx
-
 'use client';
 
 import { useState, useRef } from 'react';
@@ -55,16 +53,15 @@ export default function AvatarModal({ isOpen, onClose }: AvatarModalProps) {
     try {
       const updatedUser = await uploadAvatar(avatar);
       
-      // Обновляем данные пользователя в контексте
+      // обновляем данные пользователя в контексте
       updateUser({
         avatar_s3_path: updatedUser.avatar_s3_path
       });
       
-      // Очищаем состояние
+      // чоищаем состояние
       setAvatar(null);
       setAvatarPreview(null);
-      
-      // Закрываем модальное окно
+
       onClose();
       
     } catch (err: any) {
@@ -97,7 +94,7 @@ export default function AvatarModal({ isOpen, onClose }: AvatarModalProps) {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} className="px-10">
       <div className="p-6 bg-white rounded-[24px]">
         {/* Кнопка закрытия */}
         <button

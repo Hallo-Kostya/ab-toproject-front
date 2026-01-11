@@ -59,11 +59,10 @@ export default function MeetingFormModal({ isOpen, onClose }: { isOpen: boolean,
       };
 
       await createMeeting(meetingData);
-      
-      // Закрываем модальное окно
+
       onClose();
       
-      // Обновляем страницу
+      // обновляем страницу
       setTimeout(() => {
         window.location.reload();
       }, 300);

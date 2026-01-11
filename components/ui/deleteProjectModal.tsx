@@ -25,8 +25,7 @@ export default function DeleteProjectModal({ isOpen, onClose, projectId, project
 
     try {
       await deleteProject(projectId);
-      
-      // Успешное удаление - перенаправляем на главную страницу
+
       router.push('/projects');
       
     } catch (err: any) {

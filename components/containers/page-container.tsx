@@ -2,19 +2,13 @@ import Link from "next/link";
 import { ReactNode } from "react";
 import Image from "next/image";
 
-interface BaseListItem {
-  id: string;
-}
-
-type CardComponent<T extends BaseListItem> = (item: T, index: number) => ReactNode;
-
-interface PageContainerProps<T extends BaseListItem> {
+interface PageContainerProps<T extends { id: string }> {
   pageTag: string;
   meetingsTitle: string;
-  meetingsListComponent: ReactNode;
+  meetingsListComponent?: ReactNode;
   listHeader: string;
   list: T[];
-  cardComponent: CardComponent<T>;
+  cardComponent: (item: T, index: number) => ReactNode;
   year?: string;
   semester?: string;
 }
@@ -33,7 +27,9 @@ export default function PageContainer<T extends { id: string }>({
     <div className="space-y-8">
       <div className="">
         <h2 className="text-[20px] text-[#000150] font-semibold mb-4">{meetingsTitle}</h2>
-        {meetingsListComponent}
+        {/* {meetingsListComponent} */}
+        <p className="text-[13px] text-gray-500/80 mb-2">Пока-что здесь не отображаются предстоящие встречи</p>
+        <p className="text-[13px] text-gray-500/80">Вы можете просмотреть встречи определенной команды, перейдя на ее страницу</p>
       </div>
       
       <div>

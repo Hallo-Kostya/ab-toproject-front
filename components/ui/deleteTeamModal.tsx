@@ -25,8 +25,7 @@ export default function DeleteTeamModal({ isOpen, onClose, teamId, teamName }: D
 
     try {
       await deleteTeam(teamId);
-      
-      // Успешное удаление - перенаправляем на страницу команд
+
       router.push('/teams');
       
     } catch (err: any) {

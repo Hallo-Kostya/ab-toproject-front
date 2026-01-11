@@ -27,7 +27,7 @@ export default function EditMeetingForm({ isOpen, onClose, meetingId, initialDat
   const { isAuthenticated } = useAuth();
 
   useEffect(() => {
-    // Обновляем данные формы при изменении initialData
+    // обновляем данные формы при изменении initialData
     setName(initialData.name);
     setResume(initialData.resume);
     setDate(new Date(initialData.date).toISOString().slice(0, 16));
@@ -61,7 +61,6 @@ export default function EditMeetingForm({ isOpen, onClose, meetingId, initialDat
     setIsLoading(true);
 
     try {
-      // ИСПРАВЛЕНО: team_id теперь всегда string
       const meetingData = {
         name,
         resume,
@@ -87,7 +86,6 @@ export default function EditMeetingForm({ isOpen, onClose, meetingId, initialDat
     }
   };
 
-  // ИСПРАВЛЕНО: Функция для конвертации статуса API в отображаемый статус
   const getDisplayStatus = (apiStatus: string): 'planned' | 'completed' | 'cancelled' => {
     switch (apiStatus) {
       case 'SCHEDULED':

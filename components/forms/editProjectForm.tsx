@@ -26,7 +26,7 @@ export default function EditProjectForm({ isOpen, onClose, projectId, initialDat
   const { refreshTokens } = useAuth();
 
   useEffect(() => {
-    // Обновляем данные формы при изменении initialData
+    // обновляем данные формы при изменении initialData
     setName(initialData.name);
     setDescription(initialData.description);
     setGoal(initialData.goal);
@@ -55,11 +55,10 @@ export default function EditProjectForm({ isOpen, onClose, projectId, initialDat
       };
 
       await updateProject(projectId, projectData);
-      
-      // Закрываем модальное окно
+
       onClose();
       
-      // Обновляем страницу
+      // обновляем страницу
       setTimeout(() => {
         window.location.reload();
       }, 300);

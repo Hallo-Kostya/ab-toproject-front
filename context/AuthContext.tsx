@@ -35,7 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  // Инициализация при загрузке приложения
+  // инициализация при загрузке приложения
   useEffect(() => {
     const initializeAuth = async () => {
       try {
@@ -46,7 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // ВСЕГДА получаем свежие данные пользователя при инициализации
             const userData = await getCurrentUser(storedAccessToken);
             
-            // Сохраняем обновленные данные
+            // сохраняем обновленные данные
             localStorage.setItem('user_data', JSON.stringify(userData));
             setUser(userData);
           } catch (error) {
@@ -85,14 +85,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const handleLoginSuccess = async (tokens: AuthResponse) => {
     try {
-      // Сохраняем токены
+      // сохраняем токены
       localStorage.setItem('access_token', tokens.access_token);
       localStorage.setItem('refresh_token', tokens.refresh_token);
       
       // ВСЕГДА получаем СВЕЖИЕ данные пользователя после входа
       const userData = await getCurrentUser(tokens.access_token);
       
-      // Сохраняем обновленные данные
+      // сохраняем обновленные данные
       localStorage.setItem('user_data', JSON.stringify(userData));
       
       setUser(userData);
@@ -107,13 +107,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(async (tokens: AuthResponse) => {
     setIsLoading(true);
     try {
-      // Очищаем предыдущие данные перед новым входом
+      // очищаем предыдущие данные перед новым входом
       clearAuthData();
       
-      // Обрабатываем успешный вход с получением свежих данных
+      // обрабатываем успешный вход с получением свежих данных
       await handleLoginSuccess(tokens);
       
-      // Перенаправляем на главную страницу
+      // перенаправляем на главную страницу
       router.push('/projects');
     } finally {
       setIsLoading(false);
@@ -142,14 +142,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const newTokens = await apiRefreshToken(refreshToken);
       
-      // Сохраняем новые токены
+      // сохраняем новые токены
       localStorage.setItem('access_token', newTokens.access_token);
       localStorage.setItem('refresh_token', newTokens.refresh_token);
       
       // ВСЕГДА получаем СВЕЖИЕ данные пользователя после обновления токенов
       const userData = await getCurrentUser(newTokens.access_token);
       
-      // Сохраняем обновленные данные
+      // сохраняем обновленные данные
       localStorage.setItem('user_data', JSON.stringify(userData));
       setUser(userData);
       
@@ -178,6 +178,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     refreshTokens,
     updateUser,
   };
+
+  // Обработчик ошибки 401 Unauthorized
+  useEffect(() => {
+    const handleUnauthorized = async () => {
+      console.log('Unauthorized error detected, attempting to refresh tokens...');
+      const refreshToken = localStorage.getItem('refresh_token');
+      
+      if (refreshToken) {
+        try {
+          const success = await refreshTokens();
+          if (success) {
+            console.log('Tokens refreshed successfully');
+            return;
+          }
+        } catch (error) {
+          console.error('Token refresh failed during unauthorized handling:', error);
+        }
+      }
+      
+      console.log('Token refresh failed or no refresh token, redirecting to login...');
+      clearAuthData();
+      setTimeout(() => {
+        window.location.href = '/login';
+      }, 300);
+    };
+
+    // Глобальный обработчик ошибок fetch
+    const originalFetch = window.fetch;
+    window.fetch = async (...args) => {
+      try {
+        const response = await originalFetch(...args);
+        
+        if (response.status === 401) {
+          handleUnauthorized();
+        }
+        
+        return response;
+      } catch (error) {
+        console.error('Fetch error:', error);
+        throw error;
+      }
+    };
+
+    // Очистка при размонтировании
+    return () => {
+      window.fetch = originalFetch;
+    };
+  }, [refreshTokens]);
 
   return (
     <AuthContext.Provider value={value}>

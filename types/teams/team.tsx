@@ -1,3 +1,5 @@
+import { Student } from "../students/student";
+
 export type Team = {
   id: string;
   name: string;
@@ -15,8 +17,8 @@ export interface TeamStudent {
   first_name: string;
   last_name: string;
   patronymic?: string;
-  role: string;
-  study_group: string;
+  role?: string;
+  study_group?: string;
 }
 
 export interface CreateTeamData {
@@ -35,6 +37,5 @@ export interface TeamCardProps {
   name: string;
   teamNumber: number;
   studentCount: number;
-  // Закомментировано, так как пока не реализовано в API
-  // participants?: Student[];
+  participants?: TeamStudent[];
 }

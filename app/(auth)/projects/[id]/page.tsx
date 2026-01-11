@@ -119,7 +119,7 @@ export default function ProjectPage() {
     );
   }
 
-  // Фильтрация - показываем только команды со статусом 'ACTIVE'
+  // показываем только команды со статусом 'ACTIVE'
   const activeProjectTeams = projectTeams.filter(team => team.status === 'ACTIVE');
 
   return (
@@ -129,7 +129,7 @@ export default function ProjectPage() {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-4">
               <h1 className="text-[#000150] text-[26px] font-semibold">{project.name}</h1>
-              {/* Кнопки редактирования и удаления - видны только авторизованным пользователям */}
+              {/* Кнопки редактирования и удаления видны только авторизованным пользователям */}
               {isAuthenticated && user && (
                 <div className="flex gap-2">
                   <button
@@ -170,7 +170,7 @@ export default function ProjectPage() {
           <Section title={"Критерии оценки"} content={project.eval_criteria} />
         </div>
         
-        {/* Блок с командами проекта - показываем только активные */}
+        {/* Блок с командами проекта: показываем только активные */}
         <div className="mt-[36px]">
           <div className="flex items-center justify-between mb-[16px]">
             <h2 className="text-[24px] text-[#000000] font-medium">Команды-исполнители</h2>

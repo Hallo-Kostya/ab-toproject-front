@@ -74,7 +74,7 @@ export const getTeamProjectsWithDetails = async (teamId: string): Promise<TeamPr
     throw new Error('No access token');
   }
 
-  // Сначала получаем базовые данные о проектах команды
+  // получаем базовые данные о проектах команды
   const response = await fetch(`${API_BASE_URL}/teams/${teamId}/projects`, {
     headers: {
       'Authorization': `Bearer ${accessToken}`
@@ -88,7 +88,7 @@ export const getTeamProjectsWithDetails = async (teamId: string): Promise<TeamPr
 
   const teamProjects: ProjectTeam[] = await response.json();
   
-  // Затем получаем полные данные для каждого проекта
+  // получаем полные данные для каждого проекта
   const projectPromises = teamProjects.map(async (teamProject) => {
     try {
       const project = await getProjectById(teamProject.project_id);
@@ -98,7 +98,7 @@ export const getTeamProjectsWithDetails = async (teamId: string): Promise<TeamPr
       };
     } catch (error) {
       console.error(`Failed to get project ${teamProject.project_id}:`, error);
-      // Возвращаем минимальные данные если не удалось получить полные
+      // возвращаем минимальные данные если не удалось получить полные
       return {
         teamProject,
         project: {
@@ -137,7 +137,7 @@ export const getTeams = async (): Promise<Team[]> => {
     throw new Error(errorData.detail || 'Failed to get teams');
   }
 
-  // Добавляем номера командам на основе их позиции в списке
+  // добавляем номера командам на основе их позиции в списке
   const teams = await response.json();
   return teams.map((team: Team, index: number) => ({
     ...team,
@@ -187,24 +187,6 @@ export const deleteTeam = async (teamId: string): Promise<void> => {
 };
 
 export const getTeamStudents = async (teamId: string): Promise<TeamStudent[]> => {
-  // const accessToken = localStorage.getItem('access_token');
-  
-  // if (!accessToken) {
-  //   throw new Error('No access token');
-  // }
-
-  // const response = await fetch(`${API_BASE_URL}/teams/${teamId}/students`, {
-  //   headers: {
-  //     'Authorization': `Bearer ${accessToken}`
-  //   }
-  // });
-
-  // if (!response.ok) {
-  //   const errorData = await response.json().catch(() => ({}));
-  //   throw new Error(errorData.detail || 'Failed to get team students');
-  // }
-
-  // return response.json();
   return [];
 };
 

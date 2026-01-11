@@ -40,7 +40,7 @@ export default function StudentsPage() {
     try {
       await deleteStudent(studentToDelete.id);
       
-      // Обновляем список студентов
+      // обновляем список студентов
       setStudents(prevStudents => prevStudents.filter(student => student.id !== studentToDelete.id));
       setIsDeleteModalOpen(false);
     } catch (err: any) {

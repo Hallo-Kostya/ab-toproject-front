@@ -6,7 +6,6 @@ import Link from "next/link";
 {/* ДОРАБОТКА ФУНКЦИОНАЛА */}
 
 export default function MeetingList() {
-    // Вместо явного указания в будущем нужно сделать динамическое указание команд
     const team = teams[1];
 
     return (

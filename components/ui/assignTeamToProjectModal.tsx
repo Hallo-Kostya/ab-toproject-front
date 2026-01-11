@@ -55,13 +55,12 @@ export default function AssignTeamToProjectModal({ isOpen, onClose, projectId, o
 
       await assignTeamToProject(projectId, assignData);
       
-      // Вызываем callback для обновления списка команд проекта
+      // вызываем callback для обновления списка команд проекта
       onTeamAssigned();
-      
-      // Закрываем модальное окно
+
       onClose();
       
-      // Сбрасываем форму
+      // сбрасываем форму
       setSelectedTeamId(null);
       
     } catch (err: any) {

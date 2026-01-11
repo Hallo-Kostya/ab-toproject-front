@@ -20,7 +20,7 @@ export default function EditTeamForm({ isOpen, onClose, teamId, initialData }: E
   const { refreshTokens } = useAuth();
 
   useEffect(() => {
-    // Обновляем данные формы при изменении initialData
+    // обновляем данные формы при изменении initialData
     setName(initialData.name);
     setGroupLink(initialData.group_link);
   }, [initialData]);
@@ -37,11 +37,10 @@ export default function EditTeamForm({ isOpen, onClose, teamId, initialData }: E
       };
 
       await updateTeam(teamId, teamData);
-      
-      // Закрываем модальное окно
+
       onClose();
       
-      // Обновляем страницу
+      // обновляем страницу
       setTimeout(() => {
         window.location.reload();
       }, 300);
@@ -55,7 +54,7 @@ export default function EditTeamForm({ isOpen, onClose, teamId, initialData }: E
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} className="px-20">
       <div className="p-6 bg-white rounded-[24px]">
         {/* Кнопка закрытия */}
         <button

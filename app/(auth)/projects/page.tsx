@@ -1,45 +1,86 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import MeetingList from "@/components/features/meetings/meeting-list";
 import ProjectCard from "@/components/ui/cards/project-card";
 import PageContainer from "@/components/containers/page-container";
 import { Project } from "@/types/projects/project";
 import { getProjects } from "@/lib/api/projects";
 import { useAuth } from "@/context/AuthContext";
+import { getProjectStats, ProjectStats } from "@/lib/api/project-stats";
+
+interface ProjectWithStats extends Project {
+  stats: ProjectStats;
+}
 
 export default function ProjectsPage() {
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [projects, setProjects] = useState<ProjectWithStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { isAuthenticated } = useAuth();
 
-  const renderProjectCard = (project: Project) => (
-    <ProjectCard 
-      name={project.name} 
-      // teamsCnt={0}
-      // placesCnt={0}
-    />
-  );
+  // функция для получения статистики для одного проекта
+  const fetchProjectStats = useCallback(async (project: Project): Promise<ProjectWithStats> => {
+    const stats = await getProjectStats(project.id);
+    return { ...project, stats };
+  }, []);
+
+  // функция для получения статистики для всех проектов
+  const fetchAllProjectsStats = useCallback(async (projects: Project[]) => {
+    try {
+      // параллельно получаем статистику для всех проектов
+      const statsPromises = projects.map(project => fetchProjectStats(project));
+      const projectsWithStats = await Promise.all(statsPromises);
+      
+      // сортируем по количеству команд
+      projectsWithStats.sort((a, b) => b.stats.teamsCnt - a.stats.teamsCnt);
+      
+      setProjects(projectsWithStats);
+    } catch (err: any) {
+      console.error('Failed to fetch projects stats:', err);
+      // при ошибке в статистике показываем проекты с нулевой статистикой
+      const projectsWithDefaultStats = projects.map(project => ({
+        ...project,
+        stats: { teamsCnt: 0, placesCnt: 0 }
+      }));
+      setProjects(projectsWithDefaultStats);
+    }
+  }, [fetchProjectStats]);
 
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    const fetchProjects = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const data = await getProjects();
-        setProjects(data);
+        setError(null);
+        
+        // получаем базовые данные проектов
+        const projectsData = await getProjects();
+        
+        // получаем статистику для каждого проекта
+        await fetchAllProjectsStats(projectsData);
       } catch (err: any) {
         setError(err.message || 'Ошибка загрузки проектов');
         console.error('Projects fetch error:', err);
+        setProjects([]); // очищаем список при полной ошибке
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProjects();
-  }, [isAuthenticated]);
+    fetchData();
+  }, [isAuthenticated, fetchAllProjectsStats]);
+
+  // рендеринг карточки с обновленными пропсами
+  const renderProjectCard = useCallback((project: ProjectWithStats) => (
+    <ProjectCard 
+      key={project.id}
+      name={project.name} 
+      teamsCnt={project.stats.teamsCnt}
+      placesCnt={project.stats.placesCnt}
+    />
+  ), []);
 
   if (loading) {
     return (

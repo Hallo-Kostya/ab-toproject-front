@@ -28,11 +28,10 @@ export default function StudentFormModal({ isOpen, onClose }: { isOpen: boolean,
       };
 
       await createStudent(studentData);
-      
-      // Закрываем модальное окно
+
       onClose();
       
-      // Автоматическое обновление страницы
+      // автоматическое обновление страницы
       setTimeout(() => {
         window.location.reload();
       }, 300);

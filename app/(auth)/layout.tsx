@@ -22,7 +22,6 @@ export default async function AuthLayout({
         </main>
       
       <Footer />
-      {/* Компонент для автоматического рефреша токенов - виден только на клиенте */}
       {/* <TokenRefresher /> */}
     </div>
     //</ProtectedRoute>

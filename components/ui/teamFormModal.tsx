@@ -22,11 +22,10 @@ export default function TeamFormModal({ isOpen, onClose }: { isOpen: boolean, on
       };
 
       await createTeam(teamData);
-      
-      // Закрываем модальное окно
+
       onClose();
       
-      // Автоматическое обновление страницы
+      // автоматическое обновление страницы
       setTimeout(() => {
         window.location.reload();
       }, 300);

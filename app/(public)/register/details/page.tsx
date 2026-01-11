@@ -10,12 +10,9 @@ export default function RegistrationDetailsPage() {
     const [surname, setSurname] = useState('');
     const [patronymic, setPatronymic] = useState('');
     const [tgLink, setTgLink] = useState('');
-    // const [avatar, setAvatar] = useState<File | null>(null);
-    // const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
-    // const fileInputRef = useRef<HTMLInputElement>(null);
     const { login } = useAuth();
 
     useEffect(() => {
@@ -37,27 +34,6 @@ export default function RegistrationDetailsPage() {
         setError('');
         return true;
     };
-
-    // const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    //     const file = e.target.files?.[0];
-    //     if (file) {
-    //         if (!file.type.startsWith('image/')) {
-    //             setError('Пожалуйста, загрузите изображение');
-    //             return;
-    //         }
-    //         if (file.size > 2 * 1024 * 1024) {
-    //             setError('Изображение не должно быть больше 2MB');
-    //             return;
-    //         }
-    //         setAvatar(file);
-    //         const reader = new FileReader();
-    //         reader.onloadend = () => {
-    //             setAvatarPreview(reader.result as string);
-    //         };
-    //         reader.readAsDataURL(file);
-    //         setError('');
-    //     }
-    // };
 
     const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
@@ -87,10 +63,9 @@ export default function RegistrationDetailsPage() {
         console.log('Ответ от сервера:', authResponse);
         await login(authResponse);
         
-        // Очищаем данные регистрации
+        // очищаем данные регистрации
         localStorage.removeItem('registration-step1');
-        
-        // Перенаправляем на главную страницу
+
         router.push('/projects');
         
     } catch (err: any) {
@@ -100,27 +75,6 @@ export default function RegistrationDetailsPage() {
         setIsLoading(false);
     }
   };
-
-  // const handleDragOver = (e: React.DragEvent) => {
-  //   e.preventDefault();
-  //   e.stopPropagation();
-  // };
-
-  // const handleDrop = (e: React.DragEvent) => {
-  //   e.preventDefault();
-  //   e.stopPropagation();
-  //   const file = e.dataTransfer.files?.[0];
-  //   if (file) {
-  //     const inputEvent = {
-  //       target: { files: [file] }
-  //     } as unknown as React.ChangeEvent<HTMLInputElement>;
-  //     handleAvatarChange(inputEvent);
-  //   }
-  // };
-
-  // const triggerFileInput = () => {
-  //   fileInputRef.current?.click();
-  // };
 
   return (
     <div 
@@ -201,45 +155,6 @@ export default function RegistrationDetailsPage() {
               />
             </div>
           </div>
-          {/* <div className="">
-            <label htmlFor="avatar" className="block mb-3 text-[16px] font-light text-[#000150] text-center">
-              Загрузите ваш аватар
-            </label>
-            <div
-              className="flex flex-col items-center justify-center w-[124px] h-[124px] border-2 border-dashed border-gray-300 rounded-full cursor-pointer hover:border-[#000150] transition-colors mx-auto"
-              onDragOver={handleDragOver}
-              onDrop={handleDrop}
-              onClick={triggerFileInput}
-            >
-              <input
-                type="file"
-                id="avatar"
-                ref={fileInputRef}
-                accept="image/*"
-                onChange={handleAvatarChange}
-                className="hidden"
-              />
-              {avatarPreview ? (
-                <div className="relative w-32 h-32 rounded-full overflow-hidden">
-                  <Image
-                    src={avatarPreview}
-                    alt="Аватар"
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              ) : (
-                <div className="text-center p-4">
-                  <p className="text-sm text-gray-500">
-                    Загрузить
-                  </p>
-                </div>
-              )}
-            </div>
-            <p className="text-center text-xs text-gray-500 mt-2">
-              Аватар будет установлен позже, после регистрации
-            </p>
-          </div> */}
           <div className="flex justify-center mt-[18px]">
             <button
               type="submit"

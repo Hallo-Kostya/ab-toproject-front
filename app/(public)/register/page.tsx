@@ -33,7 +33,6 @@ export default function RegisterPage() {
 
     setIsLoading(true);
 
-    {/* RESPONSE BLOCK */}
     try {
       console.log('Registration:', {
         email,
@@ -43,8 +42,6 @@ export default function RegisterPage() {
       await new Promise(resolve => setTimeout(resolve, 1500));
 
       localStorage.setItem('registration-step1', JSON.stringify({ email, password }));
-
-      {/* RESPONSE */}
 
       router.push('/register/details');
 
