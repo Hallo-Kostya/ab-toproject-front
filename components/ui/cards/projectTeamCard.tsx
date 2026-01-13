@@ -100,8 +100,8 @@ export default function ProjectTeamCard({ projectTeam, projectId, onTeamRemoved 
         </button>
         
         {/* Название команды - только оно является ссылкой */}
-        <div className="mb-4">
-          <Link href={`/teams/${teamData.id}`} className="block w-fit flex items-center pb-[12px] border-b border-gray-300">
+        <div className="mb-4 border-b border-[#000150]/40">
+          <Link href={`/teams/${teamData.id}`} className="block w-fit flex items-center pb-[12px]">
             <h2 className="text-[20px] text-[#000150] font-semibold">
               {teamData.name}
             </h2>
@@ -135,7 +135,7 @@ export default function ProjectTeamCard({ projectTeam, projectId, onTeamRemoved 
         </div>
       </div>
 
-      <Modal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)}>
+      <Modal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} className="px-30">
         <div className="p-6 bg-white rounded-[24px]">
           <button
             onClick={() => setIsDeleteModalOpen(false)}

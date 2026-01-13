@@ -148,14 +148,14 @@ export default function MeetingPage() {
     <>
       <div className="space-y-8">
         <div>
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-4">
+          <div className="mb-3">
+            <div className="flex items-center justify-between gap-4">
               <h1 className="text-[#000150] text-[26px] font-semibold">{meeting.name}</h1>
               {isAuthenticated && (
                 <div className="flex gap-2">
                   <button
                     onClick={() => setIsEditModalOpen(true)}
-                    className="px-4 py-2 bg-[#000150]/20 text-[#000150] rounded-[8px] hover:bg-[#000150]/30 transition-colors"
+                    className="flex items-center ml-auto bg-[#000150]/20 px-4 py-2 rounded-[20px] text-[#000150] text-[19px] font-semibold max-h-[47px] hover:bg-[#000150]/30 transition-colors"
                     title="Редактировать встречу"
                   >
                     Редактировать
@@ -174,7 +174,7 @@ export default function MeetingPage() {
             </div>
           </div>
           <div className="flex items-center gap-[24px]">
-            <p><span className="text-[24px] text-[#000150] font-medium">Команда: {team.name}</span></p>
+            <p><span className="text-[24px] text-[#000150]">Команда: <span className="font-medium">{team.name}</span></span></p>
             <div className="px-3 py-[1px] bg-[#E79E00]/20 rounded-[8px]">
               <span className="text-[#E79E00] text-[20px] font-medium">
                 {new Date(meeting.date).toLocaleDateString()} в {new Date(meeting.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
@@ -189,7 +189,7 @@ export default function MeetingPage() {
         
         {/* Блок участников команды */}
         <div className="mb-12">
-          <h2 className="text-[24px] font-medium mb-8">Участники команды</h2>
+          <h2 className="text-[24px] text-[#000150] font-medium mb-[28px]">Участники команды</h2>
           {students.length > 0 ? (
             <ul className="flex flex-col gap-4">
               {students.map((student, index) => (
@@ -203,10 +203,10 @@ export default function MeetingPage() {
                   <span className="flex-1 text-[20px]">
                     {student.last_name} {student.first_name} {student.patronymic || ''}
                   </span>
-                  <span className="font-semibold text-center w-[124px] ml-auto px-3 py-1 bg-[#000150]/30 rounded-[8px] text-[#000150]">
+                  <span className="font-semibold text-center w-[124px] ml-auto px-3 py-1 bg-[#000150]/20 rounded-[16px] text-[#000150]">
                     {student.study_group || 'не указана'}
                   </span>
-                  <span className="font-semibold text-center w-[135px] ml-[72px] px-3 py-1 bg-[#000150]/30 rounded-[8px] text-[#000150]">
+                  <span className="font-semibold text-center w-[124px] ml-[72px] px-3 py-1 bg-[#000150]/20 rounded-[16px] text-[#000150]">
                     {student.role || 'не указана'}
                   </span>
                 </li>
@@ -222,11 +222,11 @@ export default function MeetingPage() {
         {/* Блок задач встречи */}
         <div className="mt-[36px]">
           <div className="flex items-center justify-between mb-[16px]">
-            <h2 className="text-[24px] text-[#000000] font-medium">Задачи встречи</h2>
+            <h2 className="text-[24px] text-[#000150] font-medium">Задачи встречи</h2>
             {isAuthenticated && (
               <button
                 onClick={() => setIsTaskModalOpen(true)}
-                className="px-4 py-2 bg-[#000150] text-white rounded-[8px] hover:bg-blue-900 transition-colors"
+                className="px-4 py-2 bg-[#000150] text-white rounded-[20px] hover:bg-blue-900 transition-colors"
               >
                 + Добавить
               </button>
@@ -245,13 +245,13 @@ export default function MeetingPage() {
                   className="flex items-center justify-between p-4 bg-white rounded-[12px] border border-gray-200 hover:shadow-md transition-shadow relative group"
                 >
                     <div className="flex items-start gap-3">
-                        <input
+                        {/* <input
                             type="checkbox"
                             checked={task.is_completed}
                             aria-label={`Задача "${task.description}" ${task.is_completed ? 'выполнена' : 'не выполнена'}`}
                             className="w-5 h-5 rounded border-gray-300 text-[#000150] focus:ring-[#000150]"
                             disabled
-                        />
+                        /> */}
                         <span className={`text-[18px] ${task.is_completed ? 'line-through text-gray-500' : 'text-gray-800'}`}>
                             {task.description}
                         </span>
@@ -316,8 +316,8 @@ export default function MeetingPage() {
 
 function Section({ title, content }: { title: string; content: string }) {
   return (
-    <div className="bg-white p-6 rounded-[16px] shadow-sm">
-      <h2 className="text-[24px] text-[#000000] font-medium mb-[28px]">{title}</h2>
+    <div className="">
+      <h2 className="text-[24px] text-[#000150] font-medium mb-[28px]">{title}</h2>
       <p className="text-[22px] leading-relaxed whitespace-pre-wrap">{content}</p>
     </div>
   );

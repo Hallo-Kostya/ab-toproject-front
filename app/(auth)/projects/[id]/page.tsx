@@ -126,15 +126,15 @@ export default function ProjectPage() {
     <>
       <div className="space-y-8">
         <div>
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-4">
+          <div className="mb-3">
+            <div className="flex justify-between items-center">
               <h1 className="text-[#000150] text-[26px] font-semibold">{project.name}</h1>
               {/* Кнопки редактирования и удаления видны только авторизованным пользователям */}
               {isAuthenticated && user && (
                 <div className="flex gap-2">
                   <button
                     onClick={() => setIsEditModalOpen(true)}
-                    className="px-4 py-2 bg-[#000150]/20 text-[#000150] rounded-[8px] hover:bg-[#000150]/30 transition-colors"
+                    className="flex items-center ml-auto bg-[#000150]/20 px-4 py-2 rounded-[20px] text-[#000150] text-[19px] font-semibold max-h-[47px]} hover:bg-[#000150]/30 transition-colors shadow-md inset-shadow-xl"
                     title="Редактировать проект"
                   >
                     Редактировать
@@ -163,7 +163,7 @@ export default function ProjectPage() {
           </div>
         </div>
         
-        <div className="flex flex-col gap-[36px]">
+        <div className="flex flex-col gap-[18px]">
           <Section title={"Описание"} content={project.description} />
           <Section title={"Цель"} content={project.goal} />
           <Section title={"Требования"} content={project.requirements} />
@@ -173,11 +173,11 @@ export default function ProjectPage() {
         {/* Блок с командами проекта: показываем только активные */}
         <div className="mt-[36px]">
           <div className="flex items-center justify-between mb-[16px]">
-            <h2 className="text-[24px] text-[#000000] font-medium">Команды-исполнители</h2>
+            <h2 className="text-[24px] text-[#000150] font-medium">Команды-исполнители</h2>
             {isAuthenticated && user && (
               <button
                 onClick={() => setIsAssignTeamModalOpen(true)}
-                className="px-4 py-2 bg-[#000150] text-white rounded-[8px] hover:bg-blue-900 transition-colors"
+                className="px-4 py-2 bg-[#000150] text-white rounded-[20px] hover:bg-blue-900 transition-colors"
               >
                 + Команда
               </button>
@@ -239,9 +239,10 @@ export default function ProjectPage() {
 
 function Section({ title, content }: { title: string; content: string }) {
   return (
-    <div className="bg-white p-6 rounded-[16px] shadow-sm">
-      <h2 className="text-[24px] text-[#000000] font-medium mb-[28px]">{title}</h2>
-      <p className="text-[22px] leading-relaxed whitespace-pre-wrap">{content}</p>
+    // <div className="bg-white p-4 rounded-[16px] shadow-sm inset-shadow-sm">
+    <div className="border-b-1 border-gray-300/40">
+      <h2 className="text-[24px] text-[#000150] font-medium mb-[28px]">{title}</h2>
+      <p className="text-[22px] leading-relaxed whitespace-pre-wrap pb-[18px]">{content}</p>
     </div>
   );
 }

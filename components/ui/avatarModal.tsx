@@ -94,7 +94,7 @@ export default function AvatarModal({ isOpen, onClose }: AvatarModalProps) {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} className="px-10">
+    <Modal isOpen={isOpen} onClose={onClose} className="px-30">
       <div className="p-6 bg-white rounded-[24px]">
         {/* Кнопка закрытия */}
         <button

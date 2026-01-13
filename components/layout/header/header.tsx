@@ -40,7 +40,7 @@ export default function Header() {
 
   if (!mounted) {
     return (
-      <header className="bg-[#F4F3F3] shadow-xl">
+      <header className="bg-[#F4F3F3] shadow-md">
         <Container className="py-[23px]">
           <div className="flex items-center justify-between">
             <div className="min-w-[100px] w-[135px]">
@@ -73,7 +73,7 @@ export default function Header() {
 
   if (!user) {
     return (
-      <header className="bg-[#F4F3F3] shadow-xl">
+      <header className="bg-[#F4F3F3] shadow-md">
         <Container className="py-[23px]">
           <div className="flex items-center justify-between">
             <div className="min-w-[100px] w-[135px]">
@@ -109,7 +109,7 @@ export default function Header() {
 
   return (
     <>
-      <header className="bg-[#F4F3F3] shadow-xl">
+      <header className="bg-[#F4F3F3] shadow-md">
         <Container className="py-[23px]">
           <div className="flex items-center justify-between">
             <div className="min-w-[100px] w-[135px]">
@@ -148,9 +148,9 @@ export default function Header() {
               <div className="relative mx-auto " ref={addMenuRef}>
                 <button
                   onClick={() => setIsAddMenuOpen(!isAddMenuOpen)}
-                  className="flex items-center gap-2 bg-[#000150] text-white px-4 py-2 rounded-[16px] hover:bg-blue-900 transition-colors"
+                  className="flex items-center gap-2 bg-[#000150] text-white px-4 py-2 rounded-[24px] hover:bg-blue-900 transition-colors"
                 >
-                  <span className="text-xl font-bold pb-[2px]">+</span>
+                  <span className="text-xl font-bold pb-[3px]">+</span>
                   <span className="hidden sm:inline">Добавить</span>
                 </button>
                 

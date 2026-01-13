@@ -72,7 +72,7 @@ export default function AssignTeamToProjectModal({ isOpen, onClose, projectId, o
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} className="px-20">
       <div className="p-6 bg-white rounded-[24px]">
         <button
           onClick={onClose}
@@ -84,8 +84,8 @@ export default function AssignTeamToProjectModal({ isOpen, onClose, projectId, o
           </svg>
         </button>
         
-        <h2 className="text-2xl text-[#000150] font-bold mb-2 text-center">Назначить команду на проект</h2>
-        <p className="mb-6 text-center text-gray-600">Выберите команду из списка</p>
+        <h2 className="text-2xl text-[#000150] font-bold mb-4">Назначить команду на проект</h2>
+        <p className="mb-6 text-gray-600">Выберите команду из списка</p>
         
         {error && (
           <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg">
@@ -117,7 +117,7 @@ export default function AssignTeamToProjectModal({ isOpen, onClose, projectId, o
                       }`}
                     >
                       {team.name}
-                      <span className="block text-sm text-gray-500">{team.group_link}</span>
+                      <span className="block text-sm text-gray-400">{team.group_link}</span>
                     </button>
                   ))
                 )}

@@ -100,7 +100,7 @@ export default function EditMeetingForm({ isOpen, onClose, meetingId, initialDat
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} className="px-20">
       <div className="p-6 bg-white rounded-[24px]">
         <button
           onClick={onClose}
@@ -112,8 +112,8 @@ export default function EditMeetingForm({ isOpen, onClose, meetingId, initialDat
           </svg>
         </button>
         
-        <h2 className="text-2xl text-[#000150] font-bold mb-2 text-center">Редактировать встречу</h2>
-        <p className="mb-6 text-center text-gray-600">Измените необходимые поля</p>
+        <h2 className="text-2xl text-[#000150] font-bold mb-4">Редактировать встречу</h2>
+        <p className="mb-6 text-gray-600">Измените необходимые поля</p>
         
         {error && (
           <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg">
@@ -207,7 +207,7 @@ export default function EditMeetingForm({ isOpen, onClose, meetingId, initialDat
             </select>
           </div>
           
-          <div className="flex gap-4 mt-6">
+          <div className="flex gap-4 mt-10">
             <button
               type="button"
               onClick={onClose}

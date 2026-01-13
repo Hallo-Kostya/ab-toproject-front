@@ -67,7 +67,7 @@ export default function UserMenu({ user, onLogout }: UserMenuProps) {
           onClick={handleAvatarClick}
           title="Изменить аватар"
         >
-          <div className="relative w-full h-full rounded-full overflow-hidden border-2 border-white shadow-sm">
+          <div className="relative w-full h-full rounded-full overflow-hidden border-2 border-white shadow-sm mt-[2px]">
             <Image
               src={avatarUrl}
               alt={`${displayName} avatar`}

@@ -119,7 +119,7 @@ export default function AddStudentToTeamModal({ isOpen, onClose, teamId, onStude
                       }`}
                     >
                       {student.last_name} {student.first_name} {student.patronymic || ''}
-                      <span className="block text-sm text-gray-500">{student.email}</span>
+                      <span className="block text-sm text-gray-400">{student.email}</span>
                     </button>
                   ))
                 )}

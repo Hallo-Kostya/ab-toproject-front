@@ -36,7 +36,7 @@ export default function TaskFormModal({ isOpen, onClose, onAddTask }: TaskFormMo
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} className="px-20">
       <div className="p-6 bg-white rounded-[24px]">
         <button
           onClick={onClose}
@@ -48,8 +48,8 @@ export default function TaskFormModal({ isOpen, onClose, onAddTask }: TaskFormMo
           </svg>
         </button>
         
-        <h2 className="text-2xl text-[#000150] font-bold mb-2 text-center">Добавить задачу</h2>
-        <p className="mb-6 text-center text-gray-600">Введите описание задачи</p>
+        <h2 className="text-2xl text-[#000150] font-bold mb-4">Добавить задачу</h2>
+        <p className="mb-6 text-gray-600">Введите описание задачи</p>
         
         {error && (
           <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg">
@@ -71,7 +71,7 @@ export default function TaskFormModal({ isOpen, onClose, onAddTask }: TaskFormMo
             />
           </div>
           
-          <div className="flex gap-4 mt-6">
+          <div className="flex gap-4 mt-10">
             <button
               type="button"
               onClick={onClose}

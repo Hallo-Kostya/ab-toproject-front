@@ -67,7 +67,7 @@ export default function EditTeamForm({ isOpen, onClose, teamId, initialData }: E
           </svg>
         </button>
         
-        <h2 className="text-2xl text-[#000150] font-bold mb-2">Редактировать команду</h2>
+        <h2 className="text-2xl text-[#000150] font-bold mb-4">Редактировать команду</h2>
         <p className="mb-6 text-gray-500">* Измените необходимые поля</p>
         
         {error && (

@@ -6,7 +6,7 @@ export default function TeamCard({ id, name, teamNumber, participants = [] }: Te
   
   return (
     <div className="flex flex-col w-full max-h-[296px] px-[20px] py-[24px] shadow-md inset-shadow-xs rounded-[12px] bg-[#FBFAFF]">
-      <div className="flex items-center text-[24px] text-[#000150] pb-[12px] mb-[12px] border-b-1 border-[#000150]">
+      <div className="flex items-center text-[24px] text-[#000150] pb-[12px] mb-[12px] border-b-1 border-[#000150]/40">
         <h2 className="font-bold align-center">{`"${name}"`}</h2>
         <div className="flex bg-[#000150]/10 rounded-[4px] px-2 py-[2px] gap-[6px] ml-3">
           <Image src={"/user-round.svg"} alt={"К-во участников"} width={20} height={20}/>
@@ -24,7 +24,7 @@ export default function TeamCard({ id, name, teamNumber, participants = [] }: Te
                 <span className="w-6 h-6 flex items-center justify-center bg-[#000150]/10 rounded-full text-[#000150] text-xs mb-[2px] flex-shrink-0">
                   {index + 1}
                 </span>
-                <span className="text-[14px] flex-1 break-words">
+                <span className="text-[14px] flex-1 break-words mt-[2px]">
                   {participant.last_name} {participant.first_name} {participant.patronymic || ''}
                 </span>
               </li>

@@ -73,9 +73,10 @@ export default function StudentsPage() {
   }
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-[28px] font-bold text-[#000150]">Список всех студентов</h1>
+    <div className="space-y-5">
+      <div className="">
+        <h1 className="text-[20px] text-[#000150] font-semibold mb-4">Список всех студентов</h1>
+        <p>Всего студентов найдено: {students.length}</p>
       </div>
       
       {students.length > 0 ? (
@@ -99,7 +100,7 @@ export default function StudentsPage() {
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         studentId={studentToDelete?.id || ''}
-        studentName={`${studentToDelete?.last_name} ${studentToDelete?.first_name}`}
+        studentName={`${studentToDelete?.last_name} ${studentToDelete?.first_name} ${studentToDelete?.patronymic}`}
         onConfirm={handleDeleteStudent}
       />
     </div>

@@ -37,7 +37,7 @@ export default function DeleteProjectModal({ isOpen, onClose, projectId, project
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} className="px-30">
       <div className="p-6 bg-white rounded-[24px]">
         <button
           onClick={onClose}
