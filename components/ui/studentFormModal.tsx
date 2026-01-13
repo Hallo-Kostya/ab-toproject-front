@@ -45,7 +45,7 @@ export default function StudentFormModal({ isOpen, onClose }: { isOpen: boolean,
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} className="px-20">
       <div className="p-6 bg-white rounded-[24px]">
         {/* Кнопка закрытия */}
         <button
@@ -58,8 +58,8 @@ export default function StudentFormModal({ isOpen, onClose }: { isOpen: boolean,
           </svg>
         </button>
         
-        <h2 className="text-2xl text-[#000150] font-bold mb-2 text-center">Создать студента</h2>
-        <p className="mb-6 text-center text-gray-600">Заполните все обязательные поля</p>
+        <h2 className="text-2xl text-[#000150] font-bold mb-4">Создать студента</h2>
+        <p className="mb-6 text-gray-600">Заполните все обязательные поля</p>
         
         {error && (
           <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg">
@@ -134,7 +134,7 @@ export default function StudentFormModal({ isOpen, onClose }: { isOpen: boolean,
             />
           </div>
           
-          <div className="flex gap-4 mt-6">
+          <div className="flex gap-4 mt-10">
             <button
               type="button"
               onClick={onClose}

@@ -10,10 +10,12 @@ import ProjectFormModal from "@/components/ui/projectFormModal";
 import StudentFormModal from "@/components/ui/studentFormModal";
 import TeamFormModal from "@/components/ui/teamFormModal";
 import MeetingFormModal from "@/components/ui/meetingFormModal";
+import { usePathname } from "next/navigation";
 
 export default function Header() {
   const { user, logout } = useAuth();
   const [mounted, setMounted] = useState(false);
+  const pathname = usePathname();
   const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [isStudentModalOpen, setIsStudentModalOpen] = useState(false);
@@ -24,6 +26,15 @@ export default function Header() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  const isActiveLink = (path: string) => {
+    if (!pathname) return false;
+
+    const currentPathParts = pathname.split('/').filter(Boolean);
+    const linkPathParts = path.split('/').filter(Boolean);
+
+    return currentPathParts[0] === linkPathParts[0];
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -200,17 +211,17 @@ export default function Header() {
               <nav className="mx-auto">
                 <ul className="flex flex-wrap gap-[24px]">
                   <li>
-                    <Link href={"/projects"} className="">
+                    <Link href={"/projects"} className={isActiveLink('/projects') ? "font-bold text-blue-900" : ""}>
                       <span className="text-[#000150] text-[17px]">Проекты</span>
                     </Link>
                   </li>
                   <li>
-                    <Link href={"/teams"} className="">
+                    <Link href={"/teams"} className={isActiveLink('/teams') ? "font-bold text-blue-900" : ""}>
                       <span className="text-[#000150] text-[17px]">Команды</span>
                     </Link>
                   </li>
                   <li>
-                    <Link href={"/students"} className="">
+                    <Link href={"/students"} className={isActiveLink('/students') ? "font-bold text-blue-900" : ""}>
                       <span className="text-[#000150] text-[17px]">Студенты</span>
                     </Link>
                   </li>
