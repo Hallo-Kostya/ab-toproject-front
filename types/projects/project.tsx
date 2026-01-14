@@ -12,6 +12,7 @@ export type Project = {
 
 export interface ProjectCardProps {
   name: string;
+  description: string;
   teamsCnt?: number;
   placesCnt?: number;
 }

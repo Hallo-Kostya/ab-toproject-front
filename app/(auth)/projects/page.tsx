@@ -77,6 +77,7 @@ export default function ProjectsPage() {
     <ProjectCard 
       key={project.id}
       name={project.name} 
+      description={project.description}
       teamsCnt={project.stats.teamsCnt}
       placesCnt={project.stats.placesCnt}
     />
