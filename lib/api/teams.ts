@@ -1,6 +1,6 @@
 import { getProjectById, Project } from "./projects";
 
-const API_BASE_URL = 'http://178.154.228.164:8001/api/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001/api/v1';
 
 export interface Team {
   id: string;
@@ -256,7 +256,7 @@ export const removeStudentFromTeam = async (teamId: string, studentId: string): 
   }
 };
 
-export const getTeamProjects = async (teamId: string): Promise<ProjectTeamWithProject[]> => {
+export const getTeamProjects = async (teamId: string): Promise<void> => {
   const accessToken = localStorage.getItem('access_token');
   
   if (!accessToken) {

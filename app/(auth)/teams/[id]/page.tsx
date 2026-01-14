@@ -335,8 +335,8 @@ export default function TeamPage() {
                     <ProjectCard 
                       name={projectData.project.name || 'Без названия'}
                       teamsCnt={projectData.stats.teamsCnt}
-                      placesCnt={projectData.stats.placesCnt}
-                    />
+                      placesCnt={projectData.stats.placesCnt} 
+                      description={projectData.project.description}                    />
                   </Link>
                 </li>
               ))}
@@ -350,6 +350,7 @@ export default function TeamPage() {
                       name={projectData.project.name || 'Без названия'}
                       teamsCnt={0}
                       placesCnt={0}
+                      description={projectData.project.description || 'Без описания'} 
                     />
                   </Link>
                 </li>

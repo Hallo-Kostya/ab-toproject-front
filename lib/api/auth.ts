@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://178.154.228.164:8001/api/v1/auth';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001/api/v1';
 
 export interface AuthResponse {
   access_token: string;
@@ -56,7 +56,7 @@ function processAuthResponse(serverResponse: ServerAuthResponse[]): AuthResponse
 }
 
 export const register = async (data: RegisterData): Promise<AuthResponse> => {
-  const response = await fetch(`${API_BASE_URL}/register`, {
+  const response = await fetch(`${API_BASE_URL}/auth/register`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -73,7 +73,7 @@ export const register = async (data: RegisterData): Promise<AuthResponse> => {
 };
 
 export const login = async (data: LoginData): Promise<AuthResponse> => {
-  const response = await fetch(`${API_BASE_URL}/login`, {
+  const response = await fetch(`${API_BASE_URL}/auth/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -94,7 +94,7 @@ export const logout = async (refreshToken: string): Promise<void> => {
     const accessToken = localStorage.getItem('access_token');
     
     if (accessToken) {
-      const response = await fetch(`${API_BASE_URL}/logout?refresh_token=${encodeURIComponent(refreshToken)}`, {
+      const response = await fetch(`${API_BASE_URL}/auth/logout?refresh_token=${encodeURIComponent(refreshToken)}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -120,7 +120,7 @@ export const logout = async (refreshToken: string): Promise<void> => {
 };
 
 export const getCurrentUser = async (accessToken: string): Promise<User> => {
-  const response = await fetch(`${API_BASE_URL}/me`, {
+  const response = await fetch(`${API_BASE_URL}/auth/me`, {
     headers: {
       'Authorization': `Bearer ${accessToken}`
     }
@@ -136,7 +136,7 @@ export const getCurrentUser = async (accessToken: string): Promise<User> => {
 
 export const refreshToken = async (refreshToken: string): Promise<AuthResponse> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/token/refresh?refresh_token=${encodeURIComponent(refreshToken)}`, {
+    const response = await fetch(`${API_BASE_URL}/auth/token/refresh?refresh_token=${encodeURIComponent(refreshToken)}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -167,7 +167,7 @@ export const uploadAvatar = async (file: File): Promise<User> => {
   const formData = new FormData();
   formData.append('file', file);
 
-  const response = await fetch(`${API_BASE_URL}/avatar`, {
+  const response = await fetch(`${API_BASE_URL}/auth/avatar`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${accessToken}`

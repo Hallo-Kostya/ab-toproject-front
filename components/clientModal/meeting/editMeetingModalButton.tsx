@@ -1,24 +1,27 @@
-'use client';
+// import { useState } from 'react';
+// import EditMeetingForm from '@/components/forms/editMeetingForm';
+// import { Meeting } from '@/lib/api/meetings';
 
-import { useState } from 'react';
-import EditMeetingForm from '@/components/forms/editMeetingForm';
+// interface EditMeetingModalButtonProps {
+//   meetingId: string;
+//   initialData?: Meeting;
+// }
 
-export default function EditMeetingModalButton() {
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+// export default function EditMeetingModalButton({ meetingId, initialData }: EditMeetingModalButtonProps) {
+//   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  return (
-    <>
-      <button 
-        onClick={() => setIsEditModalOpen(true)}
-        className="flex items-center ml-auto bg-[#000150]/20 px-4 py-2 rounded-[20px] text-[#000150] text-[19px] font-semibold max-h-[47px] hover:bg-[#000150]/30 transition-colors"
-      >
-        Редактировать
-      </button>
+//   return (
+//     <>
+//       <button onClick={() => setIsEditModalOpen(true)}>
+//         Редактировать встречу
+//       </button>
       
-      <EditMeetingForm
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-      />
-    </>
-  );
-}
+//       <EditMeetingForm
+//         isOpen={isEditModalOpen}
+//         onClose={() => setIsEditModalOpen(false)}
+//         meetingId={meetingId}
+//         initialData={initialData || {}}
+//       />
+//     </>
+//   );
+// }

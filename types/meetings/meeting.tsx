@@ -13,6 +13,7 @@ export type Meeting = {
     name: string;
     resume: string;
     date: string;
+    time?: string;
     status: 'SCHEDULED' | 'COMPLETED' | 'CANCELLED';
     previous_meeting_id: string | null;
     next_meeting_id: string | null;

@@ -11,10 +11,18 @@ Frontend системы автоматического управления ВУ
 
 1. Установка зависимостей:
 ```bash
+npm install
+```
+или
+```bash
 pnpm install
 ```
 
 2. Запуск dev-сервера:
+```bash
+npm run dev
+```
+или
 ```bash
 pnpm dev
 ```
@@ -25,16 +33,11 @@ http://localhost:3000
 
 ## Сборка и запуск через Docker (prod-ready)
 
-1. Собрать образ:
+1. Актуальный вариант сборки через docker-compose:
+
 ```bash
-docker build -t ab-toproject-front .
+docker-compose up -d --build
 ```
 
-2. Запуск:
-```bash
-docker run -p 3000:3000 ab-toproject-front
-```
-
-3. Приложение будет доступно по адресу:
+2. Запуск приложения в браузере:
 http://localhost:3000
-

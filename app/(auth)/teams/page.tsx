@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import MeetingList from "@/components/features/meetings/meeting-list";
+// import MeetingList from "@/components/features/meetings/meeting-list";
 import TeamCard from "@/components/ui/cards/team-card";
 import PageContainer from "@/components/containers/page-container";
 import { Team, TeamStudent } from "@/types/teams/team";
@@ -102,7 +102,7 @@ export default function TeamsPage() {
     <PageContainer
       pageTag="teams"
       meetingsTitle="Предстоящие встречи"
-      meetingsListComponent={<MeetingList />}
+      meetingsListComponent={''}
       listHeader="Всего команд найдено: "
       list={teamsWithStudents}
       cardComponent={renderTeamCard}

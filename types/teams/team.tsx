@@ -8,7 +8,7 @@ export type Team = {
   // Закомментировано, так как пока не реализовано в API
   // curator?: string;
   // team_artifacts?: string;
-  // participantIds?: string[];
+  participantIds?: string[];
   // projectsIds?: string[];
 }
 
