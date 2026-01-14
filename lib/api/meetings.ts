@@ -209,3 +209,24 @@ export const deleteTask = async (meetingId: string, taskId: string): Promise<voi
     throw new Error(errorData.detail || 'Failed to delete task');
   }
 };
+
+export const getAllMeetings = async (): Promise<Meeting[]> => {
+  const accessToken = localStorage.getItem('access_token');
+  
+  if (!accessToken) {
+    throw new Error('No access token');
+  }
+
+  const response = await fetch(`${API_BASE_URL}/meetings/all`, {
+    headers: {
+      'Authorization': `Bearer ${accessToken}`
+    }
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || 'Failed to get all meetings');
+  }
+
+  return response.json();
+};

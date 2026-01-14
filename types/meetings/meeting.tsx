@@ -6,7 +6,6 @@ export type Task = {
     due_date?: string;
 };
 
-// ИСПРАВЛЕНО: Убрано meeting_status, добавлен status с правильными значениями
 export type Meeting = {
     id: string;
     team_id: string;
@@ -17,7 +16,6 @@ export type Meeting = {
     status: 'SCHEDULED' | 'COMPLETED' | 'CANCELLED';
     previous_meeting_id: string | null;
     next_meeting_id: string | null;
-    // Удалены неиспользуемые поля, которые нет в API
 }
 
 export interface MeetingCardProps {

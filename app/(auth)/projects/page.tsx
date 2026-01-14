@@ -1,13 +1,13 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-// import MeetingList from "@/components/features/meetings/meeting-list";
 import ProjectCard from "@/components/ui/cards/project-card";
 import PageContainer from "@/components/containers/page-container";
 import { Project } from "@/types/projects/project";
 import { getProjects } from "@/lib/api/projects";
 import { useAuth } from "@/context/AuthContext";
 import { getProjectStats, ProjectStats } from "@/lib/api/project-stats";
+import MeetingList from '@/components/features/meetings/meeting-list';
 
 interface ProjectWithStats extends Project {
   stats: ProjectStats;
@@ -105,7 +105,7 @@ export default function ProjectsPage() {
     <PageContainer
       pageTag="projects"
       meetingsTitle="Предстоящие встречи"
-      meetingsListComponent={''}
+      meetingsListComponent={<MeetingList />}
       listHeader="Всего проектов найдено: "
       list={projects}
       cardComponent={renderProjectCard}

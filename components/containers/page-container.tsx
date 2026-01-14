@@ -27,9 +27,9 @@ export default function PageContainer<T extends { id: string }>({
     <div className="space-y-8">
       <div className="">
         <h2 className="text-[20px] text-[#000150] font-semibold mb-4">{meetingsTitle}</h2>
-        {/* {meetingsListComponent} */}
-        <p className="text-[13px] text-gray-500/80 mb-2">Пока-что здесь не отображаются предстоящие встречи</p>
-        <p className="text-[13px] text-gray-500/80">Вы можете просмотреть встречи определенной команды, перейдя на ее страницу</p>
+        <div className="">
+          {meetingsListComponent}
+        </div>
       </div>
       
       <div>

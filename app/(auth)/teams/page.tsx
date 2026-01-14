@@ -1,13 +1,13 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-// import MeetingList from "@/components/features/meetings/meeting-list";
 import TeamCard from "@/components/ui/cards/team-card";
 import PageContainer from "@/components/containers/page-container";
 import { Team, TeamStudent } from "@/types/teams/team";
 import { getTeams } from "@/lib/api/teams";
 import { getFullTeamStudents } from "@/lib/api/students";
 import { useAuth } from "@/context/AuthContext";
+import MeetingList from '@/components/features/meetings/meeting-list';
 
 export default function TeamsPage() {
   const [teams, setTeams] = useState<Team[]>([]);
@@ -102,7 +102,7 @@ export default function TeamsPage() {
     <PageContainer
       pageTag="teams"
       meetingsTitle="Предстоящие встречи"
-      meetingsListComponent={''}
+      meetingsListComponent={<MeetingList />}
       listHeader="Всего команд найдено: "
       list={teamsWithStudents}
       cardComponent={renderTeamCard}
