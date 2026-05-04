@@ -2,67 +2,53 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import { Team } from "@/types/teams/team";
-import { getTeamById, deleteTeam, removeStudentFromTeam, getTeamProjectsWithDetails, TeamProjectWithDetails } from "@/lib/api/teams";
-import { getFullTeamStudents, TeamStudent } from "@/lib/api/students";
-import { getMeetingsByTeamId, Meeting } from "@/lib/api/meetings";
+import Link from 'next/link';
+import { Team, getTeamById, deleteTeam, removeStudentFromTeam, getTeamProjects, ProjectTeam } from "@/lib/api/teams";
+import { Student, getTeamStudents } from "@/lib/api/students";
+import { Meeting, getMeetings } from "@/lib/api/meetings";
+import { Project, getProjectById } from "@/lib/api/projects";
 import { useAuth } from "@/context/AuthContext";
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import DeleteTeamModal from '@/components/ui/deleteTeamModal';
 import AddStudentToTeamModal from '@/components/ui/addStudentToTeamModal';
 import EditTeamModalButton from '@/components/clientModal/team/editTeamModalButton';
-import Link from 'next/link';
 import ProjectCard from '@/components/ui/cards/project-card';
-import DeleteStudentFromTeamModal from '@/components/ui/deleteStudentFromTeamModal';
 import MeetingCard from '@/components/ui/cards/meeting-card';
-import { getProjectStats, ProjectStats } from "@/lib/api/project-stats";
+import DeleteStudentFromTeamModal from '@/components/ui/deleteStudentFromTeamModal';
+
+// Интерфейс для проекта с деталями
+interface TeamProjectWithDetails {
+  teamProject: ProjectTeam;
+  project: Project;
+}
 
 export default function TeamPage() {
   const params = useParams();
-  const router = useRouter();
   const { id } = params as { id: string };
+  
   const [team, setTeam] = useState<Team | null>(null);
-  const [students, setStudents] = useState<TeamStudent[]>([]);
-  const [projects, setProjects] = useState<TeamProjectWithDetails[]>([]);
-  const [projectsWithStats, setProjectsWithStats] = useState<Array<TeamProjectWithDetails & { stats: ProjectStats }>>([]);
+  const [students, setStudents] = useState<Student[]>([]);
+  const [projectsWithDetails, setProjectsWithDetails] = useState<TeamProjectWithDetails[]>([]);
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [loading, setLoading] = useState(true);
-  const [statsLoading, setStatsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState(false);
   const [isDeleteStudentModalOpen, setIsDeleteStudentModalOpen] = useState(false);
-  const [studentToDelete, setStudentToDelete] = useState<TeamStudent | null>(null);
+  const [studentToDelete, setStudentToDelete] = useState<Student | null>(null);
+  
   const { isAuthenticated } = useAuth();
 
-  // функция получения статистики для проектов команды
-  const fetchProjectsStats = useCallback(async (projects: TeamProjectWithDetails[]) => {
-    try {
-      setStatsLoading(true);
-      
-      const statsPromises = projects.map(async (projectData) => {
-        try {
-          // получаем статистику для каждого проекта по его ID
-          const stats = await getProjectStats(projectData.teamProject.project_id);
-          return { ...projectData, stats };
-        } catch (error) {
-          console.warn(`Failed to get stats for project ${projectData.teamProject.project_id}:`, error);
-          // возвращаем проект с нулевой статистикой при ошибке
-          return {
-            ...projectData,
-            stats: { teamsCnt: 0, placesCnt: 0 }
-          };
-        }
-      });
-
-      const projectsWithStatsData = await Promise.all(statsPromises);
-      setProjectsWithStats(projectsWithStatsData);
-    } catch (error) {
-      console.error('Failed to fetch projects stats for team page:', error);
-    } finally {
-      setStatsLoading(false);
+  // Маппинг статусов встреч для отображения
+  const getMeetingCardStatus = (apiStatus: string): 'planned' | 'completed' | 'cancelled' => {
+    switch (apiStatus?.toUpperCase()) {
+      case 'SCHEDULED': return 'planned';
+      case 'COMPLETED': return 'completed';
+      case 'CANCELLED': return 'cancelled';
+      default: return 'planned';
     }
-  }, []);
+  };
 
   useEffect(() => {
     if (!isAuthenticated || !id) return;
@@ -72,37 +58,59 @@ export default function TeamPage() {
         setLoading(true);
         setError(null);
         
+        // 1. Данные команды
         const teamData = await getTeamById(id);
         setTeam(teamData);
         
-        const studentsData = await getFullTeamStudents(id);
+        // 2. Студенты команды
+        const studentsData = await getTeamStudents(id);
         setStudents(studentsData);
 
-        const projectsData = await getTeamProjectsWithDetails(id);
-        setProjects(projectsData);
-        
-        // сразу начинаем загружать статистику для проектов
-        if (projectsData.length > 0) {
-          fetchProjectsStats(projectsData);
-        } else {
-          setStatsLoading(false);
-        }
+        // 3. Проекты команды + детали каждого проекта
+        const projectTeams = await getTeamProjects(id);
+        const projectsWithDetails = await Promise.all(
+          projectTeams.map(async (pt) => {
+            try {
+              const project = await getProjectById(pt.project_id);
+              return { teamProject: pt, project };
+            } catch (err) {
+              console.warn(`Failed to get project ${pt.project_id}:`, err);
+              // Fallback если проект не загрузился
+              return {
+                teamProject: pt,
+                project: {
+                  id: pt.project_id,
+                  name: 'Неизвестный проект',
+                  description: '',
+                  goal: '',
+                  requirements: '',
+                  eval_criteria: '',
+                  semester: 'AUTUMN',
+                  status: 'PLANNED',
+                  year: new Date().getFullYear()
+                } as Project
+              };
+            }
+          })
+        );
+        setProjectsWithDetails(projectsWithDetails);
 
-        const meetingsData = await getMeetingsByTeamId(id);
+        // 4. Встречи команды
+        const meetingsData = await getMeetings({ team_id: id });
         setMeetings(meetingsData);
+        
       } catch (err: any) {
         setError(err.message || 'Ошибка загрузки данных команды');
         console.error('Team data fetch error:', err);
-        setStatsLoading(false);
       } finally {
         setLoading(false);
       }
     };
 
     fetchTeamData();
-  }, [isAuthenticated, id, fetchProjectsStats]);
+  }, [isAuthenticated, id]);
 
-  const handleRemoveStudent = async (student: TeamStudent) => {
+  const handleRemoveStudent = (student: Student) => {
     setStudentToDelete(student);
     setIsDeleteStudentModalOpen(true);
   };
@@ -114,7 +122,7 @@ export default function TeamPage() {
       await removeStudentFromTeam(team.id, studentToDelete.id);
       
       // Обновляем список студентов
-      const updatedStudents = await getFullTeamStudents(team.id);
+      const updatedStudents = await getTeamStudents(team.id);
       setStudents(updatedStudents);
       
       setIsDeleteStudentModalOpen(false);
@@ -122,6 +130,18 @@ export default function TeamPage() {
     } catch (err: any) {
       console.error('Failed to remove student from team:', err);
       setError(err.message || 'Ошибка при удалении студента из команды');
+    }
+  };
+
+  const handleDeleteTeam = async () => {
+    if (!team) return;
+    try {
+      await deleteTeam(team.id);
+      // После успешного удаления редирект на список команд
+      window.location.href = '/teams';
+    } catch (err: any) {
+      console.error('Failed to delete team:', err);
+      setError(err.message || 'Ошибка при удалении команды');
     }
   };
 
@@ -133,29 +153,14 @@ export default function TeamPage() {
           <div className="h-8 bg-gray-200 rounded w-1/3 animate-pulse"></div>
           <div className="h-6 bg-gray-200 rounded w-1/4 animate-pulse"></div>
         </div>
-        
         <div className="space-y-6 mt-8">
-          <div className="space-y-4">
-            <div className="h-7 bg-gray-200 rounded w-1/4 animate-pulse"></div>
-            <div className="h-4 bg-gray-200 rounded w-full animate-pulse"></div>
-            <div className="h-4 bg-gray-200 rounded w-3/4 animate-pulse"></div>
-          </div>
-          
-          <div className="space-y-4">
-            <div className="h-7 bg-gray-200 rounded w-1/4 animate-pulse"></div>
-            <div className="h-4 bg-gray-200 rounded w-full animate-pulse"></div>
-            <div className="h-4 bg-gray-200 rounded w-2/3 animate-pulse"></div>
-          </div>
-          
-          <div className="space-y-4">
-            <div className="h-7 bg-gray-200 rounded w-1/4 animate-pulse"></div>
-            <div className="h-4 bg-gray-200 rounded w-full animate-pulse"></div>
-          </div>
-          
-          <div className="space-y-4">
-            <div className="h-7 bg-gray-200 rounded w-1/4 animate-pulse"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/2 animate-pulse"></div>
-          </div>
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="space-y-4">
+              <div className="h-7 bg-gray-200 rounded w-1/4 animate-pulse"></div>
+              <div className="h-4 bg-gray-200 rounded w-full animate-pulse"></div>
+              <div className={`h-4 bg-gray-200 rounded animate-pulse ${i % 2 === 0 ? 'w-3/4' : 'w-2/3'}`}></div>
+            </div>
+          ))}
         </div>
       </div>
     );
@@ -164,9 +169,7 @@ export default function TeamPage() {
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="p-4 bg-red-50 text-red-700 rounded-lg">
-          {error}
-        </div>
+        <div className="p-4 bg-red-50 text-red-700 rounded-lg">{error}</div>
       </div>
     );
   }
@@ -179,19 +182,6 @@ export default function TeamPage() {
     );
   }
 
-  const getMeetingCardStatus = (apiStatus: string): 'planned' | 'completed' | 'cancelled' => {
-    switch (apiStatus) {
-      case 'SCHEDULED':
-        return 'planned';
-      case 'COMPLETED':
-        return 'completed';
-      case 'CANCELLED':
-        return 'cancelled';
-      default:
-        return 'planned';
-    }
-  };
-
   return (
     <>
       <div className="space-y-8">
@@ -199,15 +189,15 @@ export default function TeamPage() {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-4">
               <h1 className="text-[28px] font-bold text-[#000150]">{`"${team.name}"`}</h1>
-              <Link href={team.group_link}
-                target=""
-                rel=""
-                className="text-[16px] text-[#000150] font-semibold"
-              >
-                <div className="rounded-full p-1 border-1 border-gray-500/20 shadow-md inset-shadow-xs">
-                  <Image src="/tg.webp" className="rounded-full" width={36} height={36} alt="Ссылка на телеграм-канал команды" />
-                </div>
-              </Link>
+              {team.group_link && (
+                <Link href={team.group_link} target="_blank" rel="noopener noreferrer"
+                  className="text-[16px] text-[#000150] font-semibold"
+                >
+                  <div className="rounded-full p-1 border-1 border-gray-500/20 shadow-md inset-shadow-xs">
+                    <Image src="/tg.webp" className="rounded-full" width={36} height={36} alt="Ссылка на телеграм-канал команды" />
+                  </div>
+                </Link>
+              )}
             </div>
             <div className="flex gap-4 ml-6">
               <EditTeamModalButton 
@@ -234,6 +224,7 @@ export default function TeamPage() {
           </div>
         </div>
         
+        {/* Участники команды */}
         <div className="mb-12">
           <h2 className="text-[24px] font-medium mb-8 text-[#000150]">Участники команды</h2>
           {students.length > 0 ? (
@@ -249,20 +240,17 @@ export default function TeamPage() {
                   <span className="flex-1 text-[20px]">
                     {student.last_name} {student.first_name} {student.patronymic || ''}
                   </span>
-                  <span className="font-semibold text-center w-[124px] ml-auto px-3 py-1 bg-[#000150]/20 rounded-[16px] text-[#000150]">
-                    {student.study_group || 'не указана'}
+                  {/* Если бекенд вернёт study_group/role — раскомментируйте: */}
+                  {/* <span className="font-semibold text-center w-[124px] ml-auto px-3 py-1 bg-[#000150]/20 rounded-[16px] text-[#000150]">
+                    {(student as any).study_group || 'не указана'}
                   </span>
                   <span className="font-semibold text-center w-[135px] ml-[72px] px-3 py-1 bg-[#000150]/20 rounded-[16px] text-[#000150] mr-10">
-                    {student.role || 'не указана'}
-                  </span>
+                    {(student as any).role || 'не указана'}
+                  </span> */}
                   
-                  {/* Кнопка удаления студента появляется при наведении */}
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleRemoveStudent(student);
-                    }}
-                    className="absolute right-0 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity p-2 text-gray-500 hover:text-red-500"
+                    onClick={(e) => { e.stopPropagation(); handleRemoveStudent(student); }}
+                    className="absolute right-0 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity p-2 text-gray-500 hover:text-red-500"
                     title="Удалить студента из команды"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -279,16 +267,14 @@ export default function TeamPage() {
           )}
         </div>
 
-        {/* Блок встреч команды */}
+        {/* Встречи команды */}
         <div className="mt-[36px]">
           <div className="flex items-center justify-between mb-[16px]">
-            <h2 className="text-[24px] text-[#000000] font-medium text-[#000150]">Встречи команды</h2>
+            <h2 className="text-[24px] text-[#000150] font-medium">Встречи команды</h2>
           </div>
-          
           <div className="flex items-center mb-[24px]">
             <p className="text-[18px] text-[#353535]">Встреч найдено: <span className="text-[18px] text-[#000150] font-semibold">{meetings.length}</span></p>
           </div>
-          
           {meetings.length > 0 ? (
             <ul className="flex gap-6 flex-wrap">
               {meetings.map((meeting) => (
@@ -298,8 +284,8 @@ export default function TeamPage() {
                       teamName={team.name}
                       name={meeting.name}
                       resume={meeting.resume}
-                      date={new Date(meeting.date).toLocaleDateString()}
-                      time={new Date(meeting.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                      date={new Date(meeting.date).toLocaleDateString('ru-RU')}
+                      time={new Date(meeting.date).toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'})}
                       status={getMeetingCardStatus(meeting.status)}
                     />
                   </Link>
@@ -313,44 +299,24 @@ export default function TeamPage() {
           )}
         </div>
 
+        {/* Проекты команды */}
         <div className="mt-[36px]">
           <div className="flex items-center justify-between mb-[16px]">
-            <h2 className="text-[24px] text-[#000000] font-medium text-[#000150]">Проекты команды</h2>
+            <h2 className="text-[24px] text-[#000150] font-medium">Проекты команды</h2>
           </div>
-          
           <div className="flex items-center mb-[24px]">
-            <p className="text-[18px] text-[#353535]">Проектов найдено: <span className="text-[18px] text-[#000150] font-semibold">{projects.length}</span></p>
+            <p className="text-[18px] text-[#353535]">Проектов найдено: <span className="text-[18px] text-[#000150] font-semibold">{projectsWithDetails.length}</span></p>
           </div>
-          
-          {statsLoading && projects.length > 0 ? (
-            // Показываем лоадер для статистики
-            <div className="text-gray-500">
-              <p>Загрузка статистики по проектам...</p>
-            </div>
-          ) : projectsWithStats.length > 0 ? (
+          {projectsWithDetails.length > 0 ? (
             <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {projectsWithStats.map((projectData) => (
+              {projectsWithDetails.map((projectData) => (
                 <li key={projectData.teamProject.id}>
                   <Link href={`/projects/${projectData.teamProject.project_id}`}>
                     <ProjectCard 
                       name={projectData.project.name || 'Без названия'}
-                      teamsCnt={projectData.stats.teamsCnt}
-                      placesCnt={projectData.stats.placesCnt} 
-                      description={projectData.project.description}                    />
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          ) : projects.length > 0 ? (
-            <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {projects.map((projectData) => (
-                <li key={projectData.teamProject.id}>
-                  <Link href={`/projects/${projectData.teamProject.project_id}`}>
-                    <ProjectCard 
-                      name={projectData.project.name || 'Без названия'}
-                      teamsCnt={0}
+                      description={projectData.project.description || 'Без описания'}
+                      teamsCnt={0}  // ✅ Если бекенд вернёт статистику — подставить
                       placesCnt={0}
-                      description={projectData.project.description || 'Без описания'} 
                     />
                   </Link>
                 </li>
@@ -364,11 +330,13 @@ export default function TeamPage() {
         </div>
       </div>
       
+      {/* Модальные окна */}
       <DeleteTeamModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         teamId={team.id}
         teamName={team.name}
+        onConfirm={handleDeleteTeam}
       />
       
       <AddStudentToTeamModal
@@ -377,7 +345,7 @@ export default function TeamPage() {
         teamId={team.id}
         onStudentAdded={async () => {
           try {
-            const updatedStudents = await getFullTeamStudents(team.id);
+            const updatedStudents = await getTeamStudents(team.id);
             setStudents(updatedStudents);
           } catch (err: any) {
             console.error('Failed to refresh team students:', err);

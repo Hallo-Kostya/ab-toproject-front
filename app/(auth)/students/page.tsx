@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Student } from "@/lib/api/students";
-import { getStudents, deleteStudent } from "@/lib/api/students";
+import { Student, StudentDetailedResponse, getStudents, deleteStudent } from "@/lib/api/students";
 import { useAuth } from "@/context/AuthContext";
 import StudentCard from '@/components/ui/cards/student-card';
 import DeleteStudentModal from '@/components/ui/deleteStudentModal';
@@ -21,8 +20,10 @@ export default function StudentsPage() {
     const fetchStudents = async () => {
       try {
         setLoading(true);
-        const data = await getStudents();
-        setStudents(data);
+
+        const response: StudentDetailedResponse = await getStudents();
+
+        setStudents(response.items);
       } catch (err: any) {
         setError(err.message || 'Ошибка загрузки студентов');
         console.error('Students fetch error:', err);
@@ -40,7 +41,7 @@ export default function StudentsPage() {
     try {
       await deleteStudent(studentToDelete.id);
       
-      // обновляем список студентов
+      // Обновляем список студентов
       setStudents(prevStudents => prevStudents.filter(student => student.id !== studentToDelete.id));
       setIsDeleteModalOpen(false);
     } catch (err: any) {
@@ -65,18 +66,16 @@ export default function StudentsPage() {
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="p-4 bg-red-50 text-red-700 rounded-lg">
-          {error}
-        </div>
+        <div className="p-4 bg-red-50 text-red-700 rounded-lg">{error}</div>
       </div>
     );
   }
 
   return (
     <div className="space-y-5">
-      <div className="">
+      <div>
         <h1 className="text-[20px] text-[#000150] font-semibold mb-4">Список всех студентов</h1>
-        <p>Всего студентов найдено: {students.length}</p>
+        <p>Всего студентов найдено: <span className="font-semibold text-[#000150]">{students.length}</span></p>
       </div>
       
       {students.length > 0 ? (
@@ -100,7 +99,7 @@ export default function StudentsPage() {
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         studentId={studentToDelete?.id || ''}
-        studentName={`${studentToDelete?.last_name} ${studentToDelete?.first_name} ${studentToDelete?.patronymic}`}
+        studentName={`${studentToDelete?.last_name} ${studentToDelete?.first_name} ${studentToDelete?.patronymic || ''}`}
         onConfirm={handleDeleteStudent}
       />
     </div>

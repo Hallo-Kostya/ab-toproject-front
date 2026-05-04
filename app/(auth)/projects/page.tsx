@@ -3,49 +3,22 @@
 import { useState, useEffect, useCallback } from 'react';
 import ProjectCard from "@/components/ui/cards/project-card";
 import PageContainer from "@/components/containers/page-container";
-import { Project } from "@/types/projects/project";
-import { getProjects } from "@/lib/api/projects";
+import { Project, ProjectSummaryResponse, getProjects } from "@/lib/api/projects";
 import { useAuth } from "@/context/AuthContext";
-import { getProjectStats, ProjectStats } from "@/lib/api/project-stats";
 import MeetingList from '@/components/features/meetings/meeting-list';
 
+// Если бекенд вернёт teamsCnt/placesCnt в ProjectSummary — используем их
+// Пока заглушка
 interface ProjectWithStats extends Project {
-  stats: ProjectStats;
+  stats: { teamsCnt: number; placesCnt: number };
 }
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<ProjectWithStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [filters, setFilters] = useState<{ year?: number; semester?: string }>({});
   const { isAuthenticated } = useAuth();
-
-  // функция для получения статистики для одного проекта
-  const fetchProjectStats = useCallback(async (project: Project): Promise<ProjectWithStats> => {
-    const stats = await getProjectStats(project.id);
-    return { ...project, stats };
-  }, []);
-
-  // функция для получения статистики для всех проектов
-  const fetchAllProjectsStats = useCallback(async (projects: Project[]) => {
-    try {
-      // параллельно получаем статистику для всех проектов
-      const statsPromises = projects.map(project => fetchProjectStats(project));
-      const projectsWithStats = await Promise.all(statsPromises);
-      
-      // сортируем по количеству команд
-      projectsWithStats.sort((a, b) => b.stats.teamsCnt - a.stats.teamsCnt);
-      
-      setProjects(projectsWithStats);
-    } catch (err: any) {
-      console.error('Failed to fetch projects stats:', err);
-      // при ошибке в статистике показываем проекты с нулевой статистикой
-      const projectsWithDefaultStats = projects.map(project => ({
-        ...project,
-        stats: { teamsCnt: 0, placesCnt: 0 }
-      }));
-      setProjects(projectsWithDefaultStats);
-    }
-  }, [fetchProjectStats]);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -54,26 +27,35 @@ export default function ProjectsPage() {
       try {
         setLoading(true);
         setError(null);
+
+        const response: ProjectSummaryResponse = await getProjects(filters);
+
+        const projectsWithStats: ProjectWithStats[] = response.items.map(project => ({
+          ...project,
+          // TODO: если бекенд вернёт teamsCnt/placesCnt — использовать их:
+          // teamsCnt: project.teams_cnt ?? 0,
+          // placesCnt: project.places_cnt ?? 0,
+          stats: {
+            teamsCnt: 0, // заглушка, пока бекенд не вернёт статистику в сводке
+            placesCnt: 0
+          }
+        }));
         
-        // получаем базовые данные проектов
-        const projectsData = await getProjects();
-        
-        // получаем статистику для каждого проекта
-        await fetchAllProjectsStats(projectsData);
+        setProjects(projectsWithStats);
       } catch (err: any) {
         setError(err.message || 'Ошибка загрузки проектов');
         console.error('Projects fetch error:', err);
-        setProjects([]); // очищаем список при полной ошибке
+        setProjects([]);
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [isAuthenticated, fetchAllProjectsStats]);
+  }, [isAuthenticated, filters]);
 
-  // рендеринг карточки с обновленными пропсами
-  const renderProjectCard = useCallback((project: ProjectWithStats) => (
+  // Рендеринг карточки (добавлен индекс в сигнатуру)
+  const renderProjectCard = useCallback((project: ProjectWithStats, index: number) => (
     <ProjectCard 
       key={project.id}
       name={project.name} 
@@ -109,8 +91,8 @@ export default function ProjectsPage() {
       listHeader="Всего проектов найдено: "
       list={projects}
       cardComponent={renderProjectCard}
-      year="не указан"
-      semester="не указан"
+      year={filters.year?.toString()}
+      semester={filters.semester}
     />
   );
 }

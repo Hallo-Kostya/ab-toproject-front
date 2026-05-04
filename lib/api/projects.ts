@@ -1,5 +1,6 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001/api/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001/api';
 import { Team } from "@/types/teams/team";
+
 
 export interface Project {
   id: string;
@@ -11,6 +12,15 @@ export interface Project {
   semester: string;
   status: string;
   year: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface ProjectSummaryResponse {
+  items: Project[];
+  total: number;
+  year?: number;
+  semester?: string;
 }
 
 export interface CreateProjectData {
@@ -19,9 +29,16 @@ export interface CreateProjectData {
   goal: string;
   requirements: string;
   eval_criteria: string;
-  year: number;
-  semester: string;
-  status: string;
+  year?: number;
+  semester?: string;
+  status?: string;
+}
+
+export interface UpdateProjectData {
+  description?: string;
+  goal?: string;
+  requirements?: string;
+  eval_criteria?: string;
 }
 
 export interface ProjectTeam {
@@ -39,15 +56,14 @@ export interface ProjectTeamWithTeam extends ProjectTeam {
 
 export interface AssignTeamData {
   team_id: string;
-  status: string;
+  role_in_project?: string;
+  status?: string;
 }
+
 
 export const createProject = async (data: CreateProjectData): Promise<Project> => {
   const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token');
-  }
+  if (!accessToken) throw new Error('No access token');
 
   const response = await fetch(`${API_BASE_URL}/projects`, {
     method: 'POST',
@@ -66,17 +82,24 @@ export const createProject = async (data: CreateProjectData): Promise<Project> =
   return response.json();
 };
 
-export const getProjects = async (): Promise<Project[]> => {
+export const getProjects = async (filters?: {
+  year?: number;
+  semester?: string;
+  team_id?: string;
+}): Promise<ProjectSummaryResponse> => {
   const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token');
-  }
+  if (!accessToken) throw new Error('No access token');
 
-  const response = await fetch(`${API_BASE_URL}/projects`, {
-    headers: {
-      'Authorization': `Bearer ${accessToken}`
-    }
+  const queryParams = new URLSearchParams();
+  if (filters?.year) queryParams.append('year', filters.year.toString());
+  if (filters?.semester) queryParams.append('semester', filters.semester);
+  if (filters?.team_id) queryParams.append('team_id', filters.team_id);
+
+  const queryString = queryParams.toString();
+  const url = `${API_BASE_URL}/projects${queryString ? `?${queryString}` : ''}`;
+
+  const response = await fetch(url, {
+    headers: { 'Authorization': `Bearer ${accessToken}` }
   });
 
   if (!response.ok) {
@@ -89,15 +112,10 @@ export const getProjects = async (): Promise<Project[]> => {
 
 export const getProjectById = async (projectId: string): Promise<Project> => {
   const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token');
-  }
+  if (!accessToken) throw new Error('No access token');
 
   const response = await fetch(`${API_BASE_URL}/projects/${projectId}`, {
-    headers: {
-      'Authorization': `Bearer ${accessToken}`
-    }
+    headers: { 'Authorization': `Bearer ${accessToken}` }
   });
 
   if (!response.ok) {
@@ -110,30 +128,22 @@ export const getProjectById = async (projectId: string): Promise<Project> => {
 
 export const deleteProject = async (projectId: string): Promise<void> => {
   const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token');
-  }
+  if (!accessToken) throw new Error('No access token');
 
   const response = await fetch(`${API_BASE_URL}/projects/${projectId}`, {
     method: 'DELETE',
-    headers: {
-      'Authorization': `Bearer ${accessToken}`
-    }
+    headers: { 'Authorization': `Bearer ${accessToken}` }
   });
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
+    const errorData = await response.json().catch(() => ({ detail: response.statusText }));
     throw new Error(errorData.detail || 'Failed to delete project');
   }
 };
 
-export const updateProject = async (projectId: string, data: Partial<CreateProjectData>): Promise<Project> => {
+export const updateProject = async (projectId: string, data: UpdateProjectData): Promise<Project> => {
   const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token');
-  }
+  if (!accessToken) throw new Error('No access token');
 
   const response = await fetch(`${API_BASE_URL}/projects/${projectId}`, {
     method: 'PATCH',
@@ -154,15 +164,10 @@ export const updateProject = async (projectId: string, data: Partial<CreateProje
 
 export const getProjectTeams = async (projectId: string): Promise<ProjectTeam[]> => {
   const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token');
-  }
+  if (!accessToken) throw new Error('No access token');
 
   const response = await fetch(`${API_BASE_URL}/projects/${projectId}/teams`, {
-    headers: {
-      'Authorization': `Bearer ${accessToken}`
-    }
+    headers: { 'Authorization': `Bearer ${accessToken}` }
   });
 
   if (!response.ok) {
@@ -175,10 +180,7 @@ export const getProjectTeams = async (projectId: string): Promise<ProjectTeam[]>
 
 export const assignTeamToProject = async (projectId: string, data: AssignTeamData): Promise<ProjectTeam> => {
   const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token');
-  }
+  if (!accessToken) throw new Error('No access token');
 
   const response = await fetch(`${API_BASE_URL}/projects/${projectId}/teams`, {
     method: 'POST',
@@ -199,20 +201,15 @@ export const assignTeamToProject = async (projectId: string, data: AssignTeamDat
 
 export const removeTeamFromProject = async (projectId: string, teamId: string): Promise<void> => {
   const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token');
-  }
+  if (!accessToken) throw new Error('No access token');
 
   const response = await fetch(`${API_BASE_URL}/projects/${projectId}/teams/${teamId}`, {
     method: 'DELETE',
-    headers: {
-      'Authorization': `Bearer ${accessToken}`
-    }
+    headers: { 'Authorization': `Bearer ${accessToken}` }
   });
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
+  if (!response.ok && response.status !== 204) {
+    const errorData = await response.json().catch(() => ({ detail: response.statusText }));
     throw new Error(errorData.detail || 'Failed to remove team from project');
   }
 };

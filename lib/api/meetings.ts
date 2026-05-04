@@ -1,4 +1,5 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001/api/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001/api';
+
 
 export interface Meeting {
   id: string;
@@ -9,6 +10,8 @@ export interface Meeting {
   team_id: string;
   previous_meeting_id: string | null;
   next_meeting_id: string | null;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface CreateMeetingData {
@@ -17,25 +20,29 @@ export interface CreateMeetingData {
   date: string;
   team_id: string;
   status: string;
-  previous_meeting_id: string | null;
+  previous_meeting_id?: string | null;
 }
 
-export interface Task {
-  id: string;
+export interface UpdateMeetingData {
+  name?: string;
+  resume?: string;
+  date?: string;
+  status?: string;
+  previous_meeting_id?: string | null;
+  next_meeting_id?: string | null;
+}
+
+export interface TaskResponse {
+  meeting_id: string;
+  task_id: string;
   description: string;
   is_completed: boolean;
 }
 
-export interface CreateTaskData {
-  description: string;
-}
 
 export const createMeeting = async (data: CreateMeetingData): Promise<Meeting> => {
   const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token');
-  }
+  if (!accessToken) throw new Error('No access token');
 
   const response = await fetch(`${API_BASE_URL}/meetings`, {
     method: 'POST',
@@ -54,18 +61,24 @@ export const createMeeting = async (data: CreateMeetingData): Promise<Meeting> =
   return response.json();
 };
 
-export const getMeetingsByTeamId = async (teamId: string): Promise<Meeting[]> => {
+export const getMeetings = async (filters?: {
+  team_id?: string;
+  start_date?: string;
+  end_date?: string;
+}): Promise<Meeting[]> => {
   const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token');
-  }
+  if (!accessToken) throw new Error('No access token');
 
-  const params = new URLSearchParams({ team_id: teamId });
-  const response = await fetch(`${API_BASE_URL}/meetings?${params.toString()}`, {
-    headers: {
-      'Authorization': `Bearer ${accessToken}`
-    }
+  const queryParams = new URLSearchParams();
+  if (filters?.team_id) queryParams.append('team_id', filters.team_id);
+  if (filters?.start_date) queryParams.append('start_date', filters.start_date);
+  if (filters?.end_date) queryParams.append('end_date', filters.end_date);
+
+  const queryString = queryParams.toString();
+  const url = `${API_BASE_URL}/meetings${queryString ? `?${queryString}` : ''}`;
+
+  const response = await fetch(url, {
+    headers: { 'Authorization': `Bearer ${accessToken}` }
   });
 
   if (!response.ok) {
@@ -78,33 +91,23 @@ export const getMeetingsByTeamId = async (teamId: string): Promise<Meeting[]> =>
 
 export const getMeetingById = async (meetingId: string): Promise<Meeting> => {
   const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token');
-  }
+  if (!accessToken) throw new Error('No access token');
 
   const response = await fetch(`${API_BASE_URL}/meetings/${meetingId}`, {
-    headers: {
-      'Authorization': `Bearer ${accessToken}`
-    }
+    headers: { 'Authorization': `Bearer ${accessToken}` }
   });
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.detail || 'Failed to get meeting');
+    throw new Error(errorData.detail || `Failed to get meeting ${meetingId}`);
   }
 
   return response.json();
 };
 
-export const updateMeeting = async (meetingId: string, data: Partial<CreateMeetingData>): Promise<Meeting> => {
+export const updateMeeting = async (meetingId: string, data: UpdateMeetingData): Promise<Meeting> => {
   const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token');
-  }
-
-  console.log('Updating meeting with data:', data); // Для отладки
+  if (!accessToken) throw new Error('No access token');
 
   const response = await fetch(`${API_BASE_URL}/meetings/${meetingId}`, {
     method: 'PATCH',
@@ -117,7 +120,6 @@ export const updateMeeting = async (meetingId: string, data: Partial<CreateMeeti
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    console.error('Update meeting error:', errorData);
     throw new Error(errorData.detail || 'Failed to update meeting');
   }
 
@@ -126,31 +128,25 @@ export const updateMeeting = async (meetingId: string, data: Partial<CreateMeeti
 
 export const deleteMeeting = async (meetingId: string): Promise<void> => {
   const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token');
-  }
+  if (!accessToken) throw new Error('No access token');
 
   const response = await fetch(`${API_BASE_URL}/meetings/${meetingId}`, {
     method: 'DELETE',
-    headers: {
-      'Authorization': `Bearer ${accessToken}`
-    }
+    headers: { 'Authorization': `Bearer ${accessToken}` }
   });
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
+  if (!response.ok && response.status !== 204) {
+    const errorData = await response.json().catch(() => ({ detail: response.statusText }));
     throw new Error(errorData.detail || 'Failed to delete meeting');
   }
 };
 
-// Задачи для встреч
-export const createTask = async (meetingId: string, data: CreateTaskData): Promise<Task> => {
+export const addTaskToMeeting = async (
+  meetingId: string,
+  taskData: { description: string }
+): Promise<TaskResponse> => {
   const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token');
-  }
+  if (!accessToken) throw new Error('No access token');
 
   const response = await fetch(`${API_BASE_URL}/meetings/${meetingId}/tasks`, {
     method: 'POST',
@@ -158,75 +154,31 @@ export const createTask = async (meetingId: string, data: CreateTaskData): Promi
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${accessToken}`
     },
-    body: JSON.stringify(data),
+    body: JSON.stringify(taskData),
   });
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.detail || 'Failed to create task');
+    throw new Error(errorData.detail || 'Failed to add task to meeting');
   }
 
   return response.json();
 };
 
-export const getTasksByMeetingId = async (meetingId: string): Promise<Task[]> => {
+export const removeTaskFromMeeting = async (
+  meetingId: string,
+  taskId: string
+): Promise<void> => {
   const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token');
-  }
-
-  const response = await fetch(`${API_BASE_URL}/meetings/${meetingId}/tasks`, {
-    headers: {
-      'Authorization': `Bearer ${accessToken}`
-    }
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.detail || 'Failed to get tasks');
-  }
-
-  return response.json();
-};
-
-export const deleteTask = async (meetingId: string, taskId: string): Promise<void> => {
-  const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token');
-  }
+  if (!accessToken) throw new Error('No access token');
 
   const response = await fetch(`${API_BASE_URL}/meetings/${meetingId}/tasks/${taskId}`, {
     method: 'DELETE',
-    headers: {
-      'Authorization': `Bearer ${accessToken}`
-    }
+    headers: { 'Authorization': `Bearer ${accessToken}` }
   });
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.detail || 'Failed to delete task');
+  if (!response.ok && response.status !== 204) {
+    const errorData = await response.json().catch(() => ({ detail: response.statusText }));
+    throw new Error(errorData.detail || 'Failed to remove task from meeting');
   }
-};
-
-export const getAllMeetings = async (): Promise<Meeting[]> => {
-  const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token');
-  }
-
-  const response = await fetch(`${API_BASE_URL}/meetings/all`, {
-    headers: {
-      'Authorization': `Bearer ${accessToken}`
-    }
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.detail || 'Failed to get all meetings');
-  }
-
-  return response.json();
 };

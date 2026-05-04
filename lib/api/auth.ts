@@ -1,15 +1,8 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001/api/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001/api';
 
 export interface AuthResponse {
   access_token: string;
   refresh_token: string;
-}
-
-interface ServerAuthResponse {
-  curator_id: string;
-  token: string;
-  expires_at: string;
-  is_revoked: boolean;
 }
 
 export interface User {
@@ -36,25 +29,6 @@ export interface LoginData {
   password: string;
 }
 
-// Вспомогательная функция для преобразования ответа сервера
-function processAuthResponse(serverResponse: ServerAuthResponse[]): AuthResponse {
-  if (!Array.isArray(serverResponse) || serverResponse.length < 2) {
-    throw new Error('Invalid server response format');
-  }
-
-  const access_token = serverResponse[0]?.token;
-  const refresh_token = serverResponse[1]?.token;
-
-  if (!access_token || !refresh_token) {
-    throw new Error('Missing tokens in server response');
-  }
-
-  return {
-    access_token,
-    refresh_token
-  };
-}
-
 export const register = async (data: RegisterData): Promise<AuthResponse> => {
   const response = await fetch(`${API_BASE_URL}/auth/register`, {
     method: 'POST',
@@ -65,28 +39,33 @@ export const register = async (data: RegisterData): Promise<AuthResponse> => {
   });
 
   if (!response.ok) {
-    const errorData = await response.json();
+    const errorData = await response.json().catch(() => ({}));
     throw new Error(errorData.detail || 'Registration failed');
   }
 
-  return processAuthResponse(await response.json());
+  return response.json();
 };
 
 export const login = async (data: LoginData): Promise<AuthResponse> => {
+  const payload = {
+    email: data.email,
+    password: data.password
+  };
+
   const response = await fetch(`${API_BASE_URL}/auth/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(data),
+    body: JSON.stringify(payload),
   });
 
   if (!response.ok) {
-    const errorData = await response.json();
+    const errorData = await response.json().catch(() => ({}));
     throw new Error(errorData.detail || 'Login failed');
   }
 
-  return processAuthResponse(await response.json());
+  return response.json();
 };
 
 export const logout = async (refreshToken: string): Promise<void> => {
@@ -94,16 +73,19 @@ export const logout = async (refreshToken: string): Promise<void> => {
     const accessToken = localStorage.getItem('access_token');
     
     if (accessToken) {
-      const response = await fetch(`${API_BASE_URL}/auth/logout?refresh_token=${encodeURIComponent(refreshToken)}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`
-        },
-        body: JSON.stringify({})
-      });
+      const response = await fetch(
+        `${API_BASE_URL}/auth/logout?refresh_token=${encodeURIComponent(refreshToken)}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`
+          },
+          body: JSON.stringify({})
+        }
+      );
 
-      if (!response.ok) {
+      if (!response.ok && response.status !== 204) {
         const errorData = await response.json().catch(() => ({}));
         console.warn('Logout API failed:', errorData.detail || 'Unknown error');
       }
@@ -111,7 +93,6 @@ export const logout = async (refreshToken: string): Promise<void> => {
   } catch (error) {
     console.error('Logout request failed:', error);
   } finally {
-    // ВСЕГДА очищаем токены
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user_data');
@@ -135,28 +116,25 @@ export const getCurrentUser = async (accessToken: string): Promise<User> => {
 };
 
 export const refreshToken = async (refreshToken: string): Promise<AuthResponse> => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/auth/token/refresh?refresh_token=${encodeURIComponent(refreshToken)}`, {
+  const response = await fetch(
+    `${API_BASE_URL}/auth/refresh?refresh_token=${encodeURIComponent(refreshToken)}`,
+    {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({})
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.detail || `Token refresh failed with status ${response.status}`);
     }
+  );
 
-    return processAuthResponse(await response.json());
-  } catch (error) {
-    console.error('Refresh token request failed:', error);
-    throw error;
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || `Token refresh failed with status ${response.status}`);
   }
+
+  return response.json();
 };
 
-// Загрузка аватара пользователя
 export const uploadAvatar = async (file: File): Promise<User> => {
   const accessToken = localStorage.getItem('access_token');
   

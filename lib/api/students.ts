@@ -1,4 +1,5 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001/api/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001/api';
+
 
 export interface Student {
   id: string;
@@ -7,6 +8,15 @@ export interface Student {
   patronymic: string;
   email: string;
   tg_link: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface StudentDetailedResponse {
+  items: Student[];
+  total: number;
+  team_id?: string;
+  project_id?: string;
 }
 
 export interface CreateStudentData {
@@ -17,29 +27,23 @@ export interface CreateStudentData {
   tg_link: string;
 }
 
-export interface StudentInTeam {
-  student_id: string;
+export interface UpdateStudentData {
+  first_name?: string;
+  last_name?: string;
+  patronymic?: string;
+  email?: string;
+  tg_link?: string;
+}
+
+export interface TeamStudent extends Student {
   role: string;
   study_group: string;
 }
 
-export interface TeamStudent {
-  id: string;
-  first_name: string;
-  last_name: string;
-  patronymic: string;
-  email?: string;
-  tg_link?: string;
-  role: string;
-  study_group: string;
-}
 
 export const createStudent = async (data: CreateStudentData): Promise<Student> => {
   const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token');
-  }
+  if (!accessToken) throw new Error('No access token');
 
   const response = await fetch(`${API_BASE_URL}/students`, {
     method: 'POST',
@@ -58,17 +62,22 @@ export const createStudent = async (data: CreateStudentData): Promise<Student> =
   return response.json();
 };
 
-export const getStudents = async (): Promise<Student[]> => {
+export const getStudents = async (filters?: {
+  team_id?: string;
+  project_id?: string;
+}): Promise<StudentDetailedResponse> => {
   const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token');
-  }
+  if (!accessToken) throw new Error('No access token');
 
-  const response = await fetch(`${API_BASE_URL}/students`, {
-    headers: {
-      'Authorization': `Bearer ${accessToken}`
-    }
+  const queryParams = new URLSearchParams();
+  if (filters?.team_id) queryParams.append('team_id', filters.team_id);
+  if (filters?.project_id) queryParams.append('project_id', filters.project_id);
+
+  const queryString = queryParams.toString();
+  const url = `${API_BASE_URL}/students${queryString ? `?${queryString}` : ''}`;
+
+  const response = await fetch(url, {
+    headers: { 'Authorization': `Bearer ${accessToken}` }
   });
 
   if (!response.ok) {
@@ -81,19 +90,14 @@ export const getStudents = async (): Promise<Student[]> => {
 
 export const getStudentById = async (studentId: string): Promise<Student> => {
   const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token');
-  }
+  if (!accessToken) throw new Error('No access token');
 
   if (!studentId || typeof studentId !== 'string') {
     throw new Error('Invalid student ID');
   }
 
-  const response = await fetch(`${API_BASE_URL}/students/${encodeURIComponent(studentId)}`, {
-    headers: {
-      'Authorization': `Bearer ${accessToken}`
-    }
+  const response = await fetch(`${API_BASE_URL}/students/${studentId}`, {
+    headers: { 'Authorization': `Bearer ${accessToken}` }
   });
 
   if (!response.ok) {
@@ -104,76 +108,55 @@ export const getStudentById = async (studentId: string): Promise<Student> => {
   return response.json();
 };
 
-export const getFullTeamStudents = async (teamId: string): Promise<TeamStudent[]> => {
+export const updateStudent = async (
+  studentId: string,
+  data: UpdateStudentData
+): Promise<Student> => {
   const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token');
-  }
-
-  try {
-    const response = await fetch(`${API_BASE_URL}/teams/${encodeURIComponent(teamId)}/students`, {
-      headers: {
-        'Authorization': `Bearer ${accessToken}`
-      }
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.detail || 'Failed to get team students');
-    }
-
-    const teamStudents: StudentInTeam[] = await response.json();
-    
-    const studentPromises = teamStudents.map(async (teamStudent) => {
-      try {
-        const studentData = await getStudentById(teamStudent.student_id);
-        return {
-          id: studentData.id,
-          first_name: studentData.first_name,
-          last_name: studentData.last_name,
-          patronymic: studentData.patronymic,
-          email: studentData.email,
-          tg_link: studentData.tg_link,
-          role: teamStudent.role,
-          study_group: teamStudent.study_group
-        };
-      } catch (error) {
-        console.error(`Failed to get student ${teamStudent.student_id}:`, error);
-        return {
-          id: teamStudent.student_id,
-          first_name: 'Неизвестный',
-          last_name: 'Студент',
-          patronymic: '',
-          role: teamStudent.role,
-          study_group: teamStudent.study_group
-        };
-      }
-    });
-
-    return Promise.all(studentPromises);
-  } catch (error) {
-    console.error('Failed to get full team students:', error);
-    throw error;
-  }
-};
-
-export const deleteStudent = async (studentId: string): Promise<void> => {
-  const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token');
-  }
+  if (!accessToken) throw new Error('No access token');
 
   const response = await fetch(`${API_BASE_URL}/students/${studentId}`, {
-    method: 'DELETE',
+    method: 'PATCH',
     headers: {
+      'Content-Type': 'application/json',
       'Authorization': `Bearer ${accessToken}`
-    }
+    },
+    body: JSON.stringify(data),
   });
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || 'Failed to update student');
+  }
+
+  return response.json();
+};
+
+export const deleteStudent = async (studentId: string): Promise<void> => {
+  const accessToken = localStorage.getItem('access_token');
+  if (!accessToken) throw new Error('No access token');
+
+  const response = await fetch(`${API_BASE_URL}/students/${studentId}`, {
+    method: 'DELETE',
+    headers: { 'Authorization': `Bearer ${accessToken}` }
+  });
+
+  if (!response.ok && response.status !== 204) {
+    const errorData = await response.json().catch(() => ({ detail: response.statusText }));
     throw new Error(errorData.detail || 'Failed to delete student');
   }
 };
+
+// Бекенд сам вернёт студентов команды с необходимыми данными
+export const getTeamStudents = async (teamId: string): Promise<Student[]> => {
+  const response = await getStudents({ team_id: teamId });
+  return response.items;
+};
+
+
+// export const getFullTeamStudents = async (teamId: string): Promise<TeamStudent[]> => {
+//   console.warn('getFullTeamStudents: role/study_group fields may not be available via current endpoint');
+//   const students = await getTeamStudents(teamId);
+
+//   return students as TeamStudent[];
+// };

@@ -3,13 +3,12 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import MeetingCard from "@/components/ui/cards/meeting-card";
-import { getAllMeetings } from "@/lib/api/meetings";
+import { getMeetings, Meeting } from "@/lib/api/meetings";
 import { getTeamById } from "@/lib/api/teams";
 import { useAuth } from "@/context/AuthContext";
 
-// Функция для маппинга статусов API в статусы для отображения
 const mapApiStatusToDisplayStatus = (apiStatus: string): 'planned' | 'completed' | 'cancelled' => {
-  switch (apiStatus) {
+  switch (apiStatus?.toUpperCase()) {
     case 'SCHEDULED':
       return 'planned';
     case 'COMPLETED':
@@ -22,7 +21,7 @@ const mapApiStatusToDisplayStatus = (apiStatus: string): 'planned' | 'completed'
 };
 
 export default function MeetingList() {
-  const [meetings, setMeetings] = useState<any[]>([]);
+  const [meetings, setMeetings] = useState<Array<Meeting & { teamName: string; displayStatus: 'planned' | 'completed' | 'cancelled' }>>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isHovering, setIsHovering] = useState(false);
@@ -36,8 +35,8 @@ export default function MeetingList() {
       try {
         setLoading(true);
         setError(null);
-        
-        const meetingsData = await getAllMeetings();
+
+        const meetingsData = await getMeetings();
         
         // Получаем данные о командах для каждой встречи параллельно
         const meetingsWithTeams = await Promise.all(
@@ -60,7 +59,7 @@ export default function MeetingList() {
           })
         );
         
-        // Реверсируем массив для правильной сортировки (новые в конце)
+        // Реверсируем массив для правильной сортировки
         setMeetings([...meetingsWithTeams].reverse());
       } catch (err: any) {
         setError(err.message || 'Ошибка загрузки встреч');
@@ -75,38 +74,26 @@ export default function MeetingList() {
 
   const scrollLeft = () => {
     if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({
-        left: -300,
-        behavior: 'smooth'
-      });
+      scrollContainerRef.current.scrollBy({ left: -300, behavior: 'smooth' });
     }
   };
 
   const scrollRight = () => {
     if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({
-        left: 300,
-        behavior: 'smooth'
-      });
+      scrollContainerRef.current.scrollBy({ left: 300, behavior: 'smooth' });
     }
   };
 
   if (loading) return (
-    <div className="text-gray-500 text-center py-4">
-      Загрузка встреч...
-    </div>
+    <div className="text-gray-500 text-center py-4">Загрузка встреч...</div>
   );
 
   if (error) return (
-    <div className="p-3 bg-red-50 text-red-700 rounded text-sm">
-      {error}
-    </div>
+    <div className="p-3 bg-red-50 text-red-700 rounded text-sm">{error}</div>
   );
 
   if (meetings.length === 0) return (
-    <div className="text-gray-500 text-center py-4">
-      Нет запланированных встреч
-    </div>
+    <div className="text-gray-500 text-center py-4">Нет запланированных встреч</div>
   );
 
   return (
@@ -118,7 +105,7 @@ export default function MeetingList() {
       {/* Кнопки навигации */}
       <button 
         onClick={scrollLeft}
-        className={`absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white/80 backdrop-blur-sm rounded-full p-2 shadow-md hover:bg-white transition-colors ${isHovering ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
+        className={`absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/80 backdrop-blur-sm rounded-full p-2 shadow-md hover:bg-white transition-colors ${isHovering ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
         aria-label="Прокрутить влево"
       >
         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -138,14 +125,10 @@ export default function MeetingList() {
               name={meeting.name}
               resume={meeting.resume}
               date={new Date(meeting.date).toLocaleDateString('ru-RU', {
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric'
+                day: 'numeric', month: 'long', year: 'numeric'
               })}
               time={new Date(meeting.date).toLocaleTimeString('ru-RU', {
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: false
+                hour: '2-digit', minute: '2-digit', hour12: false
               })}
               status={meeting.displayStatus}
             />
@@ -155,7 +138,7 @@ export default function MeetingList() {
 
       <button 
         onClick={scrollRight}
-        className={`absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white/80 backdrop-blur-sm rounded-full p-2 shadow-md hover:bg-white transition-colors ${isHovering ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
+        className={`absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/80 backdrop-blur-sm rounded-full p-2 shadow-md hover:bg-white transition-colors ${isHovering ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
         aria-label="Прокрутить вправо"
       >
         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">

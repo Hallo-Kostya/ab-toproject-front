@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Project, getProjectById, deleteProject, getProjectTeams, ProjectTeam } from "@/lib/api/projects";
+import { Project, getProjectById, deleteProject, getProjectTeams, ProjectTeam, removeTeamFromProject } from "@/lib/api/projects";
 import { Team } from "@/lib/api/teams";
 import { useAuth } from "@/context/AuthContext";
 import { useParams, useRouter } from 'next/navigation';
@@ -73,29 +73,14 @@ export default function ProjectPage() {
           <div className="h-8 bg-gray-200 rounded w-1/3 animate-pulse"></div>
           <div className="h-6 bg-gray-200 rounded w-1/4 animate-pulse"></div>
         </div>
-        
         <div className="space-y-6 mt-8">
-          <div className="space-y-4">
-            <div className="h-7 bg-gray-200 rounded w-1/4 animate-pulse"></div>
-            <div className="h-4 bg-gray-200 rounded w-full animate-pulse"></div>
-            <div className="h-4 bg-gray-200 rounded w-3/4 animate-pulse"></div>
-          </div>
-          
-          <div className="space-y-4">
-            <div className="h-7 bg-gray-200 rounded w-1/4 animate-pulse"></div>
-            <div className="h-4 bg-gray-200 rounded w-full animate-pulse"></div>
-            <div className="h-4 bg-gray-200 rounded w-2/3 animate-pulse"></div>
-          </div>
-          
-          <div className="space-y-4">
-            <div className="h-7 bg-gray-200 rounded w-1/4 animate-pulse"></div>
-            <div className="h-4 bg-gray-200 rounded w-full animate-pulse"></div>
-          </div>
-          
-          <div className="space-y-4">
-            <div className="h-7 bg-gray-200 rounded w-1/4 animate-pulse"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/2 animate-pulse"></div>
-          </div>
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="space-y-4">
+              <div className="h-7 bg-gray-200 rounded w-1/4 animate-pulse"></div>
+              <div className="h-4 bg-gray-200 rounded w-full animate-pulse"></div>
+              <div className={`h-4 bg-gray-200 rounded animate-pulse ${i % 2 === 0 ? 'w-3/4' : 'w-2/3'}`}></div>
+            </div>
+          ))}
         </div>
       </div>
     );
@@ -104,9 +89,7 @@ export default function ProjectPage() {
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="p-4 bg-red-50 text-red-700 rounded-lg">
-          {error}
-        </div>
+        <div className="p-4 bg-red-50 text-red-700 rounded-lg">{error}</div>
       </div>
     );
   }
@@ -119,7 +102,6 @@ export default function ProjectPage() {
     );
   }
 
-  // показываем только команды со статусом 'ACTIVE'
   const activeProjectTeams = projectTeams.filter(team => team.status === 'ACTIVE');
 
   return (
@@ -129,12 +111,11 @@ export default function ProjectPage() {
           <div className="mb-3">
             <div className="flex justify-between items-center">
               <h1 className="text-[#000150] text-[26px] font-semibold">{project.name}</h1>
-              {/* Кнопки редактирования и удаления видны только авторизованным пользователям */}
               {isAuthenticated && user && (
                 <div className="flex gap-2">
                   <button
                     onClick={() => setIsEditModalOpen(true)}
-                    className="flex items-center ml-auto bg-[#000150]/20 px-4 py-2 rounded-[20px] text-[#000150] text-[19px] font-semibold max-h-[47px]} hover:bg-[#000150]/30 transition-colors shadow-md inset-shadow-xl"
+                    className="flex items-center ml-auto bg-[#000150]/20 px-4 py-2 rounded-[20px] text-[#000150] text-[19px] font-semibold max-h-[47px] hover:bg-[#000150]/30 transition-colors shadow-md inset-shadow-xl"
                     title="Редактировать проект"
                   >
                     Редактировать
@@ -170,7 +151,6 @@ export default function ProjectPage() {
           <Section title={"Критерии оценки"} content={project.eval_criteria} />
         </div>
         
-        {/* Блок с командами проекта: показываем только активные */}
         <div className="mt-[36px]">
           <div className="flex items-center justify-between mb-[16px]">
             <h2 className="text-[24px] text-[#000150] font-medium">Команды-исполнители</h2>
@@ -204,7 +184,7 @@ export default function ProjectPage() {
             <div className="text-gray-500">
               <p>К этому проекту еще нет активных команд</p>
               {isAuthenticated && user && (
-                <p className="mt-2 text-sm">{ 'Нажмите "+ Команда" чтобы назначить команду на проект' }</p>
+                <p className="mt-2 text-sm">{`Нажмите "+ Команда" чтобы назначить команду на проект`}</p>
               )}
             </div>
           )}
@@ -239,7 +219,6 @@ export default function ProjectPage() {
 
 function Section({ title, content }: { title: string; content: string }) {
   return (
-    // <div className="bg-white p-4 rounded-[16px] shadow-sm inset-shadow-sm">
     <div className="border-b-1 border-gray-300/40">
       <h2 className="text-[24px] text-[#000150] font-medium mb-[28px]">{title}</h2>
       <p className="text-[22px] leading-relaxed whitespace-pre-wrap pb-[18px]">{content}</p>

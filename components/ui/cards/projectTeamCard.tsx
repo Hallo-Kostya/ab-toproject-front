@@ -2,12 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ProjectTeam } from "@/lib/api/projects";
+import { ProjectTeam, removeTeamFromProject } from "@/lib/api/projects";
 import { Team, getTeamById } from "@/lib/api/teams";
-import { getFullTeamStudents, TeamStudent } from "@/lib/api/students";
+import { Student, getTeamStudents } from "@/lib/api/students";
 import Modal from "@/components/ui/modal";
 import { useAuth } from "@/context/AuthContext";
-import { removeTeamFromProject } from "@/lib/api/projects";
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 
@@ -19,9 +18,8 @@ interface ProjectTeamCardProps {
 
 export default function ProjectTeamCard({ projectTeam, projectId, onTeamRemoved }: ProjectTeamCardProps) {
   const [teamData, setTeamData] = useState<Team | null>(null);
-  const [students, setStudents] = useState<TeamStudent[]>([]);
+  const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
-  const [studentsLoading, setStudentsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const { isAuthenticated } = useAuth();
@@ -35,16 +33,15 @@ export default function ProjectTeamCard({ projectTeam, projectId, onTeamRemoved 
         
         const team = await getTeamById(projectTeam.team_id);
         setTeamData(team);
-        
-        // Получаем студентов для команды
-        const teamStudents = await getFullTeamStudents(projectTeam.team_id);
+
+        // Если бекенд вернёт role/study_group они будут в объекте студента
+        const teamStudents = await getTeamStudents(projectTeam.team_id);
         setStudents(teamStudents);
       } catch (err: any) {
         setError(err.message || 'Ошибка загрузки данных команды');
         console.error('Team fetch error:', err);
       } finally {
         setLoading(false);
-        setStudentsLoading(false);
       }
     };
 
@@ -77,9 +74,7 @@ export default function ProjectTeamCard({ projectTeam, projectId, onTeamRemoved 
   if (error || !teamData) {
     return (
       <div className="flex flex-col w-full min-h-[150px] px-[24px] py-[24px] shadow-md inset-shadow-xs rounded-[12px] bg-[#FBFAFF] border border-gray-200">
-        <div className="text-red-500">
-          {error || 'Данные команды не загружены'}
-        </div>
+        <div className="text-red-500">{error || 'Данные команды не загружены'}</div>
       </div>
     );
   }
@@ -87,7 +82,7 @@ export default function ProjectTeamCard({ projectTeam, projectId, onTeamRemoved 
   return (
     <>
       <div className="flex flex-col w-full min-h-[150px] px-[24px] py-[24px] shadow-md inset-shadow-xs rounded-[12px] bg-[#FBFAFF] border border-gray-200 hover:shadow-lg transition-shadow relative group">
-        {/* Кнопка удаления - отображается только при наведении на карточку */}
+        {/* Кнопка удаления */}
         <button
           onClick={() => setIsDeleteModalOpen(true)}
           className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-gray-500 hover:text-red-500 transition-colors z-10"
@@ -99,12 +94,10 @@ export default function ProjectTeamCard({ projectTeam, projectId, onTeamRemoved 
           </svg>
         </button>
         
-        {/* Название команды - только оно является ссылкой */}
+        {/* Название команды */}
         <div className="mb-4 border-b border-[#000150]/40">
           <Link href={`/teams/${teamData.id}`} className="block w-fit flex items-center pb-[12px]">
-            <h2 className="text-[20px] text-[#000150] font-semibold">
-              {teamData.name}
-            </h2>
+            <h2 className="text-[20px] text-[#000150] font-semibold">{teamData.name}</h2>
             <div className="flex bg-[#000150]/10 rounded-[4px] px-2 py-[2px] gap-[6px] ml-3">
               <Image src={"/user-round.svg"} alt={"К-во участников"} width={20} height={20}/>
               <p className="text-[18px] font-medium">{students.length}</p>
@@ -114,9 +107,7 @@ export default function ProjectTeamCard({ projectTeam, projectId, onTeamRemoved 
         
         {/* Список студентов */}
         <div className="overflow-y-auto max-h-[120px]">
-          {studentsLoading ? (
-            <div className="text-gray-500 text-sm">Загрузка студентов...</div>
-          ) : students.length > 0 ? (
+          {students.length > 0 ? (
             <ul className="flex flex-col gap-1">
               {students.map((student, index) => (
                 <li key={student.id} className="flex items-start gap-[10px]">
@@ -125,6 +116,7 @@ export default function ProjectTeamCard({ projectTeam, projectId, onTeamRemoved 
                   </span>
                   <span className="text-[14px] flex-1 break-words">
                     {student.last_name} {student.first_name} {student.patronymic || ''}
+                    {/* Если бекенд вернёт role — можно добавить: ({student.role}) */}
                   </span>
                 </li>
               ))}

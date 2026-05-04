@@ -3,28 +3,44 @@
 import { useState, useEffect, useCallback } from 'react';
 import TeamCard from "@/components/ui/cards/team-card";
 import PageContainer from "@/components/containers/page-container";
-import { Team, TeamStudent } from "@/types/teams/team";
-import { getTeams } from "@/lib/api/teams";
-import { getFullTeamStudents } from "@/lib/api/students";
+import { TeamSummary, TeamSummaryResponse, getTeams } from "@/lib/api/teams";
+import { Student, getTeamStudents } from "@/lib/api/students";
 import { useAuth } from "@/context/AuthContext";
 import MeetingList from '@/components/features/meetings/meeting-list';
 
+// Расширяем TeamSummary для отображения в карточке
+interface TeamWithStudents extends TeamSummary {
+  students: Student[];
+}
+
 export default function TeamsPage() {
-  const [teams, setTeams] = useState<Team[]>([]);
-  const [teamsWithStudents, setTeamsWithStudents] = useState<Array<Team & { students: TeamStudent[] }>>([]);
+  const [teams, setTeams] = useState<TeamWithStudents[]>([]);
   const [loading, setLoading] = useState(true);
   const [studentsLoading, setStudentsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { isAuthenticated } = useAuth();
 
   // Функция получения студентов для команд
-  const fetchTeamsStudents = useCallback(async (teamsData: Team[]) => {
+  const fetchTeamsStudents = useCallback(async (teamsData: TeamSummary[]) => {
     try {
       setStudentsLoading(true);
       
       const studentsPromises = teamsData.map(async (team) => {
         try {
-          const students = await getFullTeamStudents(team.id);
+          if (team.members && team.members.length > 0) {
+            // Маппим members в формат Student для совместимости с TeamCard
+            const students: Student[] = team.members.map(m => ({
+              id: m.id,
+              first_name: m.first_name,
+              last_name: m.last_name,
+              patronymic: '',
+              email: '',
+              tg_link: ''
+            }));
+            return { ...team, students };
+          }
+
+          const students = await getTeamStudents(team.id);
           return { ...team, students };
         } catch (error) {
           console.warn(`Failed to get students for team ${team.id}:`, error);
@@ -33,7 +49,7 @@ export default function TeamsPage() {
       });
 
       const teamsWithStudentsData = await Promise.all(studentsPromises);
-      setTeamsWithStudents(teamsWithStudentsData);
+      setTeams(teamsWithStudentsData);
     } catch (error) {
       console.error('Failed to fetch teams students:', error);
     } finally {
@@ -41,31 +57,33 @@ export default function TeamsPage() {
     }
   }, []);
 
-  const renderTeamCard = useCallback((team: Team & { students: TeamStudent[] }, index: number) => (
+  const renderTeamCard = useCallback((team: TeamWithStudents, index: number) => (
     <TeamCard 
       key={team.id}
       id={team.id}
       name={team.name}
       teamNumber={index + 1}
-      participants={team.students} 
-      studentCount={team.students.length}    />
+      participants={team.students}
+      studentCount={team.member_count}
+    />
   ), []);
 
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    const fetchTeams = async () => {
+    const fetchTeamsData = async () => {
       try {
         setLoading(true);
         setError(null);
+ 
+        const response: TeamSummaryResponse = await getTeams();
+
+        const teamsData = response.items;
         
-        const data = await getTeams();
-        setTeams(data);
-        
-        // Начинаем загружать студентов для команд
-        if (data.length > 0) {
-          fetchTeamsStudents(data);
+        if (teamsData.length > 0) {
+          await fetchTeamsStudents(teamsData);
         } else {
+          setTeams([]);
           setStudentsLoading(false);
         }
       } catch (err: any) {
@@ -77,7 +95,7 @@ export default function TeamsPage() {
       }
     };
 
-    fetchTeams();
+    fetchTeamsData();
   }, [isAuthenticated, fetchTeamsStudents]);
 
   if (loading) {
@@ -91,9 +109,7 @@ export default function TeamsPage() {
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="p-4 bg-red-50 text-red-700 rounded-lg">
-          {error}
-        </div>
+        <div className="p-4 bg-red-50 text-red-700 rounded-lg">{error}</div>
       </div>
     );
   }
@@ -104,7 +120,7 @@ export default function TeamsPage() {
       meetingsTitle="Предстоящие встречи"
       meetingsListComponent={<MeetingList />}
       listHeader="Всего команд найдено: "
-      list={teamsWithStudents}
+      list={teams}
       cardComponent={renderTeamCard}
     />
   );

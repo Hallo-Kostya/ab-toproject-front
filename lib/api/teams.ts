@@ -1,24 +1,44 @@
-import { getProjectById, Project } from "./projects";
+import { Project } from "./projects";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001/api/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001/api';
+
 
 export interface Team {
   id: string;
   name: string;
   group_link: string;
-  number?: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface TeamSummary {
+  id: string;
+  name: string;
+  member_count: number;
+  members?: Array<{
+    id: string;
+    first_name: string;
+    last_name: string;
+    role: string;
+  }>;
+}
+
+export interface TeamSummaryResponse {
+  items: TeamSummary[];
+  total: number;
+  project_id?: string;
 }
 
 export interface CreateTeamData {
   name: string;
-  group_link: string;
+  group_link?: string;
 }
 
 export interface TeamStudent {
   id: string;
   first_name: string;
   last_name: string;
-  patronymic: string;
+  patronymic?: string;
   role: string;
   study_group: string;
 }
@@ -27,6 +47,11 @@ export interface AddStudentToTeamData {
   student_id: string;
   role: string;
   study_group: string;
+}
+
+export interface UpdateStudentData {
+  role?: string;
+  study_group?: string;
 }
 
 export interface ProjectTeam {
@@ -43,12 +68,10 @@ export interface TeamProjectWithDetails {
   project: Project;
 }
 
+
 export const createTeam = async (data: CreateTeamData): Promise<Team> => {
   const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token');
-  }
+  if (!accessToken) throw new Error('No access token');
 
   const response = await fetch(`${API_BASE_URL}/teams`, {
     method: 'POST',
@@ -67,69 +90,20 @@ export const createTeam = async (data: CreateTeamData): Promise<Team> => {
   return response.json();
 };
 
-export const getTeamProjectsWithDetails = async (teamId: string): Promise<TeamProjectWithDetails[]> => {
+export const getTeams = async (filters?: {
+  project_id?: string;
+}): Promise<TeamSummaryResponse> => {
   const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token');
-  }
+  if (!accessToken) throw new Error('No access token');
 
-  // получаем базовые данные о проектах команды
-  const response = await fetch(`${API_BASE_URL}/teams/${teamId}/projects`, {
-    headers: {
-      'Authorization': `Bearer ${accessToken}`
-    }
-  });
+  const queryParams = new URLSearchParams();
+  if (filters?.project_id) queryParams.append('project_id', filters.project_id);
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.detail || 'Failed to get team projects');
-  }
+  const queryString = queryParams.toString();
+  const url = `${API_BASE_URL}/teams${queryString ? `?${queryString}` : ''}`;
 
-  const teamProjects: ProjectTeam[] = await response.json();
-  
-  // получаем полные данные для каждого проекта
-  const projectPromises = teamProjects.map(async (teamProject) => {
-    try {
-      const project = await getProjectById(teamProject.project_id);
-      return {
-        teamProject,
-        project
-      };
-    } catch (error) {
-      console.error(`Failed to get project ${teamProject.project_id}:`, error);
-      // возвращаем минимальные данные если не удалось получить полные
-      return {
-        teamProject,
-        project: {
-          id: teamProject.project_id,
-          name: 'Неизвестный проект',
-          description: '',
-          goal: '',
-          requirements: '',
-          eval_criteria: '',
-          semester: 'AUTUMN',
-          status: 'PLANNED',
-          year: new Date().getFullYear()
-        }
-      };
-    }
-  });
-
-  return Promise.all(projectPromises);
-};
-
-export const getTeams = async (): Promise<Team[]> => {
-  const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token');
-  }
-
-  const response = await fetch(`${API_BASE_URL}/teams`, {
-    headers: {
-      'Authorization': `Bearer ${accessToken}`
-    }
+  const response = await fetch(url, {
+    headers: { 'Authorization': `Bearer ${accessToken}` }
   });
 
   if (!response.ok) {
@@ -137,25 +111,15 @@ export const getTeams = async (): Promise<Team[]> => {
     throw new Error(errorData.detail || 'Failed to get teams');
   }
 
-  // добавляем номера командам на основе их позиции в списке
-  const teams = await response.json();
-  return teams.map((team: Team, index: number) => ({
-    ...team,
-    number: index + 1
-  }));
+  return response.json();
 };
 
 export const getTeamById = async (teamId: string): Promise<Team> => {
   const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token');
-  }
+  if (!accessToken) throw new Error('No access token');
 
   const response = await fetch(`${API_BASE_URL}/teams/${teamId}`, {
-    headers: {
-      'Authorization': `Bearer ${accessToken}`
-    }
+    headers: { 'Authorization': `Bearer ${accessToken}` }
   });
 
   if (!response.ok) {
@@ -168,34 +132,22 @@ export const getTeamById = async (teamId: string): Promise<Team> => {
 
 export const deleteTeam = async (teamId: string): Promise<void> => {
   const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token');
-  }
+  if (!accessToken) throw new Error('No access token');
 
   const response = await fetch(`${API_BASE_URL}/teams/${teamId}`, {
     method: 'DELETE',
-    headers: {
-      'Authorization': `Bearer ${accessToken}`
-    }
+    headers: { 'Authorization': `Bearer ${accessToken}` }
   });
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
+  if (!response.ok && response.status !== 204) {
+    const errorData = await response.json().catch(() => ({ detail: response.statusText }));
     throw new Error(errorData.detail || 'Failed to delete team');
   }
 };
 
-export const getTeamStudents = async (teamId: string): Promise<TeamStudent[]> => {
-  return [];
-};
-
-export const addStudentToTeam = async (teamId: string, data: AddStudentToTeamData): Promise<void> => {
+export const addStudentToTeam = async (teamId: string, data: AddStudentToTeamData): Promise<TeamStudent> => {
   const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token');
-  }
+  if (!accessToken) throw new Error('No access token');
 
   const response = await fetch(`${API_BASE_URL}/teams/${teamId}/students`, {
     method: 'POST',
@@ -210,14 +162,38 @@ export const addStudentToTeam = async (teamId: string, data: AddStudentToTeamDat
     const errorData = await response.json().catch(() => ({}));
     throw new Error(errorData.detail || 'Failed to add student to team');
   }
+
+  return response.json();
+};
+
+export const updateStudentInTeam = async (
+  teamId: string,
+  studentId: string,
+  data: UpdateStudentData
+): Promise<TeamStudent> => {
+  const accessToken = localStorage.getItem('access_token');
+  if (!accessToken) throw new Error('No access token');
+
+  const response = await fetch(`${API_BASE_URL}/teams/${teamId}/students/${studentId}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${accessToken}`
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || 'Failed to update student in team');
+  }
+
+  return response.json();
 };
 
 export const updateTeam = async (teamId: string, data: Partial<CreateTeamData>): Promise<Team> => {
   const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token');
-  }
+  if (!accessToken) throw new Error('No access token');
 
   const response = await fetch(`${API_BASE_URL}/teams/${teamId}`, {
     method: 'PATCH',
@@ -238,35 +214,25 @@ export const updateTeam = async (teamId: string, data: Partial<CreateTeamData>):
 
 export const removeStudentFromTeam = async (teamId: string, studentId: string): Promise<void> => {
   const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token');
-  }
+  if (!accessToken) throw new Error('No access token');
 
   const response = await fetch(`${API_BASE_URL}/teams/${teamId}/students/${studentId}`, {
     method: 'DELETE',
-    headers: {
-      'Authorization': `Bearer ${accessToken}`
-    }
+    headers: { 'Authorization': `Bearer ${accessToken}` }
   });
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
+    const errorData = await response.json().catch(() => ({ detail: response.statusText }));
     throw new Error(errorData.detail || 'Failed to remove student from team');
   }
 };
 
-export const getTeamProjects = async (teamId: string): Promise<void> => {
+export const getTeamProjects = async (teamId: string): Promise<ProjectTeam[]> => {
   const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token');
-  }
+  if (!accessToken) throw new Error('No access token');
 
   const response = await fetch(`${API_BASE_URL}/teams/${teamId}/projects`, {
-    headers: {
-      'Authorization': `Bearer ${accessToken}`
-    }
+    headers: { 'Authorization': `Bearer ${accessToken}` }
   });
 
   if (!response.ok) {
@@ -275,4 +241,48 @@ export const getTeamProjects = async (teamId: string): Promise<void> => {
   }
 
   return response.json();
+};
+
+export const getTeamProjectsWithDetails = async (teamId: string): Promise<TeamProjectWithDetails[]> => {
+  const accessToken = localStorage.getItem('access_token');
+  if (!accessToken) throw new Error('No access token');
+
+  const response = await fetch(`${API_BASE_URL}/teams/${teamId}/projects`, {
+    headers: { 'Authorization': `Bearer ${accessToken}` }
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || 'Failed to get team projects');
+  }
+
+  const teamProjects: ProjectTeam[] = await response.json();
+
+  const { getProjectById } = await import('./projects');
+  
+  const projectPromises = teamProjects.map(async (teamProject) => {
+    try {
+      const project = await getProjectById(teamProject.project_id);
+      return { teamProject, project };
+    } catch (error) {
+      console.error(`Failed to get project ${teamProject.project_id}:`, error);
+      // Заглушка
+      return {
+        teamProject,
+        project: {
+          id: teamProject.project_id,
+          name: 'Неизвестный проект',
+          description: '',
+          goal: '',
+          requirements: '',
+          eval_criteria: '',
+          semester: 'AUTUMN',
+          status: 'PLANNED',
+          year: new Date().getFullYear()
+        } as Project
+      };
+    }
+  });
+
+  return Promise.all(projectPromises);
 };
