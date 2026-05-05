@@ -13,7 +13,7 @@ export default function StudentCard({ student, onDelete }: StudentCardProps) {
 
   return (
     <div 
-      className="flex flex-col w-full px-6 py-6 shadow-md inset-shadow-xs rounded-xl bg-[#FBFAFF] border border-gray-200 hover:shadow-lg transition-shadow relative"
+      className="flex flex-col w-full min-h-50 px-6 py-6 shadow-md inset-shadow-xs rounded-xl bg-[#FBFAFF] border border-gray-200 hover:shadow-lg transition-shadow relative"
       onMouseEnter={() => setShowDeleteButton(true)}
       onMouseLeave={() => setShowDeleteButton(false)}
     >

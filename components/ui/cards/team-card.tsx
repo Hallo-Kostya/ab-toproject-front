@@ -6,7 +6,7 @@ export default function TeamCard({ name, teamNumber, participants = [] }: TeamCa
   const studentCount = participants.length;
   
   return (
-    <div className="flex flex-col w-full max-h-74 px-5 py-6 shadow-md inset-shadow-xs rounded-xl bg-[#FBFAFF]">
+    <div className="flex flex-col w-full min-h-70 px-5 py-6 shadow-md inset-shadow-xs rounded-xl bg-[#FBFAFF]">
       <div className="flex items-center text-[22px] text-[#000150] pb-3 mb-3 border-b border-[#000150]/40 gap-4">
         <h2 className="font-bold align-center">{truncateText(name, 24)}</h2>
         <div className="flex bg-[#000150]/10 rounded-sm px-2 py-0.5 gap-1.5">
