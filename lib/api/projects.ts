@@ -1,8 +1,11 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001/api';
 import { Team } from "@/types/teams/team";
+import { TeamSummary, TeamSummaryResponse } from "./teams";
 
-
+// TODO: Проверка запросов и переработка интерфейсов
 export interface Project {
+  teams_count: number;
+  members_count: number;
   id: string;
   name: string;
   description: string;
@@ -16,11 +19,9 @@ export interface Project {
   updated_at?: string;
 }
 
-export interface ProjectSummaryResponse {
-  items: Project[];
+export interface ProjectsResponse {
+  projects: Project[];
   total: number;
-  year?: number;
-  semester?: string;
 }
 
 export interface CreateProjectData {
@@ -82,11 +83,13 @@ export const createProject = async (data: CreateProjectData): Promise<Project> =
   return response.json();
 };
 
+// TODO: team_id - параметр для запроса со страницы команды для получения проектов для текущей команды
+// TODO: к URL не относится
 export const getProjects = async (filters?: {
   year?: number;
   semester?: string;
   team_id?: string;
-}): Promise<ProjectSummaryResponse> => {
+}): Promise<ProjectsResponse> => {
   const accessToken = localStorage.getItem('access_token');
   if (!accessToken) throw new Error('No access token');
 
@@ -162,11 +165,11 @@ export const updateProject = async (projectId: string, data: UpdateProjectData):
   return response.json();
 };
 
-export const getProjectTeams = async (projectId: string): Promise<ProjectTeam[]> => {
+export const getProjectTeams = async (projectId: string): Promise<TeamSummary[]> => {
   const accessToken = localStorage.getItem('access_token');
   if (!accessToken) throw new Error('No access token');
 
-  const response = await fetch(`${API_BASE_URL}/projects/${projectId}/teams`, {
+  const response = await fetch(`${API_BASE_URL}/teams?project_id=${projectId}`, {
     headers: { 'Authorization': `Bearer ${accessToken}` }
   });
 
@@ -175,7 +178,8 @@ export const getProjectTeams = async (projectId: string): Promise<ProjectTeam[]>
     throw new Error(errorData.detail || 'Failed to get project teams');
   }
 
-  return response.json();
+  const data: TeamSummaryResponse = await response.json();
+  return data.teams;
 };
 
 export const assignTeamToProject = async (projectId: string, data: AssignTeamData): Promise<ProjectTeam> => {

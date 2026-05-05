@@ -3,12 +3,17 @@
 import { useState, useEffect, useCallback } from 'react';
 import TeamCard from "@/components/ui/cards/team-card";
 import PageContainer from "@/components/containers/page-container";
-import { TeamSummary, TeamSummaryResponse, getTeams } from "@/lib/api/teams";
-import { Student, getTeamStudents } from "@/lib/api/students";
+import { 
+  TeamSummary, 
+  TeamSummaryResponse, 
+  TeamMemberSummary,
+  getTeams,
+  parseFullName
+} from "@/lib/api/teams";
+import { Student } from "@/lib/api/students";
 import { useAuth } from "@/context/AuthContext";
 import MeetingList from '@/components/features/meetings/meeting-list';
 
-// Расширяем TeamSummary для отображения в карточке
 interface TeamWithStudents extends TeamSummary {
   students: Student[];
 }
@@ -16,44 +21,34 @@ interface TeamWithStudents extends TeamSummary {
 export default function TeamsPage() {
   const [teams, setTeams] = useState<TeamWithStudents[]>([]);
   const [loading, setLoading] = useState(true);
-  const [studentsLoading, setStudentsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { isAuthenticated } = useAuth();
 
-  // Функция получения студентов для команд
   const fetchTeamsStudents = useCallback(async (teamsData: TeamSummary[]) => {
     try {
-      setStudentsLoading(true);
-      
-      const studentsPromises = teamsData.map(async (team) => {
-        try {
-          if (team.members && team.members.length > 0) {
-            // Маппим members в формат Student для совместимости с TeamCard
-            const students: Student[] = team.members.map(m => ({
-              id: m.id,
-              first_name: m.first_name,
-              last_name: m.last_name,
-              patronymic: '',
+      const teamsWithStudents: TeamWithStudents[] = teamsData.map(team => {
+        if (team.members && team.members.length > 0) {
+          const students: Student[] = team.members.map((member: TeamMemberSummary) => {
+            const { first_name, last_name, patronymic } = parseFullName(member.full_name);
+            return {
+              id: member.id,
+              first_name,
+              last_name,
+              patronymic: patronymic || '',
               email: '',
               tg_link: ''
-            }));
-            return { ...team, students };
-          }
-
-          const students = await getTeamStudents(team.id);
+            };
+          });
           return { ...team, students };
-        } catch (error) {
-          console.warn(`Failed to get students for team ${team.id}:`, error);
-          return { ...team, students: [] };
         }
+        return { ...team, students: [] };
       });
 
-      const teamsWithStudentsData = await Promise.all(studentsPromises);
-      setTeams(teamsWithStudentsData);
+      setTeams(teamsWithStudents);
     } catch (error) {
-      console.error('Failed to fetch teams students:', error);
-    } finally {
-      setStudentsLoading(false);
+      console.error('Failed to process teams students:', error);
+      const fallback = teamsData.map(team => ({ ...team, students: [] }));
+      setTeams(fallback);
     }
   }, []);
 
@@ -64,7 +59,7 @@ export default function TeamsPage() {
       name={team.name}
       teamNumber={index + 1}
       participants={team.students}
-      studentCount={team.member_count}
+      studentCount={team.members_count}
     />
   ), []);
 
@@ -75,21 +70,19 @@ export default function TeamsPage() {
       try {
         setLoading(true);
         setError(null);
- 
-        const response: TeamSummaryResponse = await getTeams();
 
-        const teamsData = response.items;
+        const response: TeamSummaryResponse = await getTeams();
+        const teamsData = response.teams;
         
         if (teamsData.length > 0) {
           await fetchTeamsStudents(teamsData);
         } else {
           setTeams([]);
-          setStudentsLoading(false);
         }
       } catch (err: any) {
         setError(err.message || 'Ошибка загрузки команд');
         console.error('Teams fetch error:', err);
-        setStudentsLoading(false);
+        setTeams([]);
       } finally {
         setLoading(false);
       }

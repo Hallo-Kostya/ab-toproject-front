@@ -5,15 +5,17 @@ export interface Student {
   id: string;
   first_name: string;
   last_name: string;
-  patronymic: string;
-  email: string;
-  tg_link: string;
+  patronymic?: string;
+  email?: string;
+  tg_link?: string;
+  role?: string | null;
+  study_group?: string | null;
   created_at?: string;
   updated_at?: string;
 }
 
 export interface StudentDetailedResponse {
-  items: Student[];
+  students: Student[];
   total: number;
   team_id?: string;
   project_id?: string;
@@ -22,9 +24,9 @@ export interface StudentDetailedResponse {
 export interface CreateStudentData {
   first_name: string;
   last_name: string;
-  patronymic: string;
-  email: string;
-  tg_link: string;
+  patronymic?: string | null;
+  email?: string | null;
+  tg_link?: string | null;
 }
 
 export interface UpdateStudentData {
@@ -65,7 +67,7 @@ export const createStudent = async (data: CreateStudentData): Promise<Student> =
 export const getStudents = async (filters?: {
   team_id?: string;
   project_id?: string;
-}): Promise<StudentDetailedResponse> => {
+}): Promise<Student[]> => {
   const accessToken = localStorage.getItem('access_token');
   if (!accessToken) throw new Error('No access token');
 
@@ -85,7 +87,8 @@ export const getStudents = async (filters?: {
     throw new Error(errorData.detail || 'Failed to get students');
   }
 
-  return response.json();
+  const data: StudentDetailedResponse = await response.json();
+  return data.students;  // ✅ Извлекаем массив из обёртки
 };
 
 export const getStudentById = async (studentId: string): Promise<Student> => {
@@ -147,16 +150,6 @@ export const deleteStudent = async (studentId: string): Promise<void> => {
   }
 };
 
-// Бекенд сам вернёт студентов команды с необходимыми данными
 export const getTeamStudents = async (teamId: string): Promise<Student[]> => {
-  const response = await getStudents({ team_id: teamId });
-  return response.items;
+  return await getStudents({ team_id: teamId });
 };
-
-
-// export const getFullTeamStudents = async (teamId: string): Promise<TeamStudent[]> => {
-//   console.warn('getFullTeamStudents: role/study_group fields may not be available via current endpoint');
-//   const students = await getTeamStudents(teamId);
-
-//   return students as TeamStudent[];
-// };

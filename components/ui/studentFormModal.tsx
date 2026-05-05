@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Modal from "@/components/ui/modal";
-import { createStudent } from "@/lib/api/students";
+import { createStudent, CreateStudentData } from "@/lib/api/students";
 
 export default function StudentFormModal({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
   const [firstName, setFirstName] = useState('');
@@ -19,25 +19,26 @@ export default function StudentFormModal({ isOpen, onClose }: { isOpen: boolean,
     setIsLoading(true);
 
     try {
-      const studentData = {
-        first_name: firstName,
-        last_name: lastName,
-        patronymic: patronymic,
-        email,
-        tg_link: tgLink
+      const studentData: CreateStudentData = {
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
+        patronymic: patronymic.trim() === '' ? null : patronymic.trim(),
+        email: email.trim() === '' ? null : email.trim(),
+        tg_link: tgLink.trim() === '' ? null : tgLink.trim()
       };
 
       await createStudent(studentData);
 
       onClose();
       
-      // автоматическое обновление страницы
+      // Мягкий рефреш
       setTimeout(() => {
         window.location.reload();
       }, 300);
       
     } catch (err: any) {
-      setError(err.message || 'Ошибка при создании студента');
+      const errorMsg = err.message || 'Ошибка при создании студента';
+      setError(errorMsg);
       console.error('Student creation error:', err);
     } finally {
       setIsLoading(false);
@@ -46,7 +47,7 @@ export default function StudentFormModal({ isOpen, onClose }: { isOpen: boolean,
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} className="px-20">
-      <div className="p-6 bg-white rounded-[24px]">
+      <div className="p-6 bg-white rounded-3xl">
         {/* Кнопка закрытия */}
         <button
           onClick={onClose}
@@ -59,10 +60,13 @@ export default function StudentFormModal({ isOpen, onClose }: { isOpen: boolean,
         </button>
         
         <h2 className="text-2xl text-[#000150] font-bold mb-4">Создать студента</h2>
-        <p className="mb-6 text-gray-600">Заполните все обязательные поля</p>
+        <p className="mb-6 text-gray-600">
+          Заполните обязательные поля <span className="text-red-500">*</span>. 
+          Остальные можно оставить пустыми.
+        </p>
         
         {error && (
-          <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg">
+          <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">
             {error}
           </div>
         )}
@@ -70,54 +74,61 @@ export default function StudentFormModal({ isOpen, onClose }: { isOpen: boolean,
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="lastName" className="block mb-1 text-[16px] font-medium text-[#000150]">Фамилия *</label>
+              <label htmlFor="lastName" className="block mb-1 text-[16px] font-medium text-[#000150]">
+                Фамилия <span className="text-red-500">*</span>
+              </label>
               <input
                 type="text"
                 id="lastName"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 required
-                className="w-full px-4 py-2 rounded-[12px] border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
+                minLength={1}
+                maxLength={64}
+                className="w-full px-4 py-2 rounded-xl border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
                 placeholder="Введите фамилию"
               />
             </div>
             
             <div>
-              <label htmlFor="firstName" className="block mb-1 text-[16px] font-medium text-[#000150]">Имя *</label>
+              <label htmlFor="firstName" className="block mb-1 text-[16px] font-medium text-[#000150]">
+                Имя <span className="text-red-500">*</span>
+              </label>
               <input
                 type="text"
                 id="firstName"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 required
-                className="w-full px-4 py-2 rounded-[12px] border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
+                minLength={1}
+                maxLength={64}
+                className="w-full px-4 py-2 rounded-xl border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
                 placeholder="Введите имя"
               />
             </div>
             
             <div>
-              <label htmlFor="patronymic" className="block mb-1 text-[16px] font-medium text-[#000150]">Отчество *</label>
+              <label htmlFor="patronymic" className="block mb-1 text-[16px] font-medium text-[#000150]">Отчество</label>
               <input
                 type="text"
                 id="patronymic"
                 value={patronymic}
                 onChange={(e) => setPatronymic(e.target.value)}
-                required
-                className="w-full px-4 py-2 rounded-[12px] border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
-                placeholder="Введите отчество"
+                maxLength={64}
+                className="w-full px-4 py-2 rounded-xl border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
+                placeholder="Введите отчество (необязательно)"
               />
             </div>
             
             <div>
-              <label htmlFor="email" className="block mb-1 text-[16px] font-medium text-[#000150]">Почта *</label>
+              <label htmlFor="email" className="block mb-1 text-[16px] font-medium text-[#000150]">Почта</label>
               <input
                 type="email"
                 id="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full px-4 py-2 rounded-[12px] border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
-                placeholder="Введите email"
+                className="w-full px-4 py-2 rounded-xl border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
+                placeholder="email@example.com (необязательно)"
               />
             </div>
           </div>
@@ -129,8 +140,8 @@ export default function StudentFormModal({ isOpen, onClose }: { isOpen: boolean,
               id="tgLink"
               value={tgLink}
               onChange={(e) => setTgLink(e.target.value)}
-              className="w-full px-4 py-2 rounded-[12px] border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
-              placeholder="https://t.me/username"
+              className="w-full px-4 py-2 rounded-xl border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
+              placeholder="https://t.me/username (необязательно)"
             />
           </div>
           
@@ -138,14 +149,14 @@ export default function StudentFormModal({ isOpen, onClose }: { isOpen: boolean,
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-2 px-4 bg-gray-200 text-gray-800 rounded-[16px] font-medium hover:bg-gray-300 transition-colors"
+              className="flex-1 py-2 px-4 bg-gray-200 text-gray-800 rounded-2xl font-medium hover:bg-gray-300 transition-colors"
             >
               Отмена
             </button>
             <button
               type="submit"
-              disabled={isLoading}
-              className="flex-1 py-2 px-4 bg-[#000150] text-white rounded-[16px] font-medium hover:bg-blue-900 transition-colors disabled:opacity-50"
+              disabled={isLoading || !firstName.trim() || !lastName.trim()}
+              className="flex-1 py-2 px-4 bg-[#000150] text-white rounded-2xl font-medium hover:bg-blue-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? 'Создание...' : 'Создать'}
             </button>

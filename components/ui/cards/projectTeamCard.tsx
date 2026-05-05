@@ -2,22 +2,25 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ProjectTeam, removeTeamFromProject } from "@/lib/api/projects";
-import { Team, getTeamById } from "@/lib/api/teams";
-import { Student, getTeamStudents } from "@/lib/api/students";
+import { TeamSummary } from "@/lib/api/teams";
+import { getTeamById, Team } from "@/lib/api/teams";
+import { removeTeamFromProject } from '@/lib/api/projects';
+import { parseFullName } from "@/lib/api/teams";
+import { Student } from "@/lib/api/students";
 import Modal from "@/components/ui/modal";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { truncateText } from '@/utils/truncateText';
 
 interface ProjectTeamCardProps {
-  projectTeam: ProjectTeam;
+  team: TeamSummary;
   projectId: string;
   onTeamRemoved: () => void;
 }
 
-export default function ProjectTeamCard({ projectTeam, projectId, onTeamRemoved }: ProjectTeamCardProps) {
-  const [teamData, setTeamData] = useState<Team | null>(null);
+export default function ProjectTeamCard({ team, projectId, onTeamRemoved }: ProjectTeamCardProps) {
+  const [teamDetails, setTeamDetails] = useState<Team | null>(null);
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -29,39 +32,51 @@ export default function ProjectTeamCard({ projectTeam, projectId, onTeamRemoved 
     const fetchTeamData = async () => {
       try {
         setLoading(true);
-        setError(null);
-        
-        const team = await getTeamById(projectTeam.team_id);
-        setTeamData(team);
 
-        // Если бекенд вернёт role/study_group они будут в объекте студента
-        const teamStudents = await getTeamStudents(projectTeam.team_id);
-        setStudents(teamStudents);
+        const details = await getTeamById(team.id);
+        setTeamDetails(details);
+
+        if (team.members && team.members.length > 0) {
+          const parsedStudents: Student[] = team.members.map(member => {
+            const { first_name, last_name, patronymic } = parseFullName(member.full_name);
+            return {
+              id: member.id,
+              first_name,
+              last_name,
+              patronymic: patronymic || '',
+              email: '',
+              tg_link: ''
+            };
+          });
+          setStudents(parsedStudents);
+        } else {
+          setStudents([]);
+        }
       } catch (err: any) {
-        setError(err.message || 'Ошибка загрузки данных команды');
-        console.error('Team fetch error:', err);
+        console.warn(`Failed to load team ${team.id}:`, err);
+        setError('Не удалось загрузить данные команды');
       } finally {
         setLoading(false);
       }
     };
 
     fetchTeamData();
-  }, [projectTeam.team_id]);
+  }, [team.id, team.members]);
 
   const handleRemoveTeam = async () => {
     try {
-      await removeTeamFromProject(projectId, projectTeam.team_id);
+      await removeTeamFromProject(projectId, team.id);
       onTeamRemoved();
       setIsDeleteModalOpen(false);
     } catch (error) {
       console.error('Failed to remove team from project:', error);
-      setError('Ошибка при откреплении команды от проекта');
+      setError('Ошибка при откреплении команды');
     }
   };
 
   if (loading) {
     return (
-      <div className="flex flex-col w-full min-h-[150px] px-[24px] py-[24px] shadow-md inset-shadow-xs rounded-[12px] bg-[#FBFAFF] border border-gray-200">
+      <div className="flex flex-col w-full min-h-37.5 px-6 py-6 shadow-md inset-shadow-xs rounded-xl bg-[#FBFAFF] border border-gray-200">
         <div className="animate-pulse space-y-4">
           <div className="h-6 bg-gray-200 rounded w-3/4"></div>
           <div className="h-4 bg-gray-200 rounded w-1/2"></div>
@@ -71,21 +86,23 @@ export default function ProjectTeamCard({ projectTeam, projectId, onTeamRemoved 
     );
   }
 
-  if (error || !teamData) {
+  if (error || !teamDetails) {
     return (
-      <div className="flex flex-col w-full min-h-[150px] px-[24px] py-[24px] shadow-md inset-shadow-xs rounded-[12px] bg-[#FBFAFF] border border-gray-200">
-        <div className="text-red-500">{error || 'Данные команды не загружены'}</div>
+      <div className="flex flex-col w-full min-h-37.5 px-6 py-6 shadow-md inset-shadow-xs rounded-xl bg-[#FBFAFF] border border-gray-200">
+        <div className="text-yellow-600 text-sm">
+          {error || 'Данные команды не загружены'}
+        </div>
       </div>
     );
   }
 
   return (
     <>
-      <div className="flex flex-col w-full min-h-[150px] px-[24px] py-[24px] shadow-md inset-shadow-xs rounded-[12px] bg-[#FBFAFF] border border-gray-200 hover:shadow-lg transition-shadow relative group">
+      <div className="flex flex-col w-full min-h-37.5 px-6 py-6 shadow-md inset-shadow-xs rounded-xl bg-[#FBFAFF] border border-gray-200 hover:shadow-lg transition-shadow relative group">
         {/* Кнопка удаления */}
         <button
           onClick={() => setIsDeleteModalOpen(true)}
-          className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-gray-500 hover:text-red-500 transition-colors z-10"
+          className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-gray-500 hover:text-red-500 z-10"
           title="Открепить команду"
           aria-label="Открепить команду"
         >
@@ -94,29 +111,28 @@ export default function ProjectTeamCard({ projectTeam, projectId, onTeamRemoved 
           </svg>
         </button>
         
-        {/* Название команды */}
+        {/* Название команды — ссылка */}
         <div className="mb-4 border-b border-[#000150]/40">
-          <Link href={`/teams/${teamData.id}`} className="block w-fit flex items-center pb-[12px]">
-            <h2 className="text-[20px] text-[#000150] font-semibold">{teamData.name}</h2>
-            <div className="flex bg-[#000150]/10 rounded-[4px] px-2 py-[2px] gap-[6px] ml-3">
+          <Link href={`/teams/${teamDetails.id}`} className="w-fit flex items-center justify-between gap-3 pb-3">
+            <h2 className="text-[20px] text-[#000150] font-semibold">{truncateText(team.name, 24)}</h2>
+            <div className="flex bg-[#000150]/10 rounded-sm py-0.5 px-2 gap-1.5 ml-4 mr-6">
               <Image src={"/user-round.svg"} alt={"К-во участников"} width={20} height={20}/>
-              <p className="text-[18px] font-medium">{students.length}</p>
+              <p className="text-[18px] font-medium">{team.members_count}</p>
             </div>
           </Link>
         </div>
         
         {/* Список студентов */}
-        <div className="overflow-y-auto max-h-[120px]">
+        <div className="overflow-y-auto max-h-30">
           {students.length > 0 ? (
             <ul className="flex flex-col gap-1">
               {students.map((student, index) => (
-                <li key={student.id} className="flex items-start gap-[10px]">
-                  <span className="w-6 h-6 flex items-center justify-center bg-[#000150]/10 rounded-full text-[#000150] text-xs mb-[2px] flex-shrink-0">
+                <li key={student.id} className="flex items-start gap-2.5">
+                  <span className="w-6 h-6 flex items-center justify-center bg-[#000150]/10 rounded-full text-[#000150] text-xs mb-0.5 shrink-0">
                     {index + 1}
                   </span>
-                  <span className="text-[14px] flex-1 break-words">
+                  <span className="text-[14px] flex-1 wrap-break-word">
                     {student.last_name} {student.first_name} {student.patronymic || ''}
-                    {/* Если бекенд вернёт role — можно добавить: ({student.role}) */}
                   </span>
                 </li>
               ))}
@@ -128,7 +144,7 @@ export default function ProjectTeamCard({ projectTeam, projectId, onTeamRemoved 
       </div>
 
       <Modal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} className="px-30">
-        <div className="p-6 bg-white rounded-[24px]">
+        <div className="p-6 bg-white rounded-3xl">
           <button
             onClick={() => setIsDeleteModalOpen(false)}
             className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-colors"
@@ -149,21 +165,21 @@ export default function ProjectTeamCard({ projectTeam, projectId, onTeamRemoved 
           
           <h2 className="text-2xl text-[#000150] font-bold mb-2 text-center">Открепить команду</h2>
           <p className="mb-6 text-center text-gray-600">
-            Вы точно хотите открепить команду <span className="font-semibold text-[#000150]">{teamData.name}</span> от проекта?
+            Вы точно хотите открепить команду <span className="font-semibold text-[#000150]">{team.name}</span> от проекта?
           </p>
           
           <div className="flex gap-4 mt-6">
             <button
               type="button"
               onClick={() => setIsDeleteModalOpen(false)}
-              className="flex-1 py-2 px-4 bg-gray-200 text-gray-800 rounded-[16px] font-medium hover:bg-gray-300 transition-colors"
+              className="flex-1 py-2 px-4 bg-gray-200 text-gray-800 rounded-2xl font-medium hover:bg-gray-300 transition-colors"
             >
               Отмена
             </button>
             <button
               type="button"
               onClick={handleRemoveTeam}
-              className="flex-1 py-2 px-4 bg-red-500 text-white rounded-[16px] font-medium hover:bg-red-600 transition-colors"
+              className="flex-1 py-2 px-4 bg-red-500 text-white rounded-2xl font-medium hover:bg-red-600 transition-colors"
             >
               Открепить
             </button>

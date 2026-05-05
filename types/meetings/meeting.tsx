@@ -13,7 +13,7 @@ export type Meeting = {
     resume: string;
     date: string;
     time?: string;
-    status: 'SCHEDULED' | 'COMPLETED' | 'CANCELLED';
+    status: 'SCHEDULED' | 'COMPLETED' | 'CANCELED' | 'IN_PROGRESS';
     previous_meeting_id: string | null;
     next_meeting_id: string | null;
 }
@@ -24,5 +24,5 @@ export interface MeetingCardProps {
     resume: string;
     date: string;
     time: string;
-    status: 'planned' | 'completed' | 'cancelled'; // Для отображения используем lowercase
+    status: 'scheduled' | 'completed' | 'canceled' | 'in_progress';
 }

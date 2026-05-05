@@ -11,20 +11,20 @@ export interface Team {
   updated_at?: string;
 }
 
+export interface TeamMemberSummary {
+  id: string;
+  full_name: string;
+}
+
 export interface TeamSummary {
   id: string;
   name: string;
-  member_count: number;
-  members?: Array<{
-    id: string;
-    first_name: string;
-    last_name: string;
-    role: string;
-  }>;
+  members_count: number;
+  members?: TeamMemberSummary[];
 }
 
 export interface TeamSummaryResponse {
-  items: TeamSummary[];
+  teams: TeamSummary[];
   total: number;
   project_id?: string;
 }
@@ -68,6 +68,17 @@ export interface TeamProjectWithDetails {
   project: Project;
 }
 
+export const parseFullName = (fullName: string): { first_name: string; last_name: string; patronymic?: string } => {
+  const parts = fullName.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return { first_name: '', last_name: '' };
+  if (parts.length === 1) return { first_name: parts[0], last_name: '' };
+  if (parts.length === 2) return { last_name: parts[0], first_name: parts[1] };
+  return {
+    last_name: parts[0],
+    first_name: parts[1],
+    patronymic: parts.slice(2).join(' ')
+  };
+};
 
 export const createTeam = async (data: CreateTeamData): Promise<Team> => {
   const accessToken = localStorage.getItem('access_token');
@@ -227,11 +238,11 @@ export const removeStudentFromTeam = async (teamId: string, studentId: string): 
   }
 };
 
-export const getTeamProjects = async (teamId: string): Promise<ProjectTeam[]> => {
+export const getTeamProjects = async (teamId: string): Promise<Project[]> => {
   const accessToken = localStorage.getItem('access_token');
   if (!accessToken) throw new Error('No access token');
 
-  const response = await fetch(`${API_BASE_URL}/teams/${teamId}/projects`, {
+  const response = await fetch(`${API_BASE_URL}/projects?team_id=${teamId}`, {
     headers: { 'Authorization': `Bearer ${accessToken}` }
   });
 
@@ -240,49 +251,53 @@ export const getTeamProjects = async (teamId: string): Promise<ProjectTeam[]> =>
     throw new Error(errorData.detail || 'Failed to get team projects');
   }
 
-  return response.json();
+  const  { projects }: { projects: Project[] } = await response.json();
+  return projects;
 };
 
-export const getTeamProjectsWithDetails = async (teamId: string): Promise<TeamProjectWithDetails[]> => {
-  const accessToken = localStorage.getItem('access_token');
-  if (!accessToken) throw new Error('No access token');
+// export const getTeamProjectsWithDetails = async (teamId: string): Promise<TeamProjectWithDetails[]> => {
+//   const accessToken = localStorage.getItem('access_token');
+//   if (!accessToken) throw new Error('No access token');
 
-  const response = await fetch(`${API_BASE_URL}/teams/${teamId}/projects`, {
-    headers: { 'Authorization': `Bearer ${accessToken}` }
-  });
+//   const response = await fetch(`${API_BASE_URL}/teams/${teamId}/projects`, {
+//     headers: { 'Authorization': `Bearer ${accessToken}` }
+//   });
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.detail || 'Failed to get team projects');
-  }
+//   if (!response.ok) {
+//     const errorData = await response.json().catch(() => ({}));
+//     throw new Error(errorData.detail || 'Failed to get team projects');
+//   }
 
-  const teamProjects: ProjectTeam[] = await response.json();
+//   const teamProjects: ProjectTeam[] = await response.json();
 
-  const { getProjectById } = await import('./projects');
+//   const { getProjectById } = await import('./projects');
   
-  const projectPromises = teamProjects.map(async (teamProject) => {
-    try {
-      const project = await getProjectById(teamProject.project_id);
-      return { teamProject, project };
-    } catch (error) {
-      console.error(`Failed to get project ${teamProject.project_id}:`, error);
-      // Заглушка
-      return {
-        teamProject,
-        project: {
-          id: teamProject.project_id,
-          name: 'Неизвестный проект',
-          description: '',
-          goal: '',
-          requirements: '',
-          eval_criteria: '',
-          semester: 'AUTUMN',
-          status: 'PLANNED',
-          year: new Date().getFullYear()
-        } as Project
-      };
-    }
-  });
+//   const projectPromises = teamProjects.map(async (teamProject) => {
+//     try {
+//       const project = await getProjectById(teamProject.project_id);
+//       return { teamProject, project };
+//     } catch (error) {
+//       console.error(`Failed to get project ${teamProject.project_id}:`, error);
+//       return {
+//         teamProject,
+//         project: {
+//           id: teamProject.project_id,
+//           name: 'Неизвестный проект',
+//           description: '',
+//           goal: '',
+//           requirements: '',
+//           eval_criteria: '',
+//           semester: 'AUTUMN',
+//           status: 'PLANNED',
+//           year: new Date().getFullYear()
+//         } as Project
+//       };
+//     }
+//   });
 
-  return Promise.all(projectPromises);
+//   return Promise.all(projectPromises);
+// };
+
+export const getTeamProjectsWithDetails = async (teamId: string): Promise<Project[]> => {
+  return await getTeamProjects(teamId);
 };

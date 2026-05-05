@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Student, StudentDetailedResponse, getStudents, deleteStudent } from "@/lib/api/students";
+import { Student, getStudents, deleteStudent } from "@/lib/api/students";
 import { useAuth } from "@/context/AuthContext";
 import StudentCard from '@/components/ui/cards/student-card';
 import DeleteStudentModal from '@/components/ui/deleteStudentModal';
@@ -21,12 +21,12 @@ export default function StudentsPage() {
       try {
         setLoading(true);
 
-        const response: StudentDetailedResponse = await getStudents();
-
-        setStudents(response.items);
+        const studentsData: Student[] = await getStudents();
+        setStudents(studentsData);
       } catch (err: any) {
         setError(err.message || 'Ошибка загрузки студентов');
         console.error('Students fetch error:', err);
+        setStudents([]);
       } finally {
         setLoading(false);
       }

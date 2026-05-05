@@ -14,6 +14,11 @@ export interface Meeting {
   updated_at?: string;
 }
 
+export interface MeetingsResponse {
+  items: Meeting[];
+  total: number;
+}
+
 export interface CreateMeetingData {
   name: string;
   resume: string;
@@ -86,7 +91,8 @@ export const getMeetings = async (filters?: {
     throw new Error(errorData.detail || 'Failed to get meetings');
   }
 
-  return response.json();
+  const data: MeetingsResponse = await response.json();
+  return data.items;
 };
 
 export const getMeetingById = async (meetingId: string): Promise<Meeting> => {

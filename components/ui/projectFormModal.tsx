@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import Modal from "@/components/ui/modal";
-import { createProject } from "@/lib/api/projects";
-import { useAuth } from "@/context/AuthContext";
+import { createProject, CreateProjectData } from "@/lib/api/projects";
+// import { useAuth } from "@/context/AuthContext";
 
 export default function ProjectFormModal({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
   const [name, setName] = useState('');
@@ -11,34 +11,34 @@ export default function ProjectFormModal({ isOpen, onClose }: { isOpen: boolean,
   const [goal, setGoal] = useState('');
   const [requirements, setRequirements] = useState('');
   const [evalCriteria, setEvalCriteria] = useState('');
-  const [year, setYear] = useState(new Date().getFullYear());
-  const [semester, setSemester] = useState('AUTUMN');
-  const [status, setStatus] = useState('PLANNED');
+  const [year, setYear] = useState<number | null>(null);
+  const [semester, setSemester] = useState<'AUTUMN' | 'SPRING' | null>(null);
+  const [status, setStatus] = useState<'PLANNED' | 'IN_PROGRESS' | 'COMPLETED' | null>(null);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { refreshTokens } = useAuth();
+  // const { refreshTokens } = useAuth();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
 
     try {
-      const projectData = {
+      const projectData: CreateProjectData = {
         name,
         description,
         goal,
         requirements,
         eval_criteria: evalCriteria,
-        year: Number(year),
-        semester,
-        status
+        ...(year !== null && { year }),
+        ...(semester !== null && { semester }),
+        ...(status !== null && { status })
       };
 
       await createProject(projectData);
 
       onClose();
-      
+
       setTimeout(() => {
         window.location.reload();
       }, 300);
@@ -53,7 +53,7 @@ export default function ProjectFormModal({ isOpen, onClose }: { isOpen: boolean,
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} className="px-20">
-      <div className="p-6 bg-white rounded-[24px]">
+      <div className="p-6 bg-white rounded-3xl">
         {/* Кнопка закрытия */}
         <button
           onClick={onClose}
@@ -83,87 +83,89 @@ export default function ProjectFormModal({ isOpen, onClose }: { isOpen: boolean,
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              className="w-full px-4 py-2 rounded-[12px] border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
+              className="w-full px-4 py-2 rounded-xl border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
               placeholder="Введите название проекта"
             />
           </div>
           
           <div>
-            <label htmlFor="description" className="block mb-1 text-[16px] font-medium text-[#000150]">Описание *</label>
+            <label htmlFor="description" className="block mb-1 text-[16px] font-medium text-[#000150]">Описание</label>
             <textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              required
               rows={3}
-              className="w-full px-4 py-2 rounded-[12px] border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
+              className="w-full px-4 py-2 rounded-xl border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
               placeholder="Опишите проект"
             />
           </div>
           
           <div>
-            <label htmlFor="goal" className="block mb-1 text-[16px] font-medium text-[#000150]">Цель *</label>
+            <label htmlFor="goal" className="block mb-1 text-[16px] font-medium text-[#000150]">Цель</label>
             <textarea
               id="goal"
               value={goal}
               onChange={(e) => setGoal(e.target.value)}
-              required
               rows={2}
-              className="w-full px-4 py-2 rounded-[12px] border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
+              className="w-full px-4 py-2 rounded-xl border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
               placeholder="Укажите цель проекта"
             />
           </div>
           
           <div>
-            <label htmlFor="requirements" className="block mb-1 text-[16px] font-medium text-[#000150]">Требования *</label>
+            <label htmlFor="requirements" className="block mb-1 text-[16px] font-medium text-[#000150]">Требования</label>
             <textarea
               id="requirements"
               value={requirements}
               onChange={(e) => setRequirements(e.target.value)}
-              required
               rows={2}
-              className="w-full px-4 py-2 rounded-[12px] border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
+              className="w-full px-4 py-2 rounded-xl border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
               placeholder="Введите требования к проекту"
             />
           </div>
           
           <div>
-            <label htmlFor="evalCriteria" className="block mb-1 text-[16px] font-medium text-[#000150]">Критерии оценки *</label>
+            <label htmlFor="evalCriteria" className="block mb-1 text-[16px] font-medium text-[#000150]">Критерии оценки</label>
             <textarea
               id="evalCriteria"
               value={evalCriteria}
               onChange={(e) => setEvalCriteria(e.target.value)}
-              required
               rows={2}
-              className="w-full px-4 py-2 rounded-[12px] border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
+              className="w-full px-4 py-2 rounded-xl border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
               placeholder="Введите критерии оценки"
             />
           </div>
           
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="year" className="block mb-1 text-[16px] font-medium text-[#000150]">Год *</label>
+              <label htmlFor="year" className="block mb-1 text-[16px] font-medium text-[#000150]">Год</label>
               <input
                 type="number"
                 id="year"
-                value={year}
-                onChange={(e) => setYear(Number(e.target.value))}
-                required
-                min="2000"
-                max={new Date().getFullYear() + 5}
-                className="w-full px-4 py-2 rounded-[12px] border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
+                value={year ?? ''}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setYear(val === '' ? null : Number(val));
+                }}
+                min="2026"
+                max={new Date().getFullYear() + 10}
+                placeholder="Не указано"
+                className="w-full px-4 py-2 rounded-xl border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20 placeholder:text-gray-400"
               />
             </div>
             
             <div>
-              <label htmlFor="semester" className="block mb-1 text-[16px] font-medium text-[#000150]">Семестр *</label>
+              <label htmlFor="semester" className="block mb-1 text-[16px] font-medium text-[#000150]">Семестр</label>
               <select
                 id="semester"
-                value={semester}
-                onChange={(e) => setSemester(e.target.value)}
-                required
-                className="w-full px-4 py-2 rounded-[12px] border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
+                value={semester ?? ''}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setSemester(val === '' ? null : val as 'AUTUMN' | 'SPRING');
+                }}
+                className="w-full px-4 py-2 rounded-xl border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
               >
+                <option value="">Не указано</option>
                 <option value="AUTUMN">Осенний</option>
                 <option value="SPRING">Весенний</option>
               </select>
@@ -171,14 +173,17 @@ export default function ProjectFormModal({ isOpen, onClose }: { isOpen: boolean,
           </div>
           
           <div>
-            <label htmlFor="status" className="block mb-1 text-[16px] font-medium text-[#000150]">Статус *</label>
+            <label htmlFor="status" className="block mb-1 text-[16px] font-medium text-[#000150]">Статус</label>
             <select
               id="status"
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              required
-              className="w-full px-4 py-2 rounded-[12px] border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
+              value={status ?? ''}
+              onChange={(e) => {
+                const val = e.target.value;
+                setStatus(val === '' ? null : val as 'PLANNED' | 'IN_PROGRESS' | 'COMPLETED');
+              }}
+              className="w-full px-4 py-2 rounded-xl border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
             >
+              <option value="">Не указано</option>
               <option value="PLANNED">Планируется</option>
               <option value="IN_PROGRESS">В работе</option>
               <option value="COMPLETED">Завершен</option>
@@ -189,14 +194,14 @@ export default function ProjectFormModal({ isOpen, onClose }: { isOpen: boolean,
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-2 px-4 bg-gray-200 text-gray-800 rounded-[16px] font-medium hover:bg-gray-300 transition-colors"
+              className="flex-1 py-2 px-4 bg-gray-200 text-gray-800 rounded-2xl font-medium hover:bg-gray-300 transition-colors"
             >
               Отмена
             </button>
             <button
               type="submit"
-              disabled={isLoading}
-              className="flex-1 py-2 px-4 bg-[#000150] text-white rounded-[16px] font-medium hover:bg-blue-900 transition-colors disabled:opacity-50"
+              disabled={isLoading || !name}
+              className="flex-1 py-2 px-4 bg-[#000150] text-white rounded-2xl font-medium hover:bg-blue-900 transition-colors disabled:opacity-50"
             >
               {isLoading ? 'Создание...' : 'Создать'}
             </button>

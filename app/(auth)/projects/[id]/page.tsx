@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Project, getProjectById, deleteProject, getProjectTeams, ProjectTeam, removeTeamFromProject } from "@/lib/api/projects";
-import { Team } from "@/lib/api/teams";
+import { Project, getProjectById, deleteProject, getProjectTeams, removeTeamFromProject } from "@/lib/api/projects";
+import { TeamSummary } from "@/lib/api/teams";
 import { useAuth } from "@/context/AuthContext";
 import { useParams, useRouter } from 'next/navigation';
 import DeleteProjectModal from '@/components/ui/deleteProjectModal';
@@ -14,13 +14,18 @@ export default function ProjectPage() {
   const params = useParams();
   const router = useRouter();
   const { id } = params as { id: string };
+  
   const [project, setProject] = useState<Project | null>(null);
-  const [projectTeams, setProjectTeams] = useState<ProjectTeam[]>([]);
+  const [projectTeams, setProjectTeams] = useState<TeamSummary[]>([]);
   const [loading, setLoading] = useState(true);
+  const [teamsLoading, setTeamsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [teamsError, setTeamsError] = useState<string | null>(null);
+  
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAssignTeamModalOpen, setIsAssignTeamModalOpen] = useState(false);
+  
   const { isAuthenticated, user } = useAuth();
 
   useEffect(() => {
@@ -29,20 +34,39 @@ export default function ProjectPage() {
     const fetchProjectData = async () => {
       try {
         setLoading(true);
+        setError(null);
+
         const projectData = await getProjectById(id);
         setProject(projectData);
         
-        const teamsData = await getProjectTeams(id);
-        setProjectTeams(teamsData);
       } catch (err: any) {
         setError(err.message || 'Ошибка загрузки данных проекта');
-        console.error('Project data fetch error:', err);
+        console.error('Project fetch error:', err);
       } finally {
         setLoading(false);
       }
     };
 
+    const fetchProjectTeamsData = async () => {
+      try {
+        setTeamsLoading(true);
+        setTeamsError(null);
+        
+        const teamsData = await getProjectTeams(id);
+        setProjectTeams(teamsData);
+        
+      } catch (err: any) {
+        console.warn('Failed to load project teams (soft failure):', err);
+        setTeamsError('Не удалось загрузить команды проекта');
+        setProjectTeams([]);
+      } finally {
+        setTeamsLoading(false);
+      }
+    };
+
     fetchProjectData();
+    fetchProjectTeamsData();
+    
   }, [isAuthenticated, id]);
 
   const handleTeamAssigned = async () => {
@@ -50,8 +74,8 @@ export default function ProjectPage() {
       const teamsData = await getProjectTeams(id);
       setProjectTeams(teamsData);
     } catch (err: any) {
-      console.error('Failed to refresh project teams:', err);
-      setError('Ошибка обновления списка команд проекта');
+      console.warn('Failed to refresh project teams:', err);
+      setTeamsError('Ошибка обновления списка команд');
     }
   };
 
@@ -60,15 +84,14 @@ export default function ProjectPage() {
       const teamsData = await getProjectTeams(id);
       setProjectTeams(teamsData);
     } catch (err: any) {
-      console.error('Failed to refresh project teams after removal:', err);
-      setError('Ошибка обновления списка команд проекта');
+      console.warn('Failed to refresh project teams after removal:', err);
+      setTeamsError('Ошибка обновления списка команд');
     }
   };
 
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col gap-6">
-        {/* Ghost загрузки */}
         <div className="space-y-4">
           <div className="h-8 bg-gray-200 rounded w-1/3 animate-pulse"></div>
           <div className="h-6 bg-gray-200 rounded w-1/4 animate-pulse"></div>
@@ -102,7 +125,7 @@ export default function ProjectPage() {
     );
   }
 
-  const activeProjectTeams = projectTeams.filter(team => team.status === 'ACTIVE');
+  const activeProjectTeams = projectTeams;
 
   return (
     <>
@@ -115,7 +138,7 @@ export default function ProjectPage() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => setIsEditModalOpen(true)}
-                    className="flex items-center ml-auto bg-[#000150]/20 px-4 py-2 rounded-[20px] text-[#000150] text-[19px] font-semibold max-h-[47px] hover:bg-[#000150]/30 transition-colors shadow-md inset-shadow-xl"
+                    className="flex items-center ml-auto bg-[#000150]/20 px-4 py-2 rounded-[20px] text-[#000150] text-[19px] font-semibold max-h-11.75 hover:bg-[#000150]/30 transition-colors shadow-md inset-shadow-xl"
                     title="Редактировать проект"
                   >
                     Редактировать
@@ -133,9 +156,9 @@ export default function ProjectPage() {
               )}
             </div>
           </div>
-          <div className="flex items-center gap-[24px]">
+          <div className="flex items-center gap-6">
             <p><span className="text-[24px] text-[#000150] font-medium">{project.year} год, {project.semester === 'AUTUMN' ? 'Осенний' : 'Весенний'} семестр</span></p>
-            <div className="px-3 py-[1px] bg-[#E79E00]/20 rounded-[8px]">
+            <div className="px-3 py-px bg-[#E79E00]/20 rounded-lg">
               <span className="text-[#E79E00] text-[20px] font-medium">
                 {project.status === 'PLANNED' ? 'Планируется' : 
                  project.status === 'IN_PROGRESS' ? 'В работе' : 'Завершен'}
@@ -144,15 +167,16 @@ export default function ProjectPage() {
           </div>
         </div>
         
-        <div className="flex flex-col gap-[18px]">
-          <Section title={"Описание"} content={project.description} />
-          <Section title={"Цель"} content={project.goal} />
-          <Section title={"Требования"} content={project.requirements} />
-          <Section title={"Критерии оценки"} content={project.eval_criteria} />
+        <div className="flex flex-col gap-4.5">
+          <Section title={"Описание"} content={project.description || 'Не указано'} />
+          <Section title={"Цель"} content={project.goal || 'Не указана'} />
+          <Section title={"Требования"} content={project.requirements || 'Не указаны'} />
+          <Section title={"Критерии оценки"} content={project.eval_criteria || 'Не указаны'} />
         </div>
         
-        <div className="mt-[36px]">
-          <div className="flex items-center justify-between mb-[16px]">
+        {/* Блок команд проекта с мягкой защитой */}
+        <div className="mt-9">
+          <div className="flex items-center justify-between mb-4">
             <h2 className="text-[24px] text-[#000150] font-medium">Команды-исполнители</h2>
             {isAuthenticated && user && (
               <button
@@ -163,34 +187,47 @@ export default function ProjectPage() {
               </button>
             )}
           </div>
-          
-          <div className="flex items-center mb-[24px]">
-            <p className="text-[18px] text-[#353535]">Активных команд найдено: <span className="text-[18px] text-[#000150] font-semibold">{activeProjectTeams.length}</span></p>
-          </div>
-          
-          {activeProjectTeams.length > 0 ? (
-            <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {activeProjectTeams.map((projectTeam) => (
-                <li key={projectTeam.id}>
-                  <ProjectTeamCard 
-                    projectTeam={projectTeam} 
-                    projectId={project.id} 
-                    onTeamRemoved={handleTeamRemoved} 
-                  />
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <div className="text-gray-500">
-              <p>К этому проекту еще нет активных команд</p>
-              {isAuthenticated && user && (
-                <p className="mt-2 text-sm">{`Нажмите "+ Команда" чтобы назначить команду на проект`}</p>
-              )}
+
+          {teamsLoading ? (
+            <div className="text-gray-500">Загрузка команд...</div>
+          ) : teamsError ? (
+            <div className="p-3 bg-yellow-50 text-yellow-800 rounded text-sm">
+              {teamsError}
             </div>
+          ) : (
+            <>
+              <div className="flex items-center mb-6">
+                <p className="text-[18px] text-[#353535]">
+                  Команд найдено: <span className="text-[18px] text-[#000150] font-semibold">{activeProjectTeams.length}</span>
+                </p>
+              </div>
+              
+              {activeProjectTeams.length > 0 ? (
+                <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {activeProjectTeams.map((team) => (
+                    <li key={team.id}>
+                      <ProjectTeamCard 
+                        team={team}
+                        projectId={project.id} 
+                        onTeamRemoved={handleTeamRemoved} 
+                      />
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className="text-gray-500">
+                  <p>К этому проекту еще нет активных команд</p>
+                  {isAuthenticated && user && (
+                    <p className="mt-2 text-sm">{`Нажмите "+ Команда" чтобы назначить команду на проект`}</p>
+                  )}
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
       
+      {/* Модальные окна */}
       <DeleteProjectModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
@@ -219,9 +256,9 @@ export default function ProjectPage() {
 
 function Section({ title, content }: { title: string; content: string }) {
   return (
-    <div className="border-b-1 border-gray-300/40">
-      <h2 className="text-[24px] text-[#000150] font-medium mb-[28px]">{title}</h2>
-      <p className="text-[22px] leading-relaxed whitespace-pre-wrap pb-[18px]">{content}</p>
+    <div className="border-b border-gray-300/40 pb-4.5">
+      <h2 className="text-[24px] text-[#000150] font-medium mb-3">{title}</h2>
+      <p className="text-[22px] leading-relaxed whitespace-pre-wrap">{content || 'Не указано'}</p>
     </div>
   );
 }

@@ -13,7 +13,7 @@ export default function StudentCard({ student, onDelete }: StudentCardProps) {
 
   return (
     <div 
-      className="flex flex-col w-full px-[24px] py-[24px] shadow-md inset-shadow-xs rounded-[12px] bg-[#FBFAFF] border border-gray-200 hover:shadow-lg transition-shadow relative"
+      className="flex flex-col w-full px-6 py-6 shadow-md inset-shadow-xs rounded-xl bg-[#FBFAFF] border border-gray-200 hover:shadow-lg transition-shadow relative"
       onMouseEnter={() => setShowDeleteButton(true)}
       onMouseLeave={() => setShowDeleteButton(false)}
     >
@@ -32,19 +32,20 @@ export default function StudentCard({ student, onDelete }: StudentCardProps) {
           </svg>
         </button>
       )}
-      
-      <h2 className="text-[20px] text-[#000150] font-semibold pb-[16px] border-b border-gray-300 mb-[16px]">
+
+      <h2 className="text-[20px] text-[#000150] font-semibold pb-4 border-b border-gray-300 mb-4">
         {student.last_name} {student.first_name} {student.patronymic || ''}
       </h2>
       
       <div className="space-y-2">
-        <p className="text-[16px]">
-          <span className="font-medium">Email:</span>{' '}
-          <a href={`mailto:${student.email}`} className="text-[#000150] hover:underline">
-            {student.email}
-          </a>
-        </p>
-        
+        {student.email && (
+          <p className="text-[16px]">
+            <span className="font-medium">Email:</span>{' '}
+            <a href={`mailto:${student.email}`} className="text-[#000150] hover:underline">
+              {student.email}
+            </a>
+          </p>
+        )}
         {student.tg_link && (
           <p className="text-[16px]">
             <span className="font-medium">Telegram:</span>{' '}

@@ -1,9 +1,9 @@
-# AB-ToPlan - Frontend
+# ToPlan - Frontend
 
 **Next.js 16**
 ---
 
-Frontend системы автоматического управления ВУЗами для Alfa-Bank. 
+Frontend системы автоматического управления ВУЗами для Альфа-Банка. 
 
 ---
 
@@ -31,7 +31,7 @@ pnpm dev
 http://localhost:3000
 
 
-## Сборка и запуск через Docker (prod-ready)
+## Сборка и запуск через Docker
 
 1. Актуальный вариант сборки через docker-compose:
 

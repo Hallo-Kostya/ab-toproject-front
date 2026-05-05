@@ -7,21 +7,23 @@ import { getMeetings, Meeting } from "@/lib/api/meetings";
 import { getTeamById } from "@/lib/api/teams";
 import { useAuth } from "@/context/AuthContext";
 
-const mapApiStatusToDisplayStatus = (apiStatus: string): 'planned' | 'completed' | 'cancelled' => {
+type MeetingCardData = Meeting & {
+  teamName: string;
+  displayStatus: 'scheduled' | 'completed' | 'canceled' | 'in_progress';
+};
+
+const mapApiStatusToDisplayStatus = (apiStatus: string): 'scheduled' | 'completed' | 'canceled' | 'in_progress' => {
   switch (apiStatus?.toUpperCase()) {
-    case 'SCHEDULED':
-      return 'planned';
-    case 'COMPLETED':
-      return 'completed';
-    case 'CANCELLED':
-      return 'cancelled';
-    default:
-      return 'planned';
+    case 'SCHEDULED': return 'scheduled';
+    case 'COMPLETED': return 'completed';
+    case 'CANCELED': return 'canceled';
+    case 'IN_PROGRESS': return 'in_progress';
+    default: return 'scheduled';
   }
 };
 
 export default function MeetingList() {
-  const [meetings, setMeetings] = useState<Array<Meeting & { teamName: string; displayStatus: 'planned' | 'completed' | 'cancelled' }>>([]);
+  const [meetings, setMeetings] = useState<MeetingCardData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isHovering, setIsHovering] = useState(false);
@@ -37,8 +39,7 @@ export default function MeetingList() {
         setError(null);
 
         const meetingsData = await getMeetings();
-        
-        // Получаем данные о командах для каждой встречи параллельно
+
         const meetingsWithTeams = await Promise.all(
           meetingsData.map(async (meeting) => {
             try {
@@ -49,7 +50,7 @@ export default function MeetingList() {
                 displayStatus: mapApiStatusToDisplayStatus(meeting.status)
               };
             } catch (error) {
-              console.error(`Failed to get team for meeting ${meeting.id}:`, error);
+              console.warn(`Failed to get team for meeting ${meeting.id}:`, error);
               return { 
                 ...meeting, 
                 teamName: 'Команда не найдена',
@@ -58,9 +59,8 @@ export default function MeetingList() {
             }
           })
         );
-        
-        // Реверсируем массив для правильной сортировки
-        setMeetings([...meetingsWithTeams].reverse());
+
+        setMeetings([...meetingsWithTeams]);
       } catch (err: any) {
         setError(err.message || 'Ошибка загрузки встреч');
         console.error('Error fetching meetings:', err);
@@ -115,11 +115,11 @@ export default function MeetingList() {
 
       <div 
         ref={scrollContainerRef}
-        className="flex overflow-x-auto hide-scrollbar py-2 px-4 gap-4"
+        className="flex overflow-x-auto hide-scrollbar py-2 gap-4"
         style={{ scrollBehavior: 'smooth' }}
       >
         {meetings.map((meeting) => (
-          <Link key={meeting.id} href={`/meeting/${meeting.id}`} className="flex-shrink-0 w-[290px] block">
+          <Link key={meeting.id} href={`/meeting/${meeting.id}`} className="shrink-0 w-72.5 block">
             <MeetingCard 
               teamName={meeting.teamName}
               name={meeting.name}

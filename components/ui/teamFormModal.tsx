@@ -40,7 +40,7 @@ export default function TeamFormModal({ isOpen, onClose }: { isOpen: boolean, on
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <div className="p-6 bg-white rounded-[24px]">
+      <div className="p-6 bg-white rounded-3xl">
         {/* Кнопка закрытия */}
         <button
           onClick={onClose}
@@ -70,20 +70,19 @@ export default function TeamFormModal({ isOpen, onClose }: { isOpen: boolean, on
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              className="w-full px-4 py-2 rounded-[12px] border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
+              className="w-full px-4 py-2 rounded-xl border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
               placeholder="Введите название команды"
             />
           </div>
           
           <div>
-            <label htmlFor="groupLink" className="block mb-1 text-[16px] font-medium text-[#000150]">Ссылка на группу *</label>
+            <label htmlFor="groupLink" className="block mb-1 text-[16px] font-medium text-[#000150]">Ссылка на группу</label>
             <input
               type="url"
               id="groupLink"
               value={groupLink}
               onChange={(e) => setGroupLink(e.target.value)}
-              required
-              className="w-full px-4 py-2 rounded-[12px] border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
+              className="w-full px-4 py-2 rounded-xl border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
               placeholder="https://t.me/team_group"
             />
           </div>
@@ -92,14 +91,14 @@ export default function TeamFormModal({ isOpen, onClose }: { isOpen: boolean, on
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-2 px-4 bg-gray-200 text-gray-800 rounded-[16px] font-medium hover:bg-gray-300 transition-colors"
+              className="flex-1 py-2 px-4 bg-gray-200 text-gray-800 rounded-2xl font-medium hover:bg-gray-300 transition-colors"
             >
               Отмена
             </button>
             <button
               type="submit"
               disabled={isLoading}
-              className="flex-1 py-2 px-4 bg-[#000150] text-white rounded-[16px] font-medium hover:bg-blue-900 transition-colors disabled:opacity-50"
+              className="flex-1 py-2 px-4 bg-[#000150] text-white rounded-2xl font-medium hover:bg-blue-900 transition-colors disabled:opacity-50"
             >
               {isLoading ? 'Создание...' : 'Создать'}
             </button>

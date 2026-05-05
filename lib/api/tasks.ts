@@ -14,8 +14,8 @@ export interface CreateTaskData {
 }
 
 export interface UpdateTaskData {
-  description?: string;
-  is_completed?: boolean;
+  description?: string | null;
+  is_completed?: boolean | null;
 }
 
 
@@ -84,13 +84,17 @@ export const updateTask = async (taskId: string, data: UpdateTaskData): Promise<
   const accessToken = localStorage.getItem('access_token');
   if (!accessToken) throw new Error('No access token');
 
+  const body: Record<string, any> = {};
+  if (data.description !== undefined) body.description = data.description;
+  if (data.is_completed !== undefined) body.is_completed = data.is_completed;
+
   const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${accessToken}`
     },
-    body: JSON.stringify(data),
+    body: JSON.stringify(body),
   });
 
   if (!response.ok) {
@@ -130,6 +134,9 @@ export const moveTaskToNextMeeting = async (taskId: string): Promise<Task> => {
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
+    if (response.status === 400 && errorData.detail?.includes('предстоящих встреч')) {
+      throw new Error('Нет предстоящих встреч, на которые можно перенести задачу');
+    }
     throw new Error(errorData.detail || 'Failed to move task to next meeting');
   }
 

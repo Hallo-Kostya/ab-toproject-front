@@ -1,84 +1,120 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
   Meeting, 
   getMeetingById, 
   deleteMeeting, 
-  updateMeeting,
   addTaskToMeeting,
   removeTaskFromMeeting
 } from "@/lib/api/meetings";
-import { Task, getTasks, createTask, deleteTask, moveTaskToNextMeeting } from "@/lib/api/tasks";
-import { Artifact, getArtifact, deleteArtifact, attachArtifactToMeeting, detachArtifactFromMeeting } from "@/lib/api/artifacts";
+import { Task, getTasks, moveTaskToNextMeeting } from "@/lib/api/tasks";
+import { Artifact } from "@/lib/api/artifacts";
 import { Team, getTeamById } from "@/lib/api/teams";
 import { Student, getTeamStudents } from "@/lib/api/students";
 import { useAuth } from "@/context/AuthContext";
 import { useParams, useRouter } from 'next/navigation';
-import Modal from "@/components/ui/modal";
+// import Modal from "@/components/ui/modal";
 import EditMeetingForm from '@/components/forms/editMeetingForm';
 import DeleteMeetingModal from '@/components/ui/deleteMeetingModal';
 import TaskFormModal from '@/components/ui/taskFormModal';
 import DeleteTaskModal from '@/components/ui/deleteTaskModal';
+import EditTaskModal from '@/components/ui/editTaskModal';
 
 export default function MeetingPage() {
   const params = useParams();
   const router = useRouter();
   const { id } = params as { id: string };
-  
+
   const [meeting, setMeeting] = useState<Meeting | null>(null);
   const [team, setTeam] = useState<Team | null>(null);
+
   const [students, setStudents] = useState<Student[]>([]);
+  const [studentsError, setStudentsError] = useState<string | null>(null);
+  
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [tasksError, setTasksError] = useState<string | null>(null);
+  const [tasksLoading, setTasksLoading] = useState(false);
+  
   const [artifacts, setArtifacts] = useState<Artifact[]>([]);
+  // artifactsError
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [isDeleteTaskModalOpen, setIsDeleteTaskModalOpen] = useState(false);
+  const [isEditTaskModalOpen, setIsEditTaskModalOpen] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
+  const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
   
   const { isAuthenticated } = useAuth();
+
+  const fetchTasks = useCallback(async () => {
+    try {
+      setTasksLoading(true);
+      setTasksError(null);
+      const tasksData = await getTasks({ meeting_id: id });
+
+      const uniqueTasks = Array.from(
+        new Map(tasksData.map(task => [task.id, task])).values()
+      );
+      
+      setTasks(uniqueTasks);
+    } catch (err: any) {
+      console.warn('Failed to load tasks (soft failure):', err);
+      setTasksError(err.message || 'Не удалось загрузить задачи');
+      setTasks([]);
+    } finally {
+      setTasksLoading(false);
+    }
+  }, [id]);
+
+  const fetchStudents = useCallback(async () => {
+    try {
+      setStudentsError(null);
+      const studentsData = await getTeamStudents(meeting!.team_id);
+      setStudents(studentsData);
+    } catch (err: any) {
+      console.warn('Failed to load students (soft failure):', err);
+      setStudentsError('Не удалось загрузить участников');
+      setStudents([]);
+    }
+  }, [meeting]);
 
   useEffect(() => {
     if (!isAuthenticated || !id) return;
 
-    const fetchMeetingData = async () => {
+    const fetchCriticalData = async () => {
       try {
         setLoading(true);
-        
-        // 1. Данные встречи
+        setError(null);
+
         const meetingData = await getMeetingById(id);
         setMeeting(meetingData);
         
-        // 2. Данные команды
         const teamData = await getTeamById(meetingData.team_id);
         setTeam(teamData);
         
-        // 3. Студенты команды (возвращает Student[])
-        const studentsData = await getTeamStudents(meetingData.team_id);
-        setStudents(studentsData);
-        
-        // 4. Задачи встречи (фильтр по meeting_id)
-        const tasksData = await getTasks({ meeting_id: id });
-        setTasks(tasksData);
-        
-        // 5. Артефакты встречи (заглушка — если бекенд вернёт эндпоинт)
-        // const artifactsData = await getArtifacts({ meeting_id: id });
-        // setArtifacts(artifactsData);
-        
       } catch (err: any) {
         setError(err.message || 'Ошибка загрузки данных встречи');
-        console.error('Meeting data fetch error:', err);
+        console.error('Critical data fetch error:', err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchMeetingData();
+    fetchCriticalData();
   }, [isAuthenticated, id]);
+
+  useEffect(() => {
+    if (meeting?.team_id) {
+      fetchStudents();
+      fetchTasks();
+    }
+  }, [meeting, fetchStudents, fetchTasks]);
 
   // Удаление встречи
   const handleDeleteMeeting = async () => {
@@ -91,87 +127,58 @@ export default function MeetingPage() {
     }
   };
 
-  // Добавление задачи: создаём + привязываем к встрече
+  // Добавление задачи
   const handleAddTask = async (description: string) => {
     try {
-      // Сначала создаём задачу (независимую сущность)
-      const task = await createTask({ description });
-      // Затем привязываем её к встрече
-      await addTaskToMeeting(id, { description }); // или { task_id: task.id } если бекенд поддерживает
-      // Обновляем список задач
-      const updatedTasks = await getTasks({ meeting_id: id });
-      setTasks(updatedTasks);
+      // Если addTaskToMeeting сам создаёт задачу при необходимости:
+      await addTaskToMeeting(id, { description });
+      
+      // Просто перезагружаем список (с дедупликацией внутри fetchTasks)
+      await fetchTasks();
       setIsTaskModalOpen(false);
     } catch (err: any) {
       console.error('Task creation error:', err);
-      setError(err.message || 'Ошибка при создании задачи');
+      setTasksError(err.message || 'Ошибка при создании задачи');
     }
   };
 
-  // Удаление задачи (только связь со встречей, не сама задача)
+  // Удаление задачи
   const handleDeleteTask = async () => {
     if (!taskToDelete) return;
     
     try {
-      // Удаляем только связь задачи со встречей
       await removeTaskFromMeeting(id, taskToDelete.id);
-      // Обновляем список
-      const updatedTasks = await getTasks({ meeting_id: id });
-      setTasks(updatedTasks);
+      await fetchTasks();
       setIsDeleteTaskModalOpen(false);
       setTaskToDelete(null);
     } catch (err: any) {
       console.error('Task removal error:', err);
-      setError(err.message || 'Ошибка при удалении задачи');
+      setTasksError(err.message || 'Ошибка при удалении задачи');
     }
   };
+
+  const handleTaskUpdated = useCallback((updatedTask: Task) => {
+    setTasks(prev => prev.map(t => t.id === updatedTask.id ? updatedTask : t));
+  }, []);
 
   // Перенос задачи на следующую встречу
   const handleMoveTaskToNextMeeting = async (taskId: string) => {
     try {
       await moveTaskToNextMeeting(taskId);
-      // Обновляем список
-      const updatedTasks = await getTasks({ meeting_id: id });
-      setTasks(updatedTasks);
+      await fetchTasks(); // Перезагружаем задачи с дедупликацией
     } catch (err: any) {
       console.error('Task move error:', err);
-      setError(err.message || 'Ошибка при переносе задачи');
+      setTasksError(err.message || 'Ошибка при переносе задачи');
     }
   };
 
-  // Заглушка для загрузки артефакта (файл)
-  const handleUploadArtifact = async (file: File, name?: string, description?: string) => {
-    try {
-      // const artifact = await uploadFileArtifact(file, {
-      //   name,
-      //   description,
-      //   meeting_id: id
-      // });
-      // setArtifacts(prev => [...prev, artifact]);
-      console.log('Upload artifact placeholder', { file, name, description, meeting_id: id });
-    } catch (err: any) {
-      console.error('Artifact upload error:', err);
-      setError(err.message || 'Ошибка при загрузке артефакта');
-    }
-  };
-
-  // Заглушка для удаления артефакта
-  const handleDeleteArtifact = async (artifactId: string) => {
-    try {
-      await deleteArtifact(artifactId);
-      setArtifacts(prev => prev.filter(a => a.id !== artifactId));
-    } catch (err: any) {
-      console.error('Artifact deletion error:', err);
-      setError(err.message || 'Ошибка при удалении артефакта');
-    }
-  };
-
-  // Маппинг статусов для отображения
+  // Маппинг статусов
   const getMeetingStatusDisplay = (status: string) => {
     switch (status?.toUpperCase()) {
       case 'SCHEDULED': return 'Запланирована';
       case 'COMPLETED': return 'Завершена';
-      case 'CANCELLED': return 'Отменена';
+      case 'CANCELED': return 'Отменена';
+      case 'IN_PROGRESS': return 'В работе';
       default: return 'Запланирована';
     }
   };
@@ -224,7 +231,7 @@ export default function MeetingPage() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => setIsEditModalOpen(true)}
-                    className="flex items-center ml-auto bg-[#000150]/20 px-4 py-2 rounded-[20px] text-[#000150] text-[19px] font-semibold max-h-[47px] hover:bg-[#000150]/30 transition-colors"
+                    className="flex items-center ml-auto bg-[#000150]/20 px-4 py-2 rounded-[20px] text-[#000150] text-[19px] font-semibold max-h-11.75 hover:bg-[#000150]/30 transition-colors"
                     title="Редактировать встречу"
                   >
                     Редактировать
@@ -242,14 +249,14 @@ export default function MeetingPage() {
               )}
             </div>
           </div>
-          <div className="flex flex-wrap items-center gap-[24px]">
+          <div className="flex flex-wrap items-center gap-6">
             <p><span className="text-[24px] text-[#000150]">Команда: <span className="font-medium">{team.name}</span></span></p>
-            <div className="px-3 py-[1px] bg-[#E79E00]/20 rounded-[8px]">
+            <div className="px-3 py-px bg-[#E79E00]/20 rounded-lg">
               <span className="text-[#E79E00] text-[20px] font-medium">
                 {new Date(meeting.date).toLocaleDateString('ru-RU')} в {new Date(meeting.date).toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'})}
               </span>
             </div>
-            <div className="px-3 py-[1px] bg-[#000150]/10 rounded-[8px]">
+            <div className="px-3 py-px bg-[#000150]/10 rounded-lg">
               <span className="text-[#000150] text-[18px] font-medium">
                 {getMeetingStatusDisplay(meeting.status)}
               </span>
@@ -258,33 +265,26 @@ export default function MeetingPage() {
         </div>
         
         {/* Резюме встречи */}
-        <div className="flex flex-col gap-[36px]">
+        <div className="flex flex-col gap-9">
           <Section title={"Резюме"} content={meeting.resume} />
         </div>
-        
-        {/* Участники команды */}
+
         <div className="mb-12">
-          <h2 className="text-[24px] text-[#000150] font-medium mb-[28px]">Участники команды</h2>
-          {students.length > 0 ? (
+          <h2 className="text-[24px] text-[#000150] font-medium mb-7">Участники команды</h2>
+          {studentsError ? (
+            <div className="p-3 bg-yellow-50 text-yellow-800 rounded text-sm">
+              {studentsError}
+            </div>
+          ) : students.length > 0 ? (
             <ul className="flex flex-col gap-4">
               {students.map((student, index) => (
-                <li 
-                  key={`meeting-student-${student.id}-${index}`} 
-                  className="flex gap-4 items-center"
-                >
-                  <span className="w-9 h-9 flex items-center justify-center bg-[#000150]/10 rounded-full text-[#000150] text-[20px] mb-[2px]">
+                <li key={`meeting-student-${student.id}-${index}`} className="flex gap-4 items-center">
+                  <span className="w-9 h-9 flex items-center justify-center bg-[#000150]/10 rounded-full text-[#000150] text-[20px] mb-0.5">
                     {index + 1}
                   </span>
                   <span className="flex-1 text-[20px]">
                     {student.last_name} {student.first_name} {student.patronymic || ''}
                   </span>
-                  {/* Если бекенд вернёт role/study_group */}
-                  {/* <span className="font-semibold text-center w-[124px] ml-auto px-3 py-1 bg-[#000150]/20 rounded-[16px] text-[#000150]">
-                    {(student as any).study_group || 'не указана'}
-                  </span>
-                  <span className="font-semibold text-center w-[124px] ml-[72px] px-3 py-1 bg-[#000150]/20 rounded-[16px] text-[#000150]">
-                    {(student as any).role || 'не указана'}
-                  </span> */}
                 </li>
               ))}
             </ul>
@@ -294,10 +294,9 @@ export default function MeetingPage() {
             </div>
           )}
         </div>
-        
-        {/* Задачи встречи */}
-        <div className="mt-[36px]">
-          <div className="flex items-center justify-between mb-[16px]">
+
+        <div className="mt-9">
+          <div className="flex items-center justify-between mb-4">
             <h2 className="text-[24px] text-[#000150] font-medium">Задачи встречи</h2>
             {isAuthenticated && (
               <button
@@ -309,24 +308,61 @@ export default function MeetingPage() {
             )}
           </div>
           
-          <div className="flex items-center mb-[24px]">
+          <div className="flex items-center mb-6">
             <p className="text-[18px] text-[#353535]">Задач найдено: <span className="text-[18px] text-[#000150] font-semibold">{tasks.length}</span></p>
           </div>
+
+          {tasksError && (
+            <div className="mb-4 p-3 bg-yellow-50 text-yellow-800 rounded text-sm">
+              {tasksError}
+            </div>
+          )}
           
-          {tasks.length > 0 ? (
+          {tasksLoading ? (
+            <p className="text-gray-500">Загрузка задач...</p>
+          ) : tasks.length > 0 ? (
             <ul className="space-y-4">
               {tasks.map((task) => (
                 <li 
                   key={task.id} 
-                  className="flex items-center justify-between p-4 bg-white rounded-[12px] border border-gray-200 hover:shadow-md transition-shadow relative group"
+                  className={`
+                    flex items-center justify-between p-4 rounded-xl border border-gray-200 
+                    transition-all relative group
+                    ${task.is_completed 
+                      ? 'bg-green-50/50 backdrop-blur-[2px] border-green-200' 
+                      : 'bg-white hover:shadow-md'
+                    }
+                  `}
                 >
                   <div className="flex items-start gap-3 flex-1">
+                    {task.is_completed && (
+                      <span className="text-green-600 mt-0.5" title="Выполнено">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </span>
+                    )}
                     <span className={`text-[18px] ${task.is_completed ? 'line-through text-gray-500' : 'text-gray-800'}`}>
                       {task.description}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    {/* Кнопка переноса задачи (если бекенд поддерживает) */}
+
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {/* Редактирование */}
+                    <button
+                      onClick={() => {
+                        setTaskToEdit(task);
+                        setIsEditTaskModalOpen(true);
+                      }}
+                      className="p-1 text-gray-500 hover:text-[#000150] transition-colors"
+                      title="Редактировать задачу"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                    </button>
+                    
+                    {/* Перенос */}
                     <button
                       onClick={() => handleMoveTaskToNextMeeting(task.id)}
                       className="p-1 text-gray-500 hover:text-[#000150] transition-colors"
@@ -336,6 +372,8 @@ export default function MeetingPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                       </svg>
                     </button>
+                    
+                    {/* Удаление связи */}
                     <button
                       onClick={() => {
                         setTaskToDelete(task);
@@ -360,13 +398,13 @@ export default function MeetingPage() {
         </div>
 
         {/* Артефакты встречи (заглушка) */}
-        <div className="mt-[36px]">
-          <div className="flex items-center justify-between mb-[16px]">
+        <div className="mt-9">
+          <div className="flex items-center justify-between mb-4">
             <h2 className="text-[24px] text-[#000150] font-medium">Артефакты</h2>
             {isAuthenticated && (
               <button
                 className="px-4 py-2 bg-[#000150]/20 text-[#000150] rounded-[20px] hover:bg-[#000150]/30 transition-colors"
-                disabled // Раскомментировать, когда будет модальное окно
+                disabled
                 title="Функционал в разработке"
               >
                 + Добавить
@@ -374,20 +412,18 @@ export default function MeetingPage() {
             )}
           </div>
           
-          <div className="flex items-center mb-[24px]">
+          <div className="flex items-center mb-6">
             <p className="text-[18px] text-[#353535]">Артефактов найдено: <span className="text-[18px] text-[#000150] font-semibold">{artifacts.length}</span></p>
           </div>
           
           {artifacts.length > 0 ? (
             <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {artifacts.map((artifact) => (
-                <li key={artifact.id} className="p-4 bg-white rounded-[12px] border border-gray-200">
+                <li key={artifact.id} className="p-4 bg-white rounded-xl border border-gray-200">
                   <div className="flex items-start justify-between">
                     <div>
                       <h4 className="font-medium text-[#000150]">{artifact.name}</h4>
-                      {artifact.description && (
-                        <p className="text-sm text-gray-600 mt-1">{artifact.description}</p>
-                      )}
+                      {artifact.description && <p className="text-sm text-gray-600 mt-1">{artifact.description}</p>}
                       {artifact.file_url && (
                         <a href={artifact.file_url} target="_blank" rel="noopener noreferrer" className="text-sm text-[#000150] hover:underline mt-2 inline-block">
                           📎 Скачать файл
@@ -399,17 +435,6 @@ export default function MeetingPage() {
                         </a>
                       )}
                     </div>
-                    {isAuthenticated && (
-                      <button
-                        onClick={() => handleDeleteArtifact(artifact.id)}
-                        className="p-1 text-gray-400 hover:text-red-500 transition-colors"
-                        title="Удалить артефакт"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                    )}
                   </div>
                 </li>
               ))}
@@ -454,14 +479,26 @@ export default function MeetingPage() {
         taskDescription={taskToDelete?.description || ''}
         onConfirm={handleDeleteTask}
       />
+
+      {taskToEdit && (
+        <EditTaskModal
+          isOpen={isEditTaskModalOpen}
+          onClose={() => {
+            setIsEditTaskModalOpen(false);
+            setTaskToEdit(null);
+          }}
+          task={taskToEdit}
+          onTaskUpdated={handleTaskUpdated}
+        />
+      )}
     </>
   );
 }
 
 function Section({ title, content }: { title: string; content: string }) {
   return (
-    <div className="border-b border-gray-300/40 pb-[18px]">
-      <h2 className="text-[24px] text-[#000150] font-medium mb-[12px]">{title}</h2>
+    <div className="border-b border-gray-300/40 pb-4.5">
+      <h2 className="text-[24px] text-[#000150] font-medium mb-3">{title}</h2>
       <p className="text-[22px] leading-relaxed whitespace-pre-wrap">{content}</p>
     </div>
   );

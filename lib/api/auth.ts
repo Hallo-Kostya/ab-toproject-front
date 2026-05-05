@@ -1,5 +1,6 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001/api';
 
+// TODO: Пока без видоизменений
 export interface AuthResponse {
   access_token: string;
   refresh_token: string;

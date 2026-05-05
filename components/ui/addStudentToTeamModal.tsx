@@ -103,7 +103,7 @@ export default function AddStudentToTeamModal({ isOpen, onClose, teamId, onStude
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block mb-1 text-[16px] font-medium text-[#000150]">Выберите студента *</label>
-              <div className="max-h-60 overflow-y-auto border border-gray-300 rounded-[12px] p-2">
+              <div className="max-h-60 overflow-y-auto border border-gray-300 rounded-xl p-2">
                 {students.length === 0 ? (
                   <p className="text-center text-gray-500 py-4">Нет доступных студентов</p>
                 ) : (
@@ -112,7 +112,7 @@ export default function AddStudentToTeamModal({ isOpen, onClose, teamId, onStude
                       key={student.id || `student-${student.email}-${student.last_name}`}
                       type="button"
                       onClick={() => setSelectedStudentId(student.id)}
-                      className={`w-full text-left px-4 py-2 rounded-[8px] mb-1 transition-colors ${
+                      className={`w-full text-left px-4 py-2 rounded-lg mb-1 transition-colors ${
                         selectedStudentId === student.id
                           ? 'bg-[#000150] text-white'
                           : 'hover:bg-gray-100 text-gray-800'
@@ -127,28 +127,27 @@ export default function AddStudentToTeamModal({ isOpen, onClose, teamId, onStude
             </div>
             
             <div>
-              <label htmlFor="role" className="block mb-1 text-[16px] font-medium text-[#000150]">Роль в команде *</label>
+              <label htmlFor="role" className="block mb-1 text-[16px] font-medium text-[#000150]">Роль в команде</label>
               <select
                 id="role"
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
-                required
-                className="w-full px-4 py-2 rounded-[12px] border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
+                className="w-full px-4 py-2 rounded-xl border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
               >
+                <option value="">Не указано</option>
                 <option value="Участник">Участник</option>
                 <option value="Тимлид">Тимлид</option>
               </select>
             </div>
             
             <div>
-              <label htmlFor="studyGroup" className="block mb-1 text-[16px] font-medium text-[#000150]">Учебная группа *</label>
+              <label htmlFor="studyGroup" className="block mb-1 text-[16px] font-medium text-[#000150]">Учебная группа</label>
               <input
                 type="text"
                 id="studyGroup"
                 value={studyGroup}
                 onChange={(e) => setStudyGroup(e.target.value)}
-                required
-                className="w-full px-4 py-2 rounded-[12px] border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
+                className="w-full px-4 py-2 rounded-xl border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
                 placeholder="Введите номер группы"
               />
             </div>
@@ -157,14 +156,14 @@ export default function AddStudentToTeamModal({ isOpen, onClose, teamId, onStude
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 py-2 px-4 bg-gray-200 text-gray-800 rounded-[16px] font-medium hover:bg-gray-300 transition-colors"
+                className="flex-1 py-2 px-4 bg-gray-200 text-gray-800 rounded-2xl font-medium hover:bg-gray-300 transition-colors"
               >
                 Отмена
               </button>
               <button
                 type="submit"
                 disabled={isLoading || !selectedStudentId}
-                className="flex-1 py-2 px-4 bg-[#000150] text-white rounded-[16px] font-medium hover:bg-blue-900 transition-colors disabled:opacity-50"
+                className="flex-1 py-2 px-4 bg-[#000150] text-white rounded-2xl font-medium hover:bg-blue-900 transition-colors disabled:opacity-50"
               >
                 {isLoading ? 'Добавление...' : 'Добавить участника'}
               </button>

@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Modal from "@/components/ui/modal";
-import { createMeeting } from "@/lib/api/meetings";
-import { getTeams, Team } from "@/lib/api/teams";
+import { createMeeting, CreateMeetingData } from "@/lib/api/meetings";
+import { getTeams, TeamSummary } from "@/lib/api/teams";
 import { useAuth } from "@/context/AuthContext";
 
 export default function MeetingFormModal({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
@@ -11,9 +11,11 @@ export default function MeetingFormModal({ isOpen, onClose }: { isOpen: boolean,
   const [resume, setResume] = useState('');
   const [date, setDate] = useState('');
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
-  const [status, setStatus] = useState('SCHEDULED');
+  const [status, setStatus] = useState<'SCHEDULED' | 'COMPLETED' | 'CANCELLED'>('SCHEDULED');
   const [previousMeetingId, setPreviousMeetingId] = useState<string | null>(null);
-  const [teams, setTeams] = useState<Team[]>([]);
+
+  const [teams, setTeams] = useState<TeamSummary[]>([]);
+  
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [loadingTeams, setLoadingTeams] = useState(true);
@@ -28,11 +30,14 @@ export default function MeetingFormModal({ isOpen, onClose }: { isOpen: boolean,
   const fetchTeams = async () => {
     try {
       setLoadingTeams(true);
-      const data = await getTeams();
-      setTeams(data);
+
+      const response = await getTeams();
+
+      setTeams(response.teams);
     } catch (err: any) {
       setError(err.message || 'Ошибка загрузки команд');
       console.error('Teams fetch error:', err);
+      setTeams([]);
     } finally {
       setLoadingTeams(false);
     }
@@ -49,20 +54,20 @@ export default function MeetingFormModal({ isOpen, onClose }: { isOpen: boolean,
     setIsLoading(true);
 
     try {
-      const meetingData = {
+      const meetingData: CreateMeetingData = {
         name,
         resume,
         date,
         team_id: selectedTeamId,
         status,
-        previous_meeting_id: previousMeetingId
+        previous_meeting_id: previousMeetingId || undefined
       };
 
       await createMeeting(meetingData);
 
       onClose();
       
-      // обновляем страницу
+      // Обновляем страницу
       setTimeout(() => {
         window.location.reload();
       }, 300);
@@ -77,7 +82,7 @@ export default function MeetingFormModal({ isOpen, onClose }: { isOpen: boolean,
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <div className="p-6 bg-white rounded-[24px]">
+      <div className="p-6 bg-white rounded-3xl">
         {/* Кнопка закрытия */}
         <button
           onClick={onClose}
@@ -107,20 +112,19 @@ export default function MeetingFormModal({ isOpen, onClose }: { isOpen: boolean,
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              className="w-full px-4 py-2 rounded-[12px] border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
+              className="w-full px-4 py-2 rounded-xl border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
               placeholder="Введите название встречи"
             />
           </div>
           
           <div>
-            <label htmlFor="resume" className="block mb-1 text-[16px] font-medium text-[#000150]">Резюме *</label>
+            <label htmlFor="resume" className="block mb-1 text-[16px] font-medium text-[#000150]">Резюме</label>
             <textarea
               id="resume"
               value={resume}
               onChange={(e) => setResume(e.target.value)}
-              required
               rows={3}
-              className="w-full px-4 py-2 rounded-[12px] border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
+              className="w-full px-4 py-2 rounded-xl border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
               placeholder="Краткое описание встречи"
             />
           </div>
@@ -133,7 +137,7 @@ export default function MeetingFormModal({ isOpen, onClose }: { isOpen: boolean,
               value={date}
               onChange={(e) => setDate(e.target.value)}
               required
-              className="w-full px-4 py-2 rounded-[12px] border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
+              className="w-full px-4 py-2 rounded-xl border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
             />
           </div>
           
@@ -144,26 +148,31 @@ export default function MeetingFormModal({ isOpen, onClose }: { isOpen: boolean,
               value={selectedTeamId || ''}
               onChange={(e) => setSelectedTeamId(e.target.value)}
               required
-              className="w-full px-4 py-2 rounded-[12px] border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
+              disabled={loadingTeams}
+              className="w-full px-4 py-2 rounded-xl border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20 disabled:bg-gray-100"
             >
               <option value="">Выберите команду</option>
-              {teams.map((team) => (
-                <option key={team.id} value={team.id}>
-                  {team.name}
-                </option>
-              ))}
+              {loadingTeams ? (
+                <option disabled>Загрузка...</option>
+              ) : teams.length === 0 ? (
+                <option disabled>Нет доступных команд</option>
+              ) : (
+                teams.map((team) => (
+                  <option key={team.id} value={team.id}>
+                    {team.name} ({team.members_count} участн.)
+                  </option>
+                ))
+              )}
             </select>
-            {loadingTeams && <p className="text-sm text-gray-500 mt-1">Загрузка команд...</p>}
           </div>
           
           <div>
-            <label htmlFor="status" className="block mb-1 text-[16px] font-medium text-[#000150]">Статус *</label>
+            <label htmlFor="status" className="block mb-1 text-[16px] font-medium text-[#000150]">Статус</label>
             <select
               id="status"
               value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              required
-              className="w-full px-4 py-2 rounded-[12px] border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
+              onChange={(e) => setStatus(e.target.value as 'SCHEDULED' | 'COMPLETED' | 'CANCELLED')}
+              className="w-full px-4 py-2 rounded-xl border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
             >
               <option value="SCHEDULED">Запланирована</option>
               <option value="COMPLETED">Завершена</option>
@@ -177,7 +186,7 @@ export default function MeetingFormModal({ isOpen, onClose }: { isOpen: boolean,
               id="previousMeeting"
               value={previousMeetingId || ''}
               onChange={(e) => setPreviousMeetingId(e.target.value || null)}
-              className="w-full px-4 py-2 rounded-[12px] border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
+              className="w-full px-4 py-2 rounded-xl border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
             >
               <option value="">Не выбрана</option>
               {/* Здесь можно добавить список предыдущих встреч, если нужно */}
@@ -188,14 +197,14 @@ export default function MeetingFormModal({ isOpen, onClose }: { isOpen: boolean,
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-2 px-4 bg-gray-200 text-gray-800 rounded-[16px] font-medium hover:bg-gray-300 transition-colors"
+              className="flex-1 py-2 px-4 bg-gray-200 text-gray-800 rounded-2xl font-medium hover:bg-gray-300 transition-colors"
             >
               Отмена
             </button>
             <button
               type="submit"
-              disabled={isLoading || loadingTeams}
-              className="flex-1 py-2 px-4 bg-[#000150] text-white rounded-[16px] font-medium hover:bg-blue-900 transition-colors disabled:opacity-50"
+              disabled={isLoading || loadingTeams || !selectedTeamId}
+              className="flex-1 py-2 px-4 bg-[#000150] text-white rounded-2xl font-medium hover:bg-blue-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? 'Создание...' : 'Создать'}
             </button>
