@@ -1,5 +1,5 @@
 'use client'
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { register } from "@/lib/api/auth";
@@ -81,7 +81,7 @@ export default function RegistrationDetailsPage() {
       className="min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat" 
       style={{ backgroundImage: 'url(/register-background.jpg)' }}
     >
-      <div className="w-[560px] min-w-[180px] mx-auto p-6 bg-white rounded-[24px] shadow-lg">
+      <div className="w-140 min-w-45 mx-auto p-6 bg-white rounded-3xl shadow-lg">
         <h1 className="text-3xl text-[#000150] font-bold mb-1">Регистрация</h1>
         <p className="mb-6 text-[16px] text-gray-600">Введите данные, чтобы завершить регистрацию</p>
         {error && (
@@ -89,7 +89,7 @@ export default function RegistrationDetailsPage() {
             {error}
           </div>
         )}
-        <form onSubmit={handleSubmit} className="mb-[18px]">
+        <form onSubmit={handleSubmit} className="mb-4.5">
           <div className="mb-5">
             <div className="relative">
               <span className="absolute left-3 top-1/2 transform -translate-y-1/2">
@@ -102,7 +102,7 @@ export default function RegistrationDetailsPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                className="w-full pl-[47px] pr-4 py-[12px] rounded-[16px] border-[2px] border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
+                className="w-full pl-11.75 pr-4 py-3 rounded-2xl border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
                 placeholder="Введите имя"
               />
             </div>
@@ -119,7 +119,7 @@ export default function RegistrationDetailsPage() {
                 value={surname}
                 onChange={(e) => setSurname(e.target.value)}
                 required
-                className="w-full pl-[47px] pr-4 py-[12px] rounded-[16px] border-[2px] border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
+                className="w-full pl-11.75 pr-4 py-3 rounded-2xl border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
                 placeholder="Введите фамилию"
               />
             </div>
@@ -134,7 +134,7 @@ export default function RegistrationDetailsPage() {
                 id="patronymic"
                 value={patronymic}
                 onChange={(e) => setPatronymic(e.target.value)}
-                className="w-full pl-[47px] pr-4 py-[12px] rounded-[16px] border-[2px] border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
+                className="w-full pl-11.75 pr-4 py-3 rounded-2xl border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
                 placeholder="Введите отчество (необязательно)"
               />
             </div>
@@ -150,16 +150,16 @@ export default function RegistrationDetailsPage() {
                 name="tgLink"
                 value={tgLink}
                 onChange={(e) => setTgLink(e.target.value)}
-                className="w-full pl-[47px] pr-4 py-[12px] rounded-[16px] border-[2px] border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
+                className="w-full pl-11.75 pr-4 py-3 rounded-2xl border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
                 placeholder="Ссылка на Telegram (необязательно)"
               />
             </div>
           </div>
-          <div className="flex justify-center mt-[18px]">
+          <div className="flex justify-center mt-4.5">
             <button
               type="submit"
               disabled={isLoading}
-              className="max-w-[201px] bg-[#000150] text-white font-bold text-xl py-[11.5px] px-[29.5px] rounded-[16px] hover:bg-blue-900 transition-colors"
+              className="max-w-50.25 bg-[#000150] text-white font-bold text-xl py-[11.5px] px-[29.5px] rounded-2xl hover:bg-blue-900 transition-colors"
             >
               {isLoading ? 'Регистрация...' : 'Регистрация'}
             </button>

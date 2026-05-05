@@ -115,14 +115,14 @@ function SortingComponent({
   ];
 
   return (
-    <div className="flex gap-4.5 items-center">
+    <div className="flex gap-3 items-center">
       {/* Фильтр по году */}
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-2">
         <span className="text-[18px] text-[#353535]">Год:</span>
         <div className="relative">
           <select
-            value={filterYear || ''}
-            onChange={(e) => onYearChange?.(e.target.value || null)}
+            value={filterYear?.toString() || 'все'}
+            onChange={(e) => onYearChange?.(e.target.value)}
             className="
               appearance-none 
               bg-white 
@@ -147,26 +147,19 @@ function SortingComponent({
               <option key={y} value={y}>{y}</option>
             ))}
           </select>
-
           <div className="absolute right-1 top-1/2 -translate-y-1/2 pointer-events-none">
-            <Image 
-              src="/chevron-down.svg" 
-              alt="" 
-              width={18} 
-              height={18} 
-              className="opacity-60"
-            />
+            <Image src="/chevron-down.svg" alt="" width={18} height={18} className="opacity-60" />
           </div>
         </div>
       </div>
 
       {/* Фильтр по семестру */}
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-2">
         <span className="text-[18px] text-[#353535]">Семестр:</span>
         <div className="relative">
           <select
-            value={filterSemester || ''}
-            onChange={(e) => onSemesterChange?.(e.target.value || null)}
+            value={filterSemester || 'все'}
+            onChange={(e) => onSemesterChange?.(e.target.value)}
             className="
               appearance-none 
               bg-white 
@@ -191,15 +184,8 @@ function SortingComponent({
               <option key={s.value} value={s.value}>{s.label}</option>
             ))}
           </select>
-
           <div className="absolute right-1 top-1/2 -translate-y-1/2 pointer-events-none">
-            <Image 
-              src="/chevron-down.svg" 
-              alt="" 
-              width={18} 
-              height={18} 
-              className="opacity-60"
-            />
+            <Image src="/chevron-down.svg" alt="" width={18} height={18} className="opacity-60" />
           </div>
         </div>
       </div>

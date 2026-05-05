@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Modal from "@/components/ui/modal";
 import { updateProject, Project } from "@/lib/api/projects";
-import { useAuth } from "@/context/AuthContext";
+// import { useAuth } from "@/context/AuthContext";
 
 interface EditProjectFormProps {
   isOpen: boolean;
@@ -23,7 +23,7 @@ export default function EditProjectForm({ isOpen, onClose, projectId, initialDat
   const [status, setStatus] = useState(initialData.status);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { refreshTokens } = useAuth();
+  // const { refreshTokens } = useAuth();
 
   useEffect(() => {
     // обновляем данные формы при изменении initialData

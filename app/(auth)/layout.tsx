@@ -11,7 +11,7 @@ export default async function AuthLayout({
     <div className="flex flex-col min-h-screen">
       <Header />
       
-        <main className=" flex-grow w-full">
+        <main className=" grow w-full">
           <Container className="mt-14 mb-28">
           {children}
           </Container>

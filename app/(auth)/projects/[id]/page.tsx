@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Project, getProjectById, deleteProject, getProjectTeams, removeTeamFromProject } from "@/lib/api/projects";
+import { Project, getProjectById, getProjectTeams } from "@/lib/api/projects";
 import { TeamSummary } from "@/lib/api/teams";
 import { useAuth } from "@/context/AuthContext";
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import DeleteProjectModal from '@/components/ui/deleteProjectModal';
 import EditProjectForm from '@/components/forms/editProjectForm';
 import AssignTeamToProjectModal from '@/components/ui/assignTeamToProjectModal';
@@ -12,7 +12,6 @@ import ProjectTeamCard from '@/components/ui/cards/projectTeamCard';
 
 export default function ProjectPage() {
   const params = useParams();
-  const router = useRouter();
   const { id } = params as { id: string };
   
   const [project, setProject] = useState<Project | null>(null);

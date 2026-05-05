@@ -36,7 +36,7 @@ export default function ProtectedRoute({
     };
 
     checkAuth();
-  }, [isAuthenticated, isLoading, requireAuth, router, refreshTokens]);
+  }, [isAuthenticated, isLoading, requireAuth, router, refreshTokens, redirectUnauthenticatedTo, redirectAuthenticatedTo]);
 
   if (isLoading) {
     return (

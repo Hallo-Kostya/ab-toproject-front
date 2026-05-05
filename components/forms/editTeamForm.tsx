@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Modal from "@/components/ui/modal";
 import { updateTeam, Team } from "@/lib/api/teams";
-import { useAuth } from "@/context/AuthContext";
+// import { useAuth } from "@/context/AuthContext";
 
 interface EditTeamFormProps {
   isOpen: boolean;
@@ -17,7 +17,7 @@ export default function EditTeamForm({ isOpen, onClose, teamId, initialData }: E
   const [groupLink, setGroupLink] = useState(initialData.group_link);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { refreshTokens } = useAuth();
+  // const { refreshTokens } = useAuth();
 
   useEffect(() => {
     // обновляем данные формы при изменении initialData

@@ -83,7 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   };
 
-  const handleLoginSuccess = async (tokens: AuthResponse) => {
+  const handleLoginSuccess = useCallback(async (tokens: AuthResponse) => {
     try {
       // сохраняем токены
       localStorage.setItem('access_token', tokens.access_token);
@@ -102,7 +102,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       clearAuthData();
       throw error;
     }
-  };
+  });
 
   const login = useCallback(async (tokens: AuthResponse) => {
     setIsLoading(true);
@@ -118,7 +118,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, [router]);
+  }, [handleLoginSuccess, router]);
 
   const logout = useCallback(async () => {
     setIsLoading(true);

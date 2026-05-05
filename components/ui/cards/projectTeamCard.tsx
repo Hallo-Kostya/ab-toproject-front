@@ -9,7 +9,6 @@ import { parseFullName } from "@/lib/api/teams";
 import { Student } from "@/lib/api/students";
 import Modal from "@/components/ui/modal";
 import { useAuth } from "@/context/AuthContext";
-import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { truncateText } from '@/utils/truncateText';
 
@@ -25,8 +24,7 @@ export default function ProjectTeamCard({ team, projectId, onTeamRemoved }: Proj
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const { isAuthenticated } = useAuth();
-  const router = useRouter();
+  useAuth();
 
   useEffect(() => {
     const fetchTeamData = async () => {

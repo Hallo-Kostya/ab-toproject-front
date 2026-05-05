@@ -52,8 +52,8 @@ export default function UserMenu({ user, onLogout }: UserMenuProps) {
 
   return (
     <>
-      <div className="flex gap-[6px] items-center min-w-[100px] ml-auto">
-        <div className="user-info py-[5px] flex flex-col">
+      <div className="flex gap-1.5 items-center min-w-25 ml-auto">
+        <div className="user-info py-1.25 flex flex-col">
           <p className="whitespace-nowrap text-[#000150] text-[13.5px] font-semibold">{displayName}</p>
           <button 
             onClick={handleLogout}
@@ -63,11 +63,11 @@ export default function UserMenu({ user, onLogout }: UserMenuProps) {
           </button>
         </div>
         <div 
-          className="min-w-[39px] w-[39px] h-[39px] cursor-pointer hover:opacity-80 transition-opacity flex-shrink-0"
+          className="min-w-9.75 w-9.75 h-9.75 cursor-pointer hover:opacity-80 transition-opacity shrink-0"
           onClick={handleAvatarClick}
           title="Изменить аватар"
         >
-          <div className="relative w-full h-full rounded-full overflow-hidden border-2 border-white shadow-sm mt-[2px]">
+          <div className="relative w-full h-full rounded-full overflow-hidden border-2 border-white shadow-sm mt-0.5">
             <Image
               src={avatarUrl}
               alt={`${displayName} avatar`}

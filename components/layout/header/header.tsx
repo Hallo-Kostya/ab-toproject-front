@@ -52,9 +52,9 @@ export default function Header() {
   if (!mounted) {
     return (
       <header className="bg-[#F4F3F3] shadow-md">
-        <Container className="py-[23px]">
+        <Container className="py-5.75">
           <div className="flex items-center justify-between">
-            <div className="min-w-[100px] w-[135px]">
+            <div className="min-w-25 w-33.75">
               <Link href={"/projects"}>
                 <Image
                   src="/logo.svg"
@@ -67,7 +67,7 @@ export default function Header() {
               </Link>
             </div>
             <nav>
-              <ul className="flex gap-[32px] justify-start">
+              <ul className="flex gap-8 justify-start">
                 <li>
                   <span className="text-[#000150] text-[17px] whitespace-nowrap opacity-0">Войти</span>
                 </li>
@@ -85,9 +85,9 @@ export default function Header() {
   if (!user) {
     return (
       <header className="bg-[#F4F3F3] shadow-md">
-        <Container className="py-[23px]">
+        <Container className="py-5.75">
           <div className="flex items-center justify-between">
-            <div className="min-w-[100px] w-[135px]">
+            <div className="min-w-25 w-33.75">
               <Link href={"/projects"}>
                 <Image
                   src="/logo.svg"
@@ -99,7 +99,7 @@ export default function Header() {
               </Link>
             </div>
             <nav>
-              <ul className="flex gap-[32px] justify-start">
+              <ul className="flex gap-8 justify-start">
                 <li>
                   <Link href={"/login"} className="whitespace-nowrap">
                     <span className="text-[#000150] text-[17px]">Войти</span>
@@ -121,9 +121,9 @@ export default function Header() {
   return (
     <>
       <header className="bg-[#F4F3F3] shadow-md">
-        <Container className="py-[23px]">
+        <Container className="py-5.75">
           <div className="flex items-center justify-between">
-            <div className="min-w-[100px] w-[135px]">
+            <div className="min-w-25 w-33.75">
               <Link href={"/projects"}>
                 <Image
                   src="/logo.svg"
@@ -136,15 +136,15 @@ export default function Header() {
             </div>
             
             {/* Адаптивная поисковая строка */}
-            <div className="flex items-center gap-[32px] min-w-0 flex-1 ml-12">
-              <div className="min-w-[48px] w-full max-w-[448px] h-[48px] bg-[#DBDFFF]/30 border-1 border-[#DBDFFF] rounded-[12px] flex items-center px-3">
-                <span className="flex items-center justify-center mr-[10px] w-[24px] h-[24px] flex-shrink-0">
+            <div className="flex items-center gap-8 min-w-0 flex-1 ml-12">
+              <div className="min-w-12 w-full max-w-md h-12 bg-[#DBDFFF]/30 border border-[#DBDFFF] rounded-xl flex items-center px-3">
+                <span className="flex items-center justify-center mr-2.5 w-6 h-6 shrink-0">
                   <Image
                     src="/search.svg"
                     alt={"Поиск"}
                     width={24}
                     height={24}
-                    className="w-[24px] h-[24px] object-contain"
+                    className="w-6 h-6 object-contain"
                   />
                 </span>
                 <input
@@ -159,20 +159,20 @@ export default function Header() {
               <div className="relative mx-auto " ref={addMenuRef}>
                 <button
                   onClick={() => setIsAddMenuOpen(!isAddMenuOpen)}
-                  className="flex items-center gap-2 bg-[#000150] text-white px-4 py-2 rounded-[24px] hover:bg-blue-900 transition-colors"
+                  className="flex items-center gap-2 bg-[#000150] text-white px-4 py-2 rounded-3xl hover:bg-blue-900 transition-colors"
                 >
-                  <span className="text-xl font-bold pb-[3px]">+</span>
+                  <span className="text-xl font-bold pb-0.75">+</span>
                   <span className="hidden sm:inline">Добавить</span>
                 </button>
                 
                 {isAddMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-[12px] shadow-lg border border-gray-200 z-50">
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 z-50">
                     <button
                       onClick={() => {
                         setIsAddMenuOpen(false);
                         setIsProjectModalOpen(true);
                       }}
-                      className="block w-full text-left px-4 py-2 hover:bg-gray-100 rounded-[8px] text-[#000150] font-medium"
+                      className="block w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg text-[#000150] font-medium"
                     >
                       Проект
                     </button>
@@ -181,7 +181,7 @@ export default function Header() {
                         setIsAddMenuOpen(false);
                         setIsStudentModalOpen(true);
                       }}
-                      className="block w-full text-left px-4 py-2 hover:bg-gray-100 rounded-[8px] text-[#000150] font-medium"
+                      className="block w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg text-[#000150] font-medium"
                     >
                       Студент
                     </button>
@@ -190,7 +190,7 @@ export default function Header() {
                         setIsAddMenuOpen(false);
                         setIsTeamModalOpen(true);
                       }}
-                      className="block w-full text-left px-4 py-2 hover:bg-gray-100 rounded-[8px] text-[#000150] font-medium"
+                      className="block w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg text-[#000150] font-medium"
                     >
                       Команда
                     </button>
@@ -199,7 +199,7 @@ export default function Header() {
                         setIsAddMenuOpen(false);
                         setIsMeetingModalOpen(true);
                       }}
-                      className="block w-full text-left px-4 py-2 hover:bg-gray-100 rounded-[8px] text-[#000150] font-medium"
+                      className="block w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg text-[#000150] font-medium"
                     >
                       Встреча
                     </button>
@@ -209,7 +209,7 @@ export default function Header() {
               
               {/* Навигация в одну строку */}
               <nav className="mx-auto">
-                <ul className="flex flex-wrap gap-[24px]">
+                <ul className="flex flex-wrap gap-6">
                   <li>
                     <Link href={"/projects"} className={isActiveLink('/projects') ? "font-bold text-blue-900" : ""}>
                       <span className="text-[#000150] text-[17px]">Проекты</span>

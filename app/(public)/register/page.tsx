@@ -58,7 +58,7 @@ export default function RegisterPage() {
       className="min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat" 
       style={{ backgroundImage: 'url(/register-background.jpg)' }}
     >
-      <div className="w-[560px] min-w-[180px] mx-auto p-6 bg-white rounded-[24px] shadow-lg">
+      <div className="w-140 min-w-45 mx-auto p-6 bg-white rounded-3xl shadow-lg">
         <h1 className="text-3xl text-[#000150] font-bold mb-2">Регистрация</h1>
         <p className="mb-6">Введите данные для регистрации нового аккаунта</p>
 
@@ -68,7 +68,7 @@ export default function RegisterPage() {
             </div>
           )}
 
-        <form onSubmit={handleSubmit} className="mb-[18px]">
+        <form onSubmit={handleSubmit} className="mb-4.5">
           <div className="mb-6">
             <label htmlFor="email" className="block mb-2 text-[18px] font-semibold text-[#000150]">
               Почта
@@ -84,13 +84,13 @@ export default function RegisterPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full pl-[47px] pr-4 py-[12px] rounded-[16px] border-[2px] border-gray-300"
+                className="w-full pl-11.75 pr-4 py-3 rounded-2xl border-2 border-gray-300"
                 placeholder="Введите почту"
               />
             </div>
           </div>
 
-          <div className="mb-[16px]">
+          <div className="mb-4">
             <label htmlFor="password" className="block mb-2 text-[18px] font-semibold text-[#000150]">
               Пароль
             </label>
@@ -105,7 +105,7 @@ export default function RegisterPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full pl-[47px] pr-4 py-[12px] rounded-[16px] border-[2px] border-gray-300"
+                className="w-full pl-11.75 pr-4 py-3 rounded-2xl border-2 border-gray-300"
                 placeholder="Введите пароль"
                 minLength={8}
               />
@@ -127,17 +127,17 @@ export default function RegisterPage() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                className="w-full pl-[47px] pr-4 py-[12px] rounded-[16px] border-[2px] border-gray-300"
+                className="w-full pl-11.75 pr-4 py-3 rounded-2xl border-2 border-gray-300"
                 placeholder="Повторите ваш пароль"
               />
             </div>
           </div>
 
-          <div className="flex justify-center mt-[18px]">
+          <div className="flex justify-center mt-4.5">
             <button
               type="submit"
               disabled={isLoading}
-              className="max-w-[201px] bg-[#000150] text-white font-bold text-xl py-[11.5px] px-[29.5px] rounded-[16px] hover:bg-blue-900"
+              className="max-w-50.25 bg-[#000150] text-white font-bold text-xl py-[11.5px] px-[29.5px] rounded-2xl hover:bg-blue-900"
             >
               {isLoading ? 'Сохранение...' : 'Продолжить'}
             </button>

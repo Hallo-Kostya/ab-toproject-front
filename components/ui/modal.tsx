@@ -35,7 +35,7 @@ export default function Modal({ isOpen, onClose, children, className }: ModalPro
         onClick={onClose}
       />
       <div 
-        className="relative bg-white rounded-[24px] shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:hidden"
+        className="relative bg-white rounded-3xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:hidden"
         onClick={e => e.stopPropagation()}
 
       >

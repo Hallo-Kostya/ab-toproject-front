@@ -7,7 +7,7 @@ export default function Footer() {
         <footer className="bg-[#000150] mt-auto">
             <Container className="py-[39.5px]">
                 <div className="flex flex-col md:flex-row md:justify-between items-center">
-                    <div className="min-w-[100px] w-[135px] mb-4 md:mb-0">
+                    <div className="min-w-25 w-33.75 mb-4 md:mb-0">
                         <Link href={"/projects"}>
                             <Image
                                 src="/footer-logo.svg"

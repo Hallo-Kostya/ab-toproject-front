@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Modal from "@/components/ui/modal";
-import { getTeams, TeamSummary } from "@/lib/api/teams";  // ✅ Импортируем TeamSummary
+import { getTeams, TeamSummary } from "@/lib/api/teams";
 import { assignTeamToProject, AssignTeamData } from "@/lib/api/projects";
 import { useAuth } from "@/context/AuthContext";
 

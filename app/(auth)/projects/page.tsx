@@ -25,12 +25,18 @@ export default function ProjectsPage() {
     year?: number;
     semester?: 'SPRING' | 'AUTUMN';
   }>(() => {
-    const year = searchParams.get('year');
-    const semester = searchParams.get('semester') as 'SPRING' | 'AUTUMN' | null;
-    return {
-      year: year ? Number(year) : undefined,
-      semester: semester && ['SPRING', 'AUTUMN'].includes(semester) ? semester : undefined
-    };
+    const yearParam = searchParams.get('year');
+    const semesterParam = searchParams.get('semester');
+
+    const year = yearParam && yearParam !== 'все' && !isNaN(Number(yearParam)) 
+      ? Number(yearParam) 
+      : undefined;
+
+    const semester = (semesterParam === 'SPRING' || semesterParam === 'AUTUMN') 
+      ? semesterParam 
+      : undefined;
+    
+    return { year, semester };
   });
   
   const { isAuthenticated } = useAuth();
@@ -61,11 +67,25 @@ export default function ProjectsPage() {
   }, [searchParams, router]);
 
   const handleYearChange = useCallback((year: string | null) => {
-    updateFilters({ year: year ? Number(year) : null });
+    // Если "все" или пустая строка — сбрасываем фильтр
+    if (!year || year === 'все') {
+      updateFilters({ year: null });
+    } else {
+      // Проверяем, что значение — валидное число
+      const yearNum = Number(year);
+      if (!isNaN(yearNum)) {
+        updateFilters({ year: yearNum });
+      }
+    }
   }, [updateFilters]);
 
   const handleSemesterChange = useCallback((semester: string | null) => {
-    updateFilters({ semester: semester as 'SPRING' | 'AUTUMN' | null });
+    // Если "все" или пустая строка — сбрасываем фильтр
+    if (!semester || semester === 'все') {
+      updateFilters({ semester: null });
+    } else if (semester === 'SPRING' || semester === 'AUTUMN') {
+      updateFilters({ semester });
+    }
   }, [updateFilters]);
 
   useEffect(() => {

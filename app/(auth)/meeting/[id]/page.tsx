@@ -14,7 +14,6 @@ import { Team, getTeamById } from "@/lib/api/teams";
 import { Student, getTeamStudents } from "@/lib/api/students";
 import { useAuth } from "@/context/AuthContext";
 import { useParams, useRouter } from 'next/navigation';
-// import Modal from "@/components/ui/modal";
 import EditMeetingForm from '@/components/forms/editMeetingForm';
 import DeleteMeetingModal from '@/components/ui/deleteMeetingModal';
 import TaskFormModal from '@/components/ui/taskFormModal';

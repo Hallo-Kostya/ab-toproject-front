@@ -17,7 +17,7 @@ export default function AvatarModal({ isOpen, onClose }: AvatarModalProps) {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { user, updateUser } = useAuth();
+  const { updateUser } = useAuth();
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -95,7 +95,7 @@ export default function AvatarModal({ isOpen, onClose }: AvatarModalProps) {
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} className="px-30">
-      <div className="p-6 bg-white rounded-[24px]">
+      <div className="p-6 bg-white rounded-3xl">
         {/* Кнопка закрытия */}
         <button
           onClick={onClose}
@@ -122,7 +122,7 @@ export default function AvatarModal({ isOpen, onClose }: AvatarModalProps) {
               Выберите изображение
             </label>
             <div
-              className="flex flex-col items-center justify-center w-[124px] h-[124px] border-2 border-dashed border-gray-300 rounded-full cursor-pointer hover:border-[#000150] transition-colors mx-auto"
+              className="flex flex-col items-center justify-center w-31 h-31 border-2 border-dashed border-gray-300 rounded-full cursor-pointer hover:border-[#000150] transition-colors mx-auto"
               onDragOver={handleDragOver}
               onDrop={handleDrop}
               onClick={triggerFileInput}
@@ -161,7 +161,7 @@ export default function AvatarModal({ isOpen, onClose }: AvatarModalProps) {
             <button
               type="submit"
               disabled={isLoading || !avatar}
-              className="w-full max-w-[201px] bg-[#000150] text-white font-bold text-xl py-[11.5px] px-[29.5px] rounded-[16px] hover:bg-blue-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full max-w-50.25 bg-[#000150] text-white font-bold text-xl py-[11.5px] px-[29.5px] rounded-2xl hover:bg-blue-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? 'Загрузка...' : 'Загрузить'}
             </button>

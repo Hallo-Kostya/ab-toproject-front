@@ -1,4 +1,4 @@
-import { TeamCardProps, TeamStudent } from "@/types/teams/team";
+import { TeamCardProps } from "@/types/teams/team";
 import Image from "next/image";
 import { truncateText } from "@/utils/truncateText";
 
