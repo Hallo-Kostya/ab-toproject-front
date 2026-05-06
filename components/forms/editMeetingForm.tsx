@@ -161,6 +161,7 @@ export default function EditMeetingForm({ isOpen, onClose, meetingId, initialDat
           </div>
           
           {/* Предыдущая встреча */}
+          {/*
           <div>
             <label htmlFor="previousMeeting" className="block mb-1 text-[16px] font-medium text-[#000150]">
               Предыдущая встреча
@@ -172,10 +173,10 @@ export default function EditMeetingForm({ isOpen, onClose, meetingId, initialDat
               className="w-full px-4 py-2 rounded-xl border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
             >
               <option value="">Не выбрана</option>
-              {/* Здесь можно добавить динамический список, если понадобится */}
             </select>
           </div>
-          
+          */}
+
           {/* Кнопки */}
           <div className="flex gap-4 mt-10">
             <button

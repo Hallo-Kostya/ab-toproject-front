@@ -180,7 +180,7 @@ export default function MeetingFormModal({ isOpen, onClose }: { isOpen: boolean,
             </select>
           </div>
           
-          <div>
+          {/* <div>
             <label htmlFor="previousMeeting" className="block mb-1 text-[16px] font-medium text-[#000150]">Предыдущая встреча</label>
             <select
               id="previousMeeting"
@@ -189,9 +189,8 @@ export default function MeetingFormModal({ isOpen, onClose }: { isOpen: boolean,
               className="w-full px-4 py-2 rounded-xl border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
             >
               <option value="">Не выбрана</option>
-              {/* Здесь можно добавить список предыдущих встреч, если нужно */}
             </select>
-          </div>
+          </div> */}
           
           <div className="flex gap-4 mt-10">
             <button

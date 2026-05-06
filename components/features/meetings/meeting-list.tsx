@@ -27,6 +27,9 @@ export default function MeetingList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isHovering, setIsHovering] = useState(false);
+  const [showLeftArrow, setShowLeftArrow] = useState(false);
+  const [showRightArrow, setShowRightArrow] = useState(false);
+  
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const { isAuthenticated } = useAuth();
 
@@ -72,6 +75,23 @@ export default function MeetingList() {
     fetchMeetings();
   }, [isAuthenticated]);
 
+  const checkScrollPosition = () => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+      setShowLeftArrow(scrollLeft > 10); // 10px запас
+      setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 10);
+    }
+  };
+
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.addEventListener('scroll', checkScrollPosition);
+      checkScrollPosition();
+      return () => container.removeEventListener('scroll', checkScrollPosition);
+    }
+  }, [meetings]);
+
   const scrollLeft = () => {
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollBy({ left: -300, behavior: 'smooth' });
@@ -102,10 +122,12 @@ export default function MeetingList() {
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >
-      {/* Кнопки навигации */}
       <button 
         onClick={scrollLeft}
-        className={`absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/80 backdrop-blur-sm rounded-full p-2 shadow-md hover:bg-white transition-colors ${isHovering ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
+        className={`absolute left-0 top-1/2 -translate-y-1/2 z-10 
+          bg-white/80 backdrop-blur-sm rounded-full p-2 shadow-md 
+          hover:bg-white transition-all duration-200
+          ${isHovering && showLeftArrow ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}`}
         aria-label="Прокрутить влево"
       >
         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -138,7 +160,10 @@ export default function MeetingList() {
 
       <button 
         onClick={scrollRight}
-        className={`absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/80 backdrop-blur-sm rounded-full p-2 shadow-md hover:bg-white transition-colors ${isHovering ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
+        className={`absolute right-0 top-1/2 -translate-y-1/2 z-10 
+          bg-white/80 backdrop-blur-sm rounded-full p-2 shadow-md 
+          hover:bg-white transition-all duration-200
+          ${isHovering && showRightArrow ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}`}
         aria-label="Прокрутить вправо"
       >
         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -119,8 +119,8 @@ export default function Header() {
               </Link>
             </div>
 
-            <div className="flex items-center gap-8 min-w-0 flex-1 ml-12">
-              <div className="min-w-12 w-full max-w-md">
+            <div className="flex items-center gap-8 flex-1 ml-12">
+              <div className="min-w-12 w-full max-w-md mt-2">
                 <SearchBar
                   placeholder="Поиск проектов, команд, студентов..."
                   className="h-12"
@@ -182,18 +182,20 @@ export default function Header() {
                 </ul>
               </nav>
               
-              <UserMenu 
-                user={{
-                  id: user.id,
-                  firstName: user.first_name,
-                  lastName: user.last_name,
-                  patronymic: user.patronymic || null,
-                  tgLink: user.tg_link || null,
-                  email: user.email,
-                  avatar: user.avatar_s3_path || null
-                }} 
-                onLogout={logout}
-              />
+              <div className="">
+                <UserMenu 
+                  user={{
+                    id: user.id,
+                    firstName: user.first_name,
+                    lastName: user.last_name,
+                    patronymic: user.patronymic || null,
+                    tgLink: user.tg_link || null,
+                    email: user.email,
+                    avatar: user.avatar_s3_path || null
+                  }} 
+                  onLogout={logout}
+                />
+              </div>
             </div>
           </div>
         </Container>

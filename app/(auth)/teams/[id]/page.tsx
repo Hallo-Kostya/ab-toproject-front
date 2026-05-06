@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Team, getTeamById, removeStudentFromTeam, getTeamProjects } from "@/lib/api/teams";
@@ -31,6 +31,11 @@ export default function TeamPage() {
   const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState(false);
   const [isDeleteStudentModalOpen, setIsDeleteStudentModalOpen] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState<Student | null>(null);
+
+  const meetingsScrollRef = useRef<HTMLDivElement>(null);
+  const [showLeftArrow, setShowLeftArrow] = useState(false);
+  const [showRightArrow, setShowRightArrow] = useState(false);
+  const [isMeetingsHovering, setIsMeetingsHovering] = useState(false);
   
   const { isAuthenticated } = useAuth();
 
@@ -75,6 +80,41 @@ export default function TeamPage() {
     fetchTeamData();
   }, [isAuthenticated, id]);
 
+  const scrollMeetingsLeft = () => {
+    if (meetingsScrollRef.current) {
+      meetingsScrollRef.current.scrollBy({ left: -300, behavior: 'smooth' });
+    }
+  };
+
+  const scrollMeetingsRight = () => {
+    if (meetingsScrollRef.current) {
+      meetingsScrollRef.current.scrollBy({ left: 300, behavior: 'smooth' });
+    }
+  };
+
+  const checkScrollPosition = () => {
+    if (meetingsScrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = meetingsScrollRef.current;
+      setShowLeftArrow(scrollLeft > 10);
+      setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 10);
+    }
+  };
+
+  useEffect(() => {
+    const container = meetingsScrollRef.current;
+    if (container) {
+      container.addEventListener('scroll', checkScrollPosition);
+      requestAnimationFrame(checkScrollPosition);
+      return () => container.removeEventListener('scroll', checkScrollPosition);
+    }
+  }, [meetings]);
+
+  useEffect(() => {
+    if (meetings.length > 0) {
+      requestAnimationFrame(checkScrollPosition);
+    }
+  }, [meetings]);
+
   const handleRemoveStudent = (student: Student) => {
     setStudentToDelete(student);
     setIsDeleteStudentModalOpen(true);
@@ -94,7 +134,6 @@ export default function TeamPage() {
       setError(err.message || 'Ошибка при удалении студента из команды');
     }
   };
-
 
   if (loading) {
     return (
@@ -174,7 +213,6 @@ export default function TeamPage() {
           </div>
         </div>
         
-        {/* Участники команды */}
         <div className="mb-12">
           <h2 className="text-[24px] font-medium mb-8 text-[#000150]">Участники команды</h2>
           {students.length > 0 ? (
@@ -212,32 +250,68 @@ export default function TeamPage() {
           )}
         </div>
 
-        {/* Встречи команды */}
-        <div className="mt-9">
-          <h2 className="text-[24px] text-[#000150] font-medium mb-4">Встречи команды</h2>
-          {meetings.length > 0 ? (
-            <ul className="flex gap-6 flex-wrap">
-              {meetings.map((meeting) => (
-                <li key={meeting.id}>
-                  <Link href={`/meeting/${meeting.id}`}>
-                    <MeetingCard 
-                      teamName={team.name}
-                      name={meeting.name}
-                      resume={meeting.resume}
-                      date={new Date(meeting.date).toLocaleDateString('ru-RU')}
-                      time={new Date(meeting.date).toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'})}
-                      status={getMeetingCardStatus(meeting.status)}
-                    />
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-gray-500">У этой команды пока нет запланированных встреч</p>
-          )}
+        <div>
+          <h2 className="text-[24px] text-[#000150] font-medium">Встречи команды</h2>
+          <div 
+            className="relative mt-4"
+            onMouseEnter={() => setIsMeetingsHovering(true)}
+            onMouseLeave={() => setIsMeetingsHovering(false)}
+          >
+            {meetings.length > 0 ? (
+              <>
+                <button 
+                  onClick={scrollMeetingsLeft}
+                  className={`absolute left-0 top-1/2 -translate-y-1/2 z-10 
+                    bg-white/80 backdrop-blur-sm rounded-full p-2 shadow-md 
+                    hover:bg-white transition-all duration-200
+                    ${isMeetingsHovering && showLeftArrow ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}`}
+                  aria-label="Прокрутить влево"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+
+                <ul 
+                  ref={meetingsScrollRef}
+                  className="flex overflow-x-auto hide-scrollbar py-2 gap-6"
+                  style={{ scrollBehavior: 'smooth' }}
+                >
+                  {meetings.map((meeting) => (
+                    <li key={meeting.id} className="shrink-0">
+                      <Link href={`/meeting/${meeting.id}`}>
+                        <MeetingCard 
+                          teamName={team.name}
+                          name={meeting.name}
+                          resume={meeting.resume}
+                          date={new Date(meeting.date).toLocaleDateString('ru-RU')}
+                          time={new Date(meeting.date).toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'})}
+                          status={getMeetingCardStatus(meeting.status)}
+                        />
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+
+                <button 
+                  onClick={scrollMeetingsRight}
+                  className={`absolute right-0 top-1/2 -translate-y-1/2 z-10 
+                    bg-white/80 backdrop-blur-sm rounded-full p-2 shadow-md 
+                    hover:bg-white transition-all duration-200
+                    ${isMeetingsHovering && showRightArrow ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}`}
+                  aria-label="Прокрутить вправо"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </>
+            ) : (
+              <p className="text-gray-500">У этой команды пока нет запланированных встреч</p>
+            )}
+          </div>
         </div>
 
-        {/* Проекты команды */}
         <div className="mt-9">
           <h2 className="text-[24px] text-[#000150] font-medium mb-4">Проекты команды</h2>
           {projects.length > 0 ? (

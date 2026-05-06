@@ -1,6 +1,5 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001/api';
 
-// ✅ Типы результатов поиска
 export type SearchResultType = 'project' | 'team' | 'student';
 
 export interface SearchResult {
@@ -15,7 +14,6 @@ export interface SearchResponse {
   total: number;
 }
 
-// ✅ Поиск с параметрами
 export const searchEntities = async (
   query: string,
   options?: { limit?: number }

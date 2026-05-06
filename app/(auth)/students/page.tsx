@@ -1,17 +1,23 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Student, getStudents, deleteStudent } from "@/lib/api/students";
 import { useAuth } from "@/context/AuthContext";
 import StudentCard from '@/components/ui/cards/student-card';
 import DeleteStudentModal from '@/components/ui/deleteStudentModal';
+import EditStudentForm from '@/components/forms/editStudentForm';
 
 export default function StudentsPage() {
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState<Student | null>(null);
+
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [studentToEdit, setStudentToEdit] = useState<Student | null>(null);
+
   const { isAuthenticated } = useAuth();
 
   useEffect(() => {
@@ -40,8 +46,7 @@ export default function StudentsPage() {
     
     try {
       await deleteStudent(studentToDelete.id);
-      
-      // Обновляем список студентов
+
       setStudents(prevStudents => prevStudents.filter(student => student.id !== studentToDelete.id));
       setIsDeleteModalOpen(false);
     } catch (err: any) {
@@ -54,6 +59,25 @@ export default function StudentsPage() {
     setStudentToDelete(student);
     setIsDeleteModalOpen(true);
   };
+
+  const handleStudentEditClick = useCallback((student: Student) => {
+    setStudentToEdit(student);
+    setIsEditModalOpen(true);
+  }, []);
+
+  const handleEditSuccess = useCallback(() => {
+    const fetchUpdatedStudents = async () => {
+      try {
+        const studentsData: Student[] = await getStudents();
+        setStudents(studentsData);
+      } catch (err: any) {
+        console.error('Failed to refresh students:', err);
+      }
+    };
+    fetchUpdatedStudents();
+    setIsEditModalOpen(false);
+    setStudentToEdit(null);
+  }, []);
 
   if (loading) {
     return (
@@ -84,7 +108,8 @@ export default function StudentsPage() {
             <li key={student.id}>
               <StudentCard 
                 student={student} 
-                onDelete={() => handleStudentDeleteClick(student)} 
+                onDelete={() => handleStudentDeleteClick(student)}
+                onEdit={() => handleStudentEditClick(student)} 
               />
             </li>
           ))}
@@ -102,6 +127,19 @@ export default function StudentsPage() {
         studentName={`${studentToDelete?.last_name} ${studentToDelete?.first_name} ${studentToDelete?.patronymic || ''}`}
         onConfirm={handleDeleteStudent}
       />
+
+      {studentToEdit && (
+        <EditStudentForm 
+          isOpen={isEditModalOpen} 
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setStudentToEdit(null);
+          }} 
+          studentId={studentToEdit.id} 
+          initialData={studentToEdit}
+          onEditSuccess={handleEditSuccess}
+        />
+      )}
     </div>
   );
 }

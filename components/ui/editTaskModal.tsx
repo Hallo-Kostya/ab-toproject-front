@@ -13,14 +13,12 @@ interface EditTaskModalProps {
 
 export default function EditTaskModal({ isOpen, onClose, task, onTaskUpdated }: EditTaskModalProps) {
   const [description, setDescription] = useState(task.description);
-  const [isCompleted, setIsCompleted] = useState(task.is_completed);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       setDescription(task.description);
-      setIsCompleted(task.is_completed);
       setError('');
     }
   }, [isOpen, task]);
@@ -32,8 +30,9 @@ export default function EditTaskModal({ isOpen, onClose, task, onTaskUpdated }: 
 
     try {
       const updateData: UpdateTaskData = {};
-      if (description !== task.description) updateData.description = description.trim() || null;
-      if (isCompleted !== task.is_completed) updateData.is_completed = isCompleted;
+      if (description !== task.description) {
+        updateData.description = description.trim() === '' ? null : description.trim();
+      }
 
       const updated = await updateTask(task.id, updateData);
       onTaskUpdated(updated);
@@ -68,7 +67,6 @@ export default function EditTaskModal({ isOpen, onClose, task, onTaskUpdated }: 
         )}
         
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Описание */}
           <div>
             <label htmlFor="description" className="block mb-1 text-[16px] font-medium text-[#000150]">
               Описание задачи
@@ -84,21 +82,6 @@ export default function EditTaskModal({ isOpen, onClose, task, onTaskUpdated }: 
             />
           </div>
           
-          {/* Чекбокс "Выполнено" */}
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="isCompleted"
-              checked={isCompleted}
-              onChange={(e) => setIsCompleted(e.target.checked)}
-              className="w-5 h-5 rounded border-gray-300 text-[#000150] focus:ring-[#000150]"
-            />
-            <label htmlFor="isCompleted" className="text-[16px] text-[#000150] font-medium">
-              Задача выполнена
-            </label>
-          </div>
-          
-          {/* Кнопки */}
           <div className="flex gap-4 mt-10">
             <button
               type="button"

@@ -32,9 +32,9 @@ export interface CreateStudentData {
 export interface UpdateStudentData {
   first_name?: string;
   last_name?: string;
-  patronymic?: string;
-  email?: string;
-  tg_link?: string;
+  patronymic?: string | null;
+  email?: string | null;
+  tg_link?: string | null;
 }
 
 export interface TeamStudent extends Student {
@@ -88,7 +88,7 @@ export const getStudents = async (filters?: {
   }
 
   const data: StudentDetailedResponse = await response.json();
-  return data.students;  // ✅ Извлекаем массив из обёртки
+  return data.students;
 };
 
 export const getStudentById = async (studentId: string): Promise<Student> => {

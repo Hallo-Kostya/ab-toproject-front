@@ -96,7 +96,7 @@ export default function ProjectTeamCard({ team, projectId, onTeamRemoved }: Proj
 
   return (
     <>
-      <div className="flex flex-col w-full min-h-37.5 px-6 py-6 shadow-md inset-shadow-xs rounded-xl bg-[#FBFAFF] border border-gray-200 hover:shadow-lg transition-shadow relative group">
+      <div className="flex flex-col w-full min-h-70 px-6 py-6 shadow-md inset-shadow-xs rounded-xl bg-[#FBFAFF] border border-gray-200 hover:shadow-lg transition-shadow relative group">
         {/* Кнопка удаления */}
         <button
           onClick={() => setIsDeleteModalOpen(true)}
@@ -121,7 +121,7 @@ export default function ProjectTeamCard({ team, projectId, onTeamRemoved }: Proj
         </div>
         
         {/* Список студентов */}
-        <div className="overflow-y-auto max-h-30">
+        <div className="">
           {students.length > 0 ? (
             <ul className="flex flex-col gap-1">
               {students.map((student, index) => (

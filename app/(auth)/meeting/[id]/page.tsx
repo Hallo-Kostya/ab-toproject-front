@@ -8,7 +8,7 @@ import {
   addTaskToMeeting,
   removeTaskFromMeeting
 } from "@/lib/api/meetings";
-import { Task, getTasks, moveTaskToNextMeeting } from "@/lib/api/tasks";
+import { Task, getTasks, moveTaskToNextMeeting, updateTask } from "@/lib/api/tasks";
 import { Artifact } from "@/lib/api/artifacts";
 import { Team, getTeamById } from "@/lib/api/teams";
 import { Student, getTeamStudents } from "@/lib/api/students";
@@ -19,6 +19,58 @@ import DeleteMeetingModal from '@/components/ui/deleteMeetingModal';
 import TaskFormModal from '@/components/ui/taskFormModal';
 import DeleteTaskModal from '@/components/ui/deleteTaskModal';
 import EditTaskModal from '@/components/ui/editTaskModal';
+
+interface CompleteTaskModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  task: Task;
+  onConfirm: () => void;
+}
+
+function CompleteTaskModal({ isOpen, onClose, task, onConfirm }: CompleteTaskModalProps) {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl p-6 w-full max-w-md mx-4 shadow-xl">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+            <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h3 className="text-xl font-semibold text-[#000150]">Подтвердите выполнение</h3>
+        </div>
+        
+        <p className="text-[#353535] mb-6">
+          Вы действительно хотите отметить задачу как выполненную?
+        </p>
+        
+        <p className="text-[16px] text-gray-600 bg-gray-50 rounded-lg p-3 mb-6">
+          {task.description}
+        </p>
+        
+        <div className="flex gap-3">
+          <button
+            onClick={onClose}
+            className="flex-1 py-2.5 px-4 bg-gray-200 text-gray-800 rounded-xl font-medium hover:bg-gray-300 transition-colors"
+          >
+            Отмена
+          </button>
+          <button
+            onClick={() => {
+              onConfirm();
+              onClose();
+            }}
+            className="flex-1 py-2.5 px-4 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 transition-colors"
+          >
+            Подтвердить
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function MeetingPage() {
   const params = useParams();
@@ -36,7 +88,6 @@ export default function MeetingPage() {
   const [tasksLoading, setTasksLoading] = useState(false);
   
   const [artifacts, setArtifacts] = useState<Artifact[]>([]);
-  // artifactsError
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -46,8 +97,10 @@ export default function MeetingPage() {
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [isDeleteTaskModalOpen, setIsDeleteTaskModalOpen] = useState(false);
   const [isEditTaskModalOpen, setIsEditTaskModalOpen] = useState(false);
+  const [isCompleteTaskModalOpen, setIsCompleteTaskModalOpen] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
+  const [taskToComplete, setTaskToComplete] = useState<Task | null>(null);
   
   const { isAuthenticated } = useAuth();
 
@@ -115,7 +168,6 @@ export default function MeetingPage() {
     }
   }, [meeting, fetchStudents, fetchTasks]);
 
-  // Удаление встречи
   const handleDeleteMeeting = async () => {
     try {
       await deleteMeeting(id);
@@ -126,13 +178,9 @@ export default function MeetingPage() {
     }
   };
 
-  // Добавление задачи
   const handleAddTask = async (description: string) => {
     try {
-      // Если addTaskToMeeting сам создаёт задачу при необходимости:
       await addTaskToMeeting(id, { description });
-      
-      // Просто перезагружаем список (с дедупликацией внутри fetchTasks)
       await fetchTasks();
       setIsTaskModalOpen(false);
     } catch (err: any) {
@@ -141,7 +189,6 @@ export default function MeetingPage() {
     }
   };
 
-  // Удаление задачи
   const handleDeleteTask = async () => {
     if (!taskToDelete) return;
     
@@ -160,18 +207,26 @@ export default function MeetingPage() {
     setTasks(prev => prev.map(t => t.id === updatedTask.id ? updatedTask : t));
   }, []);
 
-  // Перенос задачи на следующую встречу
   const handleMoveTaskToNextMeeting = async (taskId: string) => {
     try {
       await moveTaskToNextMeeting(taskId);
-      await fetchTasks(); // Перезагружаем задачи с дедупликацией
+      await fetchTasks();
     } catch (err: any) {
       console.error('Task move error:', err);
       setTasksError(err.message || 'Ошибка при переносе задачи');
     }
   };
 
-  // Маппинг статусов
+  const handleCompleteTask = async (taskId: string) => {
+    try {
+      await updateTask(taskId, { is_completed: true });
+      await fetchTasks();
+    } catch (err: any) {
+      console.error('Task completion error:', err);
+      setTasksError(err.message || 'Ошибка при отметке задачи как выполненной');
+    }
+  };
+
   const getMeetingStatusDisplay = (status: string) => {
     switch (status?.toUpperCase()) {
       case 'SCHEDULED': return 'Запланирована';
@@ -221,7 +276,6 @@ export default function MeetingPage() {
   return (
     <>
       <div className="space-y-8">
-        {/* Заголовок встречи */}
         <div>
           <div className="mb-3">
             <div className="flex items-center justify-between gap-4">
@@ -263,9 +317,12 @@ export default function MeetingPage() {
           </div>
         </div>
         
-        {/* Резюме встречи */}
         <div className="flex flex-col gap-9">
-          <Section title={"Резюме"} content={meeting.resume} />
+          <Section 
+            title={"Резюме"} 
+            content={meeting.resume || "Добавьте описание встречи"} 
+            isEmpty={!meeting.resume}
+          />
         </div>
 
         <div className="mb-12">
@@ -333,21 +390,36 @@ export default function MeetingPage() {
                     }
                   `}
                 >
-                  <div className="flex items-start gap-3 flex-1">
-                    {task.is_completed && (
-                      <span className="text-green-600 mt-0.5" title="Выполнено">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  <div className="flex items-center gap-3 flex-1">
+                    <button
+                      onClick={() => {
+                        if (!task.is_completed) {
+                          setTaskToComplete(task);
+                          setIsCompleteTaskModalOpen(true);
+                        }
+                      }}
+                      className={`
+                        w-5 h-5 rounded border-2 flex items-center justify-center transition-all
+                        ${task.is_completed
+                          ? 'bg-green-500 border-green-500'
+                          : 'border-gray-300 hover:border-[#000150] hover:bg-[#000150]/5'
+                        }
+                      `}
+                      title={task.is_completed ? 'Задача выполнена' : 'Отметить как выполненную'}
+                      disabled={task.is_completed}
+                    >
+                      {task.is_completed && (
+                        <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                         </svg>
-                      </span>
-                    )}
-                    <span className={`text-[18px] ${task.is_completed ? 'line-through text-gray-500' : 'text-gray-800'}`}>
+                      )}
+                    </button>
+                    <span className={`text-[18px] ${task.is_completed ? 'text-gray-500/70' : 'text-gray-800'}`}>
                       {task.description}
                     </span>
                   </div>
 
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    {/* Редактирование */}
                     <button
                       onClick={() => {
                         setTaskToEdit(task);
@@ -361,7 +433,6 @@ export default function MeetingPage() {
                       </svg>
                     </button>
                     
-                    {/* Перенос */}
                     <button
                       onClick={() => handleMoveTaskToNextMeeting(task.id)}
                       className="p-1 text-gray-500 hover:text-[#000150] transition-colors"
@@ -372,7 +443,6 @@ export default function MeetingPage() {
                       </svg>
                     </button>
                     
-                    {/* Удаление связи */}
                     <button
                       onClick={() => {
                         setTaskToDelete(task);
@@ -396,7 +466,6 @@ export default function MeetingPage() {
           )}
         </div>
 
-        {/* Артефакты встречи (заглушка) */}
         <div className="mt-9">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-[24px] text-[#000150] font-medium">Артефакты</h2>
@@ -446,7 +515,6 @@ export default function MeetingPage() {
         </div>
       </div>
       
-      {/* Модальные окна */}
       <EditMeetingForm
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
@@ -490,15 +558,29 @@ export default function MeetingPage() {
           onTaskUpdated={handleTaskUpdated}
         />
       )}
+
+      {taskToComplete && (
+        <CompleteTaskModal
+          isOpen={isCompleteTaskModalOpen}
+          onClose={() => {
+            setIsCompleteTaskModalOpen(false);
+            setTaskToComplete(null);
+          }}
+          task={taskToComplete}
+          onConfirm={() => handleCompleteTask(taskToComplete.id)}
+        />
+      )}
     </>
   );
 }
 
-function Section({ title, content }: { title: string; content: string }) {
+function Section({ title, content, isEmpty = false }: { title: string; content: string; isEmpty?: boolean }) {
   return (
     <div className="border-b border-gray-300/40 pb-4.5">
       <h2 className="text-[24px] text-[#000150] font-medium mb-3">{title}</h2>
-      <p className="text-[22px] leading-relaxed whitespace-pre-wrap">{content}</p>
+      <p className={`text-[22px] leading-relaxed whitespace-pre-wrap ${isEmpty ? 'text-gray-400 italic' : ''}`}>
+        {content}
+      </p>
     </div>
   );
 }

@@ -52,7 +52,7 @@ export default function UserMenu({ user, onLogout }: UserMenuProps) {
 
   return (
     <>
-      <div className="flex gap-1.5 items-center min-w-25 ml-auto">
+      <div className="flex gap-1.5 items-center">
         <div className="user-info py-1.25 flex flex-col">
           <p className="whitespace-nowrap text-[#000150] text-[13.5px] font-semibold">{displayName}</p>
           <button 
