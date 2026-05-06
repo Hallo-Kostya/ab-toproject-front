@@ -15,6 +15,7 @@ import EditTeamModalButton from '@/components/clientModal/team/editTeamModalButt
 import ProjectCard from '@/components/ui/cards/project-card';
 import MeetingCard from '@/components/ui/cards/meeting-card';
 import DeleteStudentFromTeamModal from '@/components/ui/deleteStudentFromTeamModal';
+import MeetingFormModal from '@/components/ui/meetingFormModal';
 
 export default function TeamPage() {
   const params = useParams();
@@ -31,6 +32,8 @@ export default function TeamPage() {
   const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState(false);
   const [isDeleteStudentModalOpen, setIsDeleteStudentModalOpen] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState<Student | null>(null);
+  
+  const [isMeetingModalOpen, setIsMeetingModalOpen] = useState(false);
 
   const meetingsScrollRef = useRef<HTMLDivElement>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
@@ -251,7 +254,15 @@ export default function TeamPage() {
         </div>
 
         <div>
-          <h2 className="text-[24px] text-[#000150] font-medium">Встречи команды</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-[24px] text-[#000150] font-medium">Встречи команды</h2>
+            <button
+              onClick={() => setIsMeetingModalOpen(true)}
+              className="px-4 py-2 bg-[#000150]/90 text-white text-[16px] rounded-2xl hover:bg-[#000150]/80 transition-colors"
+            >
+              + Добавить встречу
+            </button>
+          </div>
           <div 
             className="relative mt-4"
             onMouseEnter={() => setIsMeetingsHovering(true)}
@@ -363,6 +374,12 @@ export default function TeamPage() {
         studentId={studentToDelete?.id || ''}
         studentName={`${studentToDelete?.last_name} ${studentToDelete?.first_name}`}
         onConfirm={handleConfirmRemoveStudent}
+      />
+      
+      <MeetingFormModal
+        isOpen={isMeetingModalOpen}
+        onClose={() => setIsMeetingModalOpen(false)}
+        teamId={team.id}
       />
     </>
   );

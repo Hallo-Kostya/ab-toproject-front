@@ -7,6 +7,7 @@ import PageContainer from "@/components/containers/page-container";
 import { Project, ProjectsResponse, getProjects } from "@/lib/api/projects";
 import { useAuth } from "@/context/AuthContext";
 import MeetingList from '@/components/features/meetings/meeting-list';
+import ProjectFormModal from '@/components/ui/projectFormModal';
 
 interface ProjectWithCounts extends Project {
   teams_count: number; 
@@ -20,6 +21,7 @@ export default function ProjectsPage() {
   const [projects, setProjects] = useState<ProjectWithCounts[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
 
   const [filters, setFilters] = useState<{
     year?: number;
@@ -67,11 +69,9 @@ export default function ProjectsPage() {
   }, [searchParams, router]);
 
   const handleYearChange = useCallback((year: string | null) => {
-    // Если "все" или пустая строка — сбрасываем фильтр
     if (!year || year === 'все') {
       updateFilters({ year: null });
     } else {
-      // Проверяем, что значение — валидное число
       const yearNum = Number(year);
       if (!isNaN(yearNum)) {
         updateFilters({ year: yearNum });
@@ -80,7 +80,6 @@ export default function ProjectsPage() {
   }, [updateFilters]);
 
   const handleSemesterChange = useCallback((semester: string | null) => {
-    // Если "все" или пустая строка — сбрасываем фильтр
     if (!semester || semester === 'все') {
       updateFilters({ semester: null });
     } else if (semester === 'SPRING' || semester === 'AUTUMN') {
@@ -117,7 +116,6 @@ export default function ProjectsPage() {
     fetchData();
   }, [isAuthenticated, filters]);
 
-  // Рендеринг карточки
   const renderProjectCard = useCallback((project: ProjectWithCounts) => (
     <ProjectCard 
       key={project.id}
@@ -145,17 +143,28 @@ export default function ProjectsPage() {
   }
 
   return (
-    <PageContainer
-      pageTag="projects"
-      meetingsTitle="Предстоящие встречи"
-      meetingsListComponent={<MeetingList />}
-      listHeader="Всего проектов найдено: "
-      list={projects}
-      cardComponent={renderProjectCard}
-      year={filters.year?.toString()}
-      semester={filters.semester}
-      onYearChange={handleYearChange}
-      onSemesterChange={handleSemesterChange}
-    />
+    <>
+      <PageContainer
+        pageTag="projects"
+        meetingsTitle="Предстоящие встречи"
+        meetingsListComponent={<MeetingList />}
+        listHeader="Всего проектов найдено: "
+        list={projects}
+        cardComponent={renderProjectCard}
+        year={filters.year?.toString()}
+        semester={filters.semester}
+        onYearChange={handleYearChange}
+        onSemesterChange={handleSemesterChange}
+        addButton={{
+          label: '+ Добавить проект',
+          onClick: () => setIsProjectModalOpen(true)
+        }}
+      />
+      
+      <ProjectFormModal 
+        isOpen={isProjectModalOpen} 
+        onClose={() => setIsProjectModalOpen(false)} 
+      />
+    </>
   );
 }

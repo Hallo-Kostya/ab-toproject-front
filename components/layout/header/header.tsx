@@ -154,7 +154,7 @@ export default function Header() {
               </div>
               
               {/* Блок добавления */}
-              <div className="relative mx-auto" ref={addMenuRef}>
+              {/* <div className="relative mx-auto" ref={addMenuRef}>
                 <button
                   onClick={() => setIsAddMenuOpen(!isAddMenuOpen)}
                   className="flex items-center gap-2 bg-[#000150] text-white px-4 py-2 rounded-3xl hover:bg-blue-900 transition-colors"
@@ -171,7 +171,7 @@ export default function Header() {
                     <button onClick={() => { setIsAddMenuOpen(false); setIsMeetingModalOpen(true); }} className="block w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg text-[#000150] font-medium">Встреча</button>
                   </div>
                 )}
-              </div>
+              </div> */}
               
               {/* Навигация */}
               <nav className="mx-auto">
@@ -179,6 +179,8 @@ export default function Header() {
                   <li><Link href={"/projects"} className={isActiveLink('/projects') ? "font-bold text-blue-900" : ""}><span className="text-[#000150] text-[17px]">Проекты</span></Link></li>
                   <li><Link href={"/teams"} className={isActiveLink('/teams') ? "font-bold text-blue-900" : ""}><span className="text-[#000150] text-[17px]">Команды</span></Link></li>
                   <li><Link href={"/students"} className={isActiveLink('/students') ? "font-bold text-blue-900" : ""}><span className="text-[#000150] text-[17px]">Студенты</span></Link></li>
+                  <li><Link href={"/calendar"} className={isActiveLink('/calendar') ? "font-bold text-blue-900" : ""}><span className="text-[#000150] text-[17px]">Календарь</span></Link></li>
+                  <li><Link href={"/interviews"} className={isActiveLink('/interviews') ? "font-bold text-blue-900" : ""}><span className="text-[#000150] text-[17px]">Собеседования</span></Link></li>
                 </ul>
               </nav>
               

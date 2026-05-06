@@ -6,6 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import StudentCard from '@/components/ui/cards/student-card';
 import DeleteStudentModal from '@/components/ui/deleteStudentModal';
 import EditStudentForm from '@/components/forms/editStudentForm';
+import StudentFormModal from '@/components/ui/studentFormModal';
 
 export default function StudentsPage() {
   const [students, setStudents] = useState<Student[]>([]);
@@ -17,6 +18,8 @@ export default function StudentsPage() {
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [studentToEdit, setStudentToEdit] = useState<Student | null>(null);
+  
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const { isAuthenticated } = useAuth();
 
@@ -96,50 +99,63 @@ export default function StudentsPage() {
   }
 
   return (
-    <div className="space-y-5">
-      <div>
+    <>
+      <div className="space-y-5">
         <h1 className="text-[20px] text-[#000150] font-semibold mb-4">Список всех студентов</h1>
-        <p>Всего студентов найдено: <span className="font-semibold text-[#000150]">{students.length}</span></p>
-      </div>
-      
-      {students.length > 0 ? (
-        <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {students.map((student) => (
-            <li key={student.id}>
-              <StudentCard 
-                student={student} 
-                onDelete={() => handleStudentDeleteClick(student)}
-                onEdit={() => handleStudentEditClick(student)} 
-              />
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <div className="text-gray-500 text-center py-8">
-          <p>Список студентов пуст</p>
+        <div className="flex items-center justify-between">
+            <p>Всего студентов найдено: <span className="font-semibold text-[#000150]">{students.length}</span></p>
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className="px-4 py-2 bg-[#000150]/90 text-white text-[16px] rounded-2xl hover:bg-[#000150]/80 transition-colors"
+          >
+            + Добавить студента
+          </button>
         </div>
-      )}
-      
-      <DeleteStudentModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        studentId={studentToDelete?.id || ''}
-        studentName={`${studentToDelete?.last_name} ${studentToDelete?.first_name} ${studentToDelete?.patronymic || ''}`}
-        onConfirm={handleDeleteStudent}
-      />
-
-      {studentToEdit && (
-        <EditStudentForm 
-          isOpen={isEditModalOpen} 
-          onClose={() => {
-            setIsEditModalOpen(false);
-            setStudentToEdit(null);
-          }} 
-          studentId={studentToEdit.id} 
-          initialData={studentToEdit}
-          onEditSuccess={handleEditSuccess}
+        
+        {students.length > 0 ? (
+          <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {students.map((student) => (
+              <li key={student.id}>
+                <StudentCard 
+                  student={student} 
+                  onDelete={() => handleStudentDeleteClick(student)}
+                  onEdit={() => handleStudentEditClick(student)} 
+                />
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className="text-gray-500 text-center py-8">
+            <p>Список студентов пуст</p>
+          </div>
+        )}
+        
+        <DeleteStudentModal
+          isOpen={isDeleteModalOpen}
+          onClose={() => setIsDeleteModalOpen(false)}
+          studentId={studentToDelete?.id || ''}
+          studentName={`${studentToDelete?.last_name} ${studentToDelete?.first_name} ${studentToDelete?.patronymic || ''}`}
+          onConfirm={handleDeleteStudent}
         />
-      )}
-    </div>
+
+        {studentToEdit && (
+          <EditStudentForm 
+            isOpen={isEditModalOpen} 
+            onClose={() => {
+              setIsEditModalOpen(false);
+              setStudentToEdit(null);
+            }} 
+            studentId={studentToEdit.id} 
+            initialData={studentToEdit}
+            onEditSuccess={handleEditSuccess}
+          />
+        )}
+      </div>
+
+      <StudentFormModal 
+        isOpen={isAddModalOpen} 
+        onClose={() => setIsAddModalOpen(false)} 
+      />
+    </>
   );
 }

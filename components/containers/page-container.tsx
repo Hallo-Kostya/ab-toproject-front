@@ -13,6 +13,10 @@ interface PageContainerProps<T extends { id: string }> {
   semester?: string;
   onYearChange?: (year: string | null) => void;
   onSemesterChange?: (semester: string | null) => void;
+  addButton?: {
+    label: string;
+    onClick: () => void;
+  };
 }
 
 export default function PageContainer<T extends { id: string }>({ 
@@ -26,6 +30,7 @@ export default function PageContainer<T extends { id: string }>({
   semester,
   onYearChange,
   onSemesterChange,
+  addButton,
 }: PageContainerProps<T>) {
   return (
     <div className="space-y-8">
@@ -43,6 +48,7 @@ export default function PageContainer<T extends { id: string }>({
           semester={semester}
           onYearChange={onYearChange}
           onSemesterChange={onSemesterChange}
+          addButton={addButton}
         />
         <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-4 w-full">
           {list.map((item, index) => (
@@ -66,6 +72,10 @@ interface ListHeaderComponentProps {
   semester?: string;
   onYearChange?: (year: string | null) => void;
   onSemesterChange?: (semester: string | null) => void;
+  addButton?: {
+    label: string;
+    onClick: () => void;
+  };
 }
 
 function ListHeaderComponent({
@@ -75,13 +85,24 @@ function ListHeaderComponent({
   year, 
   semester,
   onYearChange,
-  onSemesterChange
+  onSemesterChange,
+  addButton,
 }: ListHeaderComponentProps) {
   return (
-    <div className="flex justify-between items-center mb-4">
-      <p className="text-[18px] text-[#353535]">
-        {counterTitle}<span className="text-[18px] text-[#000150] font-semibold">{counter}</span>
-      </p>
+    <div className="flex justify-between items-center mb-4 flex-wrap gap-4">
+      <div className="flex items-center gap-4">
+        <p className="text-[18px] text-[#353535]">
+          {counterTitle}<span className="text-[18px] text-[#000150] font-semibold">{counter}</span>
+        </p>
+        {addButton && (
+          <button
+            onClick={addButton.onClick}
+            className="ml-4 px-4 py-2 bg-[#000150]/90 text-white text-[16px] rounded-2xl hover:bg-[#000150]/80 transition-colors"
+          >
+            {addButton.label}
+          </button>
+        )}
+      </div>
       {pageTag !== "teams" && (
         <SortingComponent 
           filterYear={year} 
@@ -116,7 +137,6 @@ function SortingComponent({
 
   return (
     <div className="flex gap-3 items-center">
-      {/* Фильтр по году */}
       <div className="flex items-center gap-2">
         <span className="text-[18px] text-[#353535]">Год:</span>
         <div className="relative">
@@ -153,7 +173,6 @@ function SortingComponent({
         </div>
       </div>
 
-      {/* Фильтр по семестру */}
       <div className="flex items-center gap-2">
         <span className="text-[18px] text-[#353535]">Семестр:</span>
         <div className="relative">

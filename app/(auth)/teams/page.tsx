@@ -13,6 +13,7 @@ import {
 import { Student } from "@/lib/api/students";
 import { useAuth } from "@/context/AuthContext";
 import MeetingList from '@/components/features/meetings/meeting-list';
+import TeamFormModal from '@/components/ui/teamFormModal';
 
 interface TeamWithStudents extends TeamSummary {
   students: Student[];
@@ -22,6 +23,7 @@ export default function TeamsPage() {
   const [teams, setTeams] = useState<TeamWithStudents[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
   const { isAuthenticated } = useAuth();
 
   const fetchTeamsStudents = useCallback(async (teamsData: TeamSummary[]) => {
@@ -108,13 +110,24 @@ export default function TeamsPage() {
   }
 
   return (
-    <PageContainer
-      pageTag="teams"
-      meetingsTitle="Предстоящие встречи"
-      meetingsListComponent={<MeetingList />}
-      listHeader="Всего команд найдено: "
-      list={teams}
-      cardComponent={renderTeamCard}
-    />
+    <>
+      <PageContainer
+        pageTag="teams"
+        meetingsTitle="Предстоящие встречи"
+        meetingsListComponent={<MeetingList />}
+        listHeader="Всего команд найдено: "
+        list={teams}
+        cardComponent={renderTeamCard}
+        addButton={{
+          label: '+ Добавить команду',
+          onClick: () => setIsTeamModalOpen(true)
+        }}
+      />
+      
+      <TeamFormModal 
+        isOpen={isTeamModalOpen} 
+        onClose={() => setIsTeamModalOpen(false)} 
+      />
+    </>
   );
 }
