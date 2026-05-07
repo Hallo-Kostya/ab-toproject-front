@@ -59,13 +59,13 @@ export default function RegistrationDetailsPage() {
           tg_link: tgLink || undefined
         };
 
+        // register() возвращает токены в теле ответа
         const authResponse = await register(registerData);
-        console.log('Ответ от сервера:', authResponse);
+        
+        // Передаём токены в контекст для сохранения и загрузки профиля
         await login(authResponse);
         
-        // очищаем данные регистрации
         localStorage.removeItem('registration-step1');
-
         router.push('/projects');
         
     } catch (err: any) {

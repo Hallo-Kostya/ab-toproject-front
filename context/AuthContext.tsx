@@ -35,7 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  // инициализация при загрузке приложения
+  // Инициализация при загрузке приложения
   useEffect(() => {
     const initializeAuth = async () => {
       try {
@@ -43,18 +43,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         if (storedAccessToken) {
           try {
-            // ВСЕГДА получаем свежие данные пользователя при инициализации
-            const userData = await getCurrentUser(storedAccessToken);
-            
-            // сохраняем обновленные данные
+            // Получаем свежие данные пользователя при инициализации
+            const userData = await getCurrentUser();
             localStorage.setItem('user_data', JSON.stringify(userData));
             setUser(userData);
           } catch (error) {
-            console.log('Failed to get user data, attempting refresh...');
+            // Если токен истёк — пытаемся рефрешнуть
+            console.log('Token expired, attempting refresh...');
             const storedRefreshToken = localStorage.getItem('refresh_token');
             if (storedRefreshToken) {
               try {
-                const newTokens = await apiRefreshToken(storedRefreshToken);
+                const newTokens = await apiRefreshToken();
                 await handleLoginSuccess(newTokens);
               } catch (refreshError) {
                 console.log('Token refresh failed, clearing tokens');
@@ -85,16 +84,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const handleLoginSuccess = useCallback(async (tokens: AuthResponse) => {
     try {
-      // сохраняем токены
+      // Сохраняем токены в localStorage
       localStorage.setItem('access_token', tokens.access_token);
       localStorage.setItem('refresh_token', tokens.refresh_token);
       
-      // ВСЕГДА получаем СВЕЖИЕ данные пользователя после входа
-      const userData = await getCurrentUser(tokens.access_token);
-      
-      // сохраняем обновленные данные
+      // Получаем свежие данные пользователя после входа
+      const userData = await getCurrentUser();
       localStorage.setItem('user_data', JSON.stringify(userData));
-      
       setUser(userData);
       return true;
     } catch (error) {
@@ -102,18 +98,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       clearAuthData();
       throw error;
     }
-  });
+  }, []);
 
   const login = useCallback(async (tokens: AuthResponse) => {
     setIsLoading(true);
     try {
-      // очищаем предыдущие данные перед новым входом
       clearAuthData();
-      
-      // обрабатываем успешный вход с получением свежих данных
       await handleLoginSuccess(tokens);
-      
-      // перенаправляем на главную страницу
       router.push('/projects');
     } finally {
       setIsLoading(false);
@@ -123,10 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(async () => {
     setIsLoading(true);
     try {
-      const refreshToken = localStorage.getItem('refresh_token');
-      if (refreshToken) {
-        await apiLogout(refreshToken);
-      }
+      await apiLogout();
     } catch (error) {
       console.error('Logout API error:', error);
     } finally {
@@ -137,19 +125,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshTokens = useCallback(async (): Promise<boolean> => {
     try {
-      const refreshToken = localStorage.getItem('refresh_token');
-      if (!refreshToken) return false;
-
-      const newTokens = await apiRefreshToken(refreshToken);
+      const newTokens = await apiRefreshToken();
       
-      // сохраняем новые токены
+      // Сохраняем новые токены
       localStorage.setItem('access_token', newTokens.access_token);
       localStorage.setItem('refresh_token', newTokens.refresh_token);
       
-      // ВСЕГДА получаем СВЕЖИЕ данные пользователя после обновления токенов
-      const userData = await getCurrentUser(newTokens.access_token);
-      
-      // сохраняем обновленные данные
+      // Обновляем данные пользователя
+      const userData = await getCurrentUser();
       localStorage.setItem('user_data', JSON.stringify(userData));
       setUser(userData);
       
@@ -221,7 +204,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    // Очистка при размонтировании
     return () => {
       window.fetch = originalFetch;
     };

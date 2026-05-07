@@ -1,6 +1,5 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001/api';
 
-// TODO: Пока без видоизменений
 export interface AuthResponse {
   access_token: string;
   refresh_token: string;
@@ -30,6 +29,15 @@ export interface LoginData {
   password: string;
 }
 
+// Вспомогательная функция для получения заголовков с токеном
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('access_token');
+  return {
+    'Content-Type': 'application/json',
+    ...(token && { 'Authorization': `Bearer ${token}` })
+  };
+};
+
 export const register = async (data: RegisterData): Promise<AuthResponse> => {
   const response = await fetch(`${API_BASE_URL}/auth/register`, {
     method: 'POST',
@@ -48,17 +56,12 @@ export const register = async (data: RegisterData): Promise<AuthResponse> => {
 };
 
 export const login = async (data: LoginData): Promise<AuthResponse> => {
-  const payload = {
-    email: data.email,
-    password: data.password
-  };
-
   const response = await fetch(`${API_BASE_URL}/auth/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(payload),
+    body: JSON.stringify(data),
   });
 
   if (!response.ok) {
@@ -69,39 +72,50 @@ export const login = async (data: LoginData): Promise<AuthResponse> => {
   return response.json();
 };
 
-export const logout = async (refreshToken: string): Promise<void> => {
-  try {
-    const accessToken = localStorage.getItem('access_token');
-    
-    if (accessToken) {
-      const response = await fetch(
-        `${API_BASE_URL}/auth/logout?refresh_token=${encodeURIComponent(refreshToken)}`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${accessToken}`
-          },
-          body: JSON.stringify({})
-        }
-      );
+export const logout = async (): Promise<void> => {
+  const refreshToken = localStorage.getItem('refresh_token');
+  const accessToken = localStorage.getItem('access_token');
+  
+  if (!refreshToken || !accessToken) {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('user_data');
+    return;
+  }
 
-      if (!response.ok && response.status !== 204) {
-        const errorData = await response.json().catch(() => ({}));
-        console.warn('Logout API failed:', errorData.detail || 'Unknown error');
+  try {
+    // Бекенд ожидает refresh_token как query-параметр и Authorization header
+    const response = await fetch(
+      `${API_BASE_URL}/auth/logout?refresh_token=${encodeURIComponent(refreshToken)}`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        },
       }
+    );
+
+    if (!response.ok && response.status !== 204) {
+      const errorData = await response.json().catch(() => ({}));
+      console.warn('Logout API failed:', errorData.detail || 'Unknown error');
     }
   } catch (error) {
     console.error('Logout request failed:', error);
   } finally {
+    // Всегда очищаем данные на фронте
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user_data');
-    console.log('Tokens cleared successfully');
   }
 };
 
-export const getCurrentUser = async (accessToken: string): Promise<User> => {
+export const getCurrentUser = async (): Promise<User> => {
+  const accessToken = localStorage.getItem('access_token');
+  
+  if (!accessToken) {
+    throw new Error('No access token');
+  }
+
   const response = await fetch(`${API_BASE_URL}/auth/me`, {
     headers: {
       'Authorization': `Bearer ${accessToken}`
@@ -116,15 +130,21 @@ export const getCurrentUser = async (accessToken: string): Promise<User> => {
   return response.json();
 };
 
-export const refreshToken = async (refreshToken: string): Promise<AuthResponse> => {
+export const refreshToken = async (): Promise<AuthResponse> => {
+  const refreshTokenValue = localStorage.getItem('refresh_token');
+  
+  if (!refreshTokenValue) {
+    throw new Error('No refresh token');
+  }
+
+  // Бекенд ожидает refresh_token как query-параметр
   const response = await fetch(
-    `${API_BASE_URL}/auth/refresh?refresh_token=${encodeURIComponent(refreshToken)}`,
+    `${API_BASE_URL}/auth/refresh?refresh_token=${encodeURIComponent(refreshTokenValue)}`,
     {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({})
     }
   );
 

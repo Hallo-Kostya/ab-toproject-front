@@ -13,7 +13,6 @@ export default function LoginPage() {
   const router = useRouter();
   const { login: authLogin, isAuthenticated } = useAuth();
 
-  // проверка для редиректа авторизованных пользователей
   useEffect(() => {
     if (isAuthenticated) {
       router.push('/projects');
@@ -26,7 +25,9 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
+      // apiLogin возвращает токены в теле ответа
       const authResponse = await apiLogin({ email, password });
+      // Передаём токены в контекст для сохранения и загрузки профиля
       await authLogin(authResponse);
       
     } catch (err: any) {
