@@ -26,33 +26,51 @@ export default function TeamsPage() {
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
   const { isAuthenticated } = useAuth();
 
-  const fetchTeamsStudents = useCallback(async (teamsData: TeamSummary[]) => {
-    try {
-      const teamsWithStudents: TeamWithStudents[] = teamsData.map(team => {
-        if (team.members && team.members.length > 0) {
-          const students: Student[] = team.members.map((member: TeamMemberSummary) => {
-            const { first_name, last_name, patronymic } = parseFullName(member.full_name);
-            return {
-              id: member.id,
-              first_name,
-              last_name,
-              patronymic: patronymic || '',
-              email: '',
-              tg_link: ''
-            };
-          });
-          return { ...team, students };
-        }
-        return { ...team, students: [] };
-      });
-
-      setTeams(teamsWithStudents);
-    } catch (error) {
-      console.error('Failed to process teams students:', error);
-      const fallback = teamsData.map(team => ({ ...team, students: [] }));
-      setTeams(fallback);
-    }
+  const processTeamsWithStudents = useCallback((teamsData: TeamSummary[]): TeamWithStudents[] => {
+    return teamsData.map(team => {
+      if (team.members && team.members.length > 0) {
+        const students: Student[] = team.members.map((member: TeamMemberSummary) => {
+          const { first_name, last_name, patronymic } = parseFullName(member.full_name);
+          return {
+            id: member.id,
+            first_name,
+            last_name,
+            patronymic: patronymic || '',
+            email: '',
+            tg_link: ''
+          };
+        });
+        return { ...team, students };
+      }
+      return { ...team, students: [] };
+    });
   }, []);
+
+  const fetchTeams = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response: TeamSummaryResponse = await getTeams();
+      const teamsWithStudents = processTeamsWithStudents(response.teams);
+      setTeams(teamsWithStudents);
+    } catch (err: any) {
+      setError(err.message || 'Ошибка загрузки команд');
+      console.error('Teams fetch error:', err);
+      setTeams([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [processTeamsWithStudents]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    fetchTeams();
+  }, [isAuthenticated, fetchTeams]);
+
+  const handleTeamCreated = useCallback(() => {
+    fetchTeams();
+    setIsTeamModalOpen(false);
+  }, [fetchTeams]);
 
   const renderTeamCard = useCallback((team: TeamWithStudents, index: number) => (
     <TeamCard 
@@ -64,34 +82,6 @@ export default function TeamsPage() {
       studentCount={team.members_count}
     />
   ), []);
-
-  useEffect(() => {
-    if (!isAuthenticated) return;
-
-    const fetchTeamsData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const response: TeamSummaryResponse = await getTeams();
-        const teamsData = response.teams;
-        
-        if (teamsData.length > 0) {
-          await fetchTeamsStudents(teamsData);
-        } else {
-          setTeams([]);
-        }
-      } catch (err: any) {
-        setError(err.message || 'Ошибка загрузки команд');
-        console.error('Teams fetch error:', err);
-        setTeams([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTeamsData();
-  }, [isAuthenticated, fetchTeamsStudents]);
 
   if (loading) {
     return (
@@ -123,10 +113,11 @@ export default function TeamsPage() {
           onClick: () => setIsTeamModalOpen(true)
         }}
       />
-      
+
       <TeamFormModal 
         isOpen={isTeamModalOpen} 
-        onClose={() => setIsTeamModalOpen(false)} 
+        onClose={() => setIsTeamModalOpen(false)}
+        onSuccess={handleTeamCreated}
       />
     </>
   );

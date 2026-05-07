@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ReactNode } from "react";
+import { ReactNode, memo } from "react";
 import Image from "next/image";
 
 interface PageContainerProps<T extends { id: string }> {
@@ -19,7 +19,7 @@ interface PageContainerProps<T extends { id: string }> {
   };
 }
 
-export default function PageContainer<T extends { id: string }>({ 
+export default memo(function PageContainer<T extends { id: string }>({ 
   pageTag, 
   meetingsTitle, 
   meetingsListComponent, 
@@ -62,7 +62,7 @@ export default function PageContainer<T extends { id: string }>({
       </div>
     </div>
   );
-}
+});
 
 interface ListHeaderComponentProps {
   pageTag: string;
@@ -128,7 +128,7 @@ function SortingComponent({
   onYearChange,
   onSemesterChange
 }: FilterComponentProps) {
-  const yearOptions = ['все', '2024', '2025', '2026', '2027'];
+  const yearOptions = ['все', '2026', '2027', '2028', '2029'];
   const semesterOptions = [
     { value: 'все', label: 'все' },
     { value: 'SPRING', label: 'Весенний' },

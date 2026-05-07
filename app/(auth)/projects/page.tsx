@@ -43,6 +43,26 @@ export default function ProjectsPage() {
   
   const { isAuthenticated } = useAuth();
 
+  const fetchProjects = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response: ProjectsResponse = await getProjects(filters);
+      const projectsWithCounts: ProjectWithCounts[] = response.projects.map(project => ({
+        ...project,
+        teams_count: project.teams_count ?? 0,
+        members_count: project.members_count ?? 0
+      }));
+      setProjects(projectsWithCounts);
+    } catch (err: any) {
+      setError(err.message || 'Ошибка загрузки проектов');
+      console.error('Projects fetch error:', err);
+      setProjects([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [filters]);
+
   const updateFilters = useCallback((newFilters: { year?: number | null; semester?: 'SPRING' | 'AUTUMN' | null }) => {
     const params = new URLSearchParams(searchParams.toString());
 
@@ -89,32 +109,13 @@ export default function ProjectsPage() {
 
   useEffect(() => {
     if (!isAuthenticated) return;
+    fetchProjects();
+  }, [isAuthenticated, fetchProjects]);
 
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const response: ProjectsResponse = await getProjects(filters);
-
-        const projectsWithCounts: ProjectWithCounts[] = response.projects.map(project => ({
-          ...project,
-          teams_count: project.teams_count ?? 0,
-          members_count: project.members_count ?? 0
-        }));
-        
-        setProjects(projectsWithCounts);
-      } catch (err: any) {
-        setError(err.message || 'Ошибка загрузки проектов');
-        console.error('Projects fetch error:', err);
-        setProjects([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [isAuthenticated, filters]);
+  const handleProjectCreated = useCallback(() => {
+    fetchProjects();
+    setIsProjectModalOpen(false);
+  }, [fetchProjects]);
 
   const renderProjectCard = useCallback((project: ProjectWithCounts) => (
     <ProjectCard 
@@ -160,10 +161,11 @@ export default function ProjectsPage() {
           onClick: () => setIsProjectModalOpen(true)
         }}
       />
-      
+
       <ProjectFormModal 
         isOpen={isProjectModalOpen} 
-        onClose={() => setIsProjectModalOpen(false)} 
+        onClose={() => setIsProjectModalOpen(false)}
+        onSuccess={handleProjectCreated}
       />
     </>
   );

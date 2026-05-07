@@ -2,9 +2,15 @@
 
 import { useState } from 'react';
 import Modal from "@/components/ui/modal";
-import { createTeam } from "@/lib/api/teams";
+import { createTeam, CreateTeamData } from "@/lib/api/teams";
 
-export default function TeamFormModal({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
+interface TeamFormModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess?: () => void;
+}
+
+export default function TeamFormModal({ isOpen, onClose, onSuccess }: TeamFormModalProps) {
   const [name, setName] = useState('');
   const [groupLink, setGroupLink] = useState('');
   const [error, setError] = useState('');
@@ -16,19 +22,14 @@ export default function TeamFormModal({ isOpen, onClose }: { isOpen: boolean, on
     setIsLoading(true);
 
     try {
-      const teamData = {
+      const teamData: CreateTeamData = {
         name,
-        group_link: groupLink
+        group_link: groupLink || undefined
       };
 
       await createTeam(teamData);
 
-      onClose();
-      
-      // автоматическое обновление страницы
-      setTimeout(() => {
-        window.location.reload();
-      }, 300);
+      onSuccess?.();
       
     } catch (err: any) {
       setError(err.message || 'Ошибка при создании команды');
@@ -39,9 +40,8 @@ export default function TeamFormModal({ isOpen, onClose }: { isOpen: boolean, on
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} className="px-20">
       <div className="p-6 bg-white rounded-3xl">
-        {/* Кнопка закрытия */}
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-colors"
@@ -53,7 +53,7 @@ export default function TeamFormModal({ isOpen, onClose }: { isOpen: boolean, on
         </button>
         
         <h2 className="text-2xl text-[#000150] font-bold mb-4">Создать команду</h2>
-        <p className="mb-6 text-gray-600">Заполните все обязательные поля</p>
+        <p className="mb-6 text-gray-600">Заполните необходимые поля</p>
         
         {error && (
           <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg">
@@ -70,20 +70,21 @@ export default function TeamFormModal({ isOpen, onClose }: { isOpen: boolean, on
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
+              maxLength={100}
               className="w-full px-4 py-2 rounded-xl border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
               placeholder="Введите название команды"
             />
           </div>
           
           <div>
-            <label htmlFor="groupLink" className="block mb-1 text-[16px] font-medium text-[#000150]">Ссылка на группу</label>
+            <label htmlFor="groupLink" className="block mb-1 text-[16px] font-medium text-[#000150]">Ссылка на чат команды</label>
             <input
               type="url"
               id="groupLink"
               value={groupLink}
               onChange={(e) => setGroupLink(e.target.value)}
               className="w-full px-4 py-2 rounded-xl border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
-              placeholder="https://t.me/team_group"
+              placeholder="https://t.me/..."
             />
           </div>
           
@@ -97,7 +98,7 @@ export default function TeamFormModal({ isOpen, onClose }: { isOpen: boolean, on
             </button>
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || !name}
               className="flex-1 py-2 px-4 bg-[#000150] text-white rounded-2xl font-medium hover:bg-blue-900 transition-colors disabled:opacity-50"
             >
               {isLoading ? 'Создание...' : 'Создать'}
