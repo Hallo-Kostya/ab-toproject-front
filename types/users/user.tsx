@@ -1,3 +1,5 @@
+// TODO: Check unusual ifaces
+
 export type User = {
     id: string;
     firstName: string;

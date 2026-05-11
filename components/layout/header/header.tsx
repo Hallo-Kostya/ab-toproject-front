@@ -19,7 +19,7 @@ export default function Header() {
   const pathname = usePathname();
   
   const [mounted, setMounted] = useState(false);
-  const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
+  const [, setIsAddMenuOpen] = useState(false);
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [isStudentModalOpen, setIsStudentModalOpen] = useState(false);
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
@@ -27,6 +27,7 @@ export default function Header() {
   
   const addMenuRef = useRef<HTMLDivElement>(null);
 
+  // TODO: Fix
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -153,26 +154,6 @@ export default function Header() {
                 />
               </div>
               
-              {/* Блок добавления */}
-              {/* <div className="relative mx-auto" ref={addMenuRef}>
-                <button
-                  onClick={() => setIsAddMenuOpen(!isAddMenuOpen)}
-                  className="flex items-center gap-2 bg-[#000150] text-white px-4 py-2 rounded-3xl hover:bg-blue-900 transition-colors"
-                >
-                  <span className="text-xl font-bold pb-0.75">+</span>
-                  <span className="hidden sm:inline">Добавить</span>
-                </button>
-                
-                {isAddMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 z-50">
-                    <button onClick={() => { setIsAddMenuOpen(false); setIsProjectModalOpen(true); }} className="block w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg text-[#000150] font-medium">Проект</button>
-                    <button onClick={() => { setIsAddMenuOpen(false); setIsStudentModalOpen(true); }} className="block w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg text-[#000150] font-medium">Студент</button>
-                    <button onClick={() => { setIsAddMenuOpen(false); setIsTeamModalOpen(true); }} className="block w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg text-[#000150] font-medium">Команда</button>
-                    <button onClick={() => { setIsAddMenuOpen(false); setIsMeetingModalOpen(true); }} className="block w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg text-[#000150] font-medium">Встреча</button>
-                  </div>
-                )}
-              </div> */}
-              
               {/* Навигация */}
               <nav className="mx-auto">
                 <ul className="flex flex-wrap gap-6">
@@ -203,7 +184,7 @@ export default function Header() {
         </Container>
       </header>
       
-      {/* Модальные окна (без изменений) */}
+      {/* Модальные окна */}
       <ProjectFormModal isOpen={isProjectModalOpen} onClose={() => setIsProjectModalOpen(false)} />
       <StudentFormModal isOpen={isStudentModalOpen} onClose={() => setIsStudentModalOpen(false)} />
       <TeamFormModal isOpen={isTeamModalOpen} onClose={() => setIsTeamModalOpen(false)} />

@@ -112,6 +112,55 @@ function TaskMoveSuccessModal({ isOpen, onClose, taskDescription }: TaskMoveSucc
   );
 }
 
+interface MoveTaskConfirmModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  taskDescription: string;
+}
+
+function MoveTaskConfirmModal({ isOpen, onClose, onConfirm, taskDescription }: MoveTaskConfirmModalProps) {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl p-6 w-full max-w-md mx-4 shadow-xl">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-full bg-[#000150]/10 flex items-center justify-center">
+            <svg className="w-6 h-6 text-[#000150]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+          </div>
+          <h3 className="text-xl font-semibold text-[#000150]">Перенос задачи</h3>
+        </div>
+        
+        <p className="text-[#353535] mb-4">
+          Вы действительно хотите перенести эту задачу на следующую встречу?
+        </p>
+        
+        <p className="text-[14px] text-gray-500 bg-gray-50 rounded-lg p-3 mb-6">
+          {taskDescription}
+        </p>
+        
+        <div className="flex gap-3">
+          <button
+            onClick={onClose}
+            className="flex-1 py-2.5 px-4 bg-gray-200 text-gray-800 rounded-xl font-medium hover:bg-gray-300 transition-colors"
+          >
+            Отмена
+          </button>
+          <button
+            onClick={onConfirm}
+            className="flex-1 py-2.5 px-4 bg-[#000150] text-white rounded-xl font-medium hover:bg-blue-900 transition-colors"
+          >
+            Перенести
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function MeetingPage() {
   const params = useParams();
   const router = useRouter();
@@ -126,6 +175,7 @@ export default function MeetingPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [tasksError, setTasksError] = useState<string | null>(null);
   const [tasksLoading, setTasksLoading] = useState(false);
+  const [taskToMove, setTaskToMove] = useState<Task | null>(null);
   
   const [artifacts, setArtifacts] = useState<Artifact[]>([]);
 
@@ -230,7 +280,7 @@ export default function MeetingPage() {
       setIsTaskModalOpen(false);
     } catch (err: any) {
       console.error('Task creation error:', err);
-      // Если задача создалась, но ответ был с ошибкой — всё равно обновляем список
+      // Если задача создалась, но ответ был с ошибкой - всё равно обновляем список
       fetchTasks().catch(() => {});
       setTasksError(err.message || 'Ошибка при создании задачи');
     }
@@ -254,24 +304,33 @@ export default function MeetingPage() {
     setTasks(prev => prev.map(t => t.id === updatedTask.id ? updatedTask : t));
   }, []);
 
-  const handleMoveTaskToNextMeeting = async (taskId: string) => {
-    const task = tasks.find(t => t.id === taskId);
+  // Открытие модального окна подтверждения
+  const handleMoveTaskClick = (task: Task) => {
+    setTaskToMove(task);
+  };
+
+  // Фактический перенос после подтверждения
+  const handleConfirmMoveTask = async () => {
+    if (!taskToMove) return;
+    
     try {
-      await moveTaskToNextMeeting(taskId);
+      await moveTaskToNextMeeting(taskToMove.id);
       
-      // Сохраняем описание для отображения в модальном окне
-      if (task) {
-        setMovedTaskDescription(task.description);
-      }
+      // Сохраняем описание для отображения в модальном окне успеха
+      setMovedTaskDescription(taskToMove.description);
       
       // Показываем модальное окно об успехе
       setIsMoveSuccessModalOpen(true);
       
       // Обновляем список задач
       await fetchTasks();
+      
+      // Закрываем модальное окно подтверждения
+      setTaskToMove(null);
     } catch (err: any) {
       console.error('Task move error:', err);
       setTasksError(err.message || 'Ошибка при переносе задачи');
+      setTaskToMove(null);
     }
   };
 
@@ -492,7 +551,7 @@ export default function MeetingPage() {
                     </button>
                     
                     <button
-                      onClick={() => handleMoveTaskToNextMeeting(task.id)}
+                      onClick={() => handleMoveTaskClick(task)}  // ✅ Теперь открывает подтверждение
                       className="p-1 text-gray-500 hover:text-[#000150] transition-colors"
                       title="Перенести на следующую встречу"
                     >
@@ -626,6 +685,15 @@ export default function MeetingPage() {
           }}
           task={taskToComplete}
           onConfirm={() => handleCompleteTask(taskToComplete.id)}
+        />
+      )}
+
+      {taskToMove && (
+        <MoveTaskConfirmModal
+          isOpen={!!taskToMove}
+          onClose={() => setTaskToMove(null)}
+          onConfirm={handleConfirmMoveTask}
+          taskDescription={taskToMove.description}
         />
       )}
 

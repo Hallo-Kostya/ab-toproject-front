@@ -72,6 +72,7 @@ export default function TeamsPage() {
     setIsTeamModalOpen(false);
   }, [fetchTeams]);
 
+  // TODO: Fix
   const renderTeamCard = useCallback((team: TeamWithStudents, index: number) => (
     <TeamCard 
       key={team.id}
@@ -99,6 +100,7 @@ export default function TeamsPage() {
     );
   }
 
+  // TODO: Fix
   return (
     <>
       <PageContainer

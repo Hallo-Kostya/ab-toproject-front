@@ -33,7 +33,10 @@ export default function AddStudentToTeamModal({ isOpen, onClose, teamId, onStude
     try {
       setLoadingStudents(true);
       const data = await getStudents();
+
+      // TODO: Fix
       setStudents(data);
+      
     } catch (err: any) {
       setError(err.message || 'Ошибка загрузки студентов');
       console.error('Students fetch error:', err);

@@ -125,12 +125,6 @@ export default function AssignTeamToProjectModal({ isOpen, onClose, projectId, o
                           {team.members_count} участник(ов)
                         </span>
                       </div>
-                      {/* {team.members && team.members.length > 0 && (
-                        <div className="text-xs text-gray-400 mt-1">
-                          {team.members.slice(0, 3).map(m => m.full_name).join(', ')}
-                          {team.members.length > 3 && ` +${team.members.length - 3} ещё`}
-                        </div>
-                      )} */}
                     </button>
                   ))
                 )}

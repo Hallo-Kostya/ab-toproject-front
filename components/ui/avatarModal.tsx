@@ -96,7 +96,6 @@ export default function AvatarModal({ isOpen, onClose }: AvatarModalProps) {
   return (
     <Modal isOpen={isOpen} onClose={onClose} className="px-30">
       <div className="p-6 bg-white rounded-3xl">
-        {/* Кнопка закрытия */}
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-colors"

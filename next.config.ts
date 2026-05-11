@@ -24,14 +24,20 @@ const nextConfig: NextConfig = {
     ];
   },
     images: {
-    remotePatterns: [
-      {
-        protocol: 'http',
-        hostname: 'localhost',
-        port: '9000',
-        pathname: '/curators/avatars/**',
-      },
-    ],
+      remotePatterns: [
+        {
+          protocol: 'http',
+          hostname: 'localhost',
+          port: '9000',
+          pathname: '/curators/avatars/**',
+        },
+        {
+          protocol: 'https',
+          hostname: 'localhost',
+          port: '9000',
+          pathname: '/curators/avatars/**',
+        },
+      ],
   },
 };
 

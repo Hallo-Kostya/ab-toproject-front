@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import Modal from "@/components/ui/modal";
 import { updateMeeting, Meeting, UpdateMeetingData } from "@/lib/api/meetings";
-// import { useAuth } from "@/context/AuthContext";
 
 interface EditMeetingFormProps {
   isOpen: boolean;
@@ -23,7 +22,6 @@ export default function EditMeetingForm({ isOpen, onClose, meetingId, initialDat
   
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  // const { isAuthenticated } = useAuth();
 
   function formatDateForInput(isoDate: string): string {
     if (!isoDate) return '';
@@ -55,8 +53,7 @@ export default function EditMeetingForm({ isOpen, onClose, meetingId, initialDat
       await updateMeeting(meetingId, meetingData);
       
       onClose();
-      
-      // Мягкий рефреш
+
       setTimeout(() => {
         window.location.reload();
       }, 300);
@@ -159,23 +156,6 @@ export default function EditMeetingForm({ isOpen, onClose, meetingId, initialDat
               <option value="CANCELED">Отменена</option>
             </select>
           </div>
-          
-          {/* Предыдущая встреча */}
-          {/*
-          <div>
-            <label htmlFor="previousMeeting" className="block mb-1 text-[16px] font-medium text-[#000150]">
-              Предыдущая встреча
-            </label>
-            <select
-              id="previousMeeting"
-              value={previousMeetingId || ''}
-              onChange={(e) => setPreviousMeetingId(e.target.value || null)}
-              className="w-full px-4 py-2 rounded-xl border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
-            >
-              <option value="">Не выбрана</option>
-            </select>
-          </div>
-          */}
 
           {/* Кнопки */}
           <div className="flex gap-4 mt-10">

@@ -34,6 +34,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  
+  const handleLoginSuccess = useCallback(async (tokens: AuthResponse) => {
+    try {
+      // Сохраняем токены в localStorage
+      localStorage.setItem('access_token', tokens.access_token);
+      localStorage.setItem('refresh_token', tokens.refresh_token);
+      
+      // Получаем свежие данные пользователя после входа
+      const userData = await getCurrentUser();
+      localStorage.setItem('user_data', JSON.stringify(userData));
+      setUser(userData);
+      return true;
+    } catch (error) {
+      console.error('Failed to get user after login:', error);
+      clearAuthData();
+      throw error;
+    }
+  }, []);
 
   // Инициализация при загрузке приложения
   useEffect(() => {
@@ -73,7 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     initializeAuth();
-  }, []);
+  }, [handleLoginSuccess]);
 
   const clearAuthData = () => {
     localStorage.removeItem('access_token');
@@ -81,24 +99,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('user_data');
     setUser(null);
   };
-
-  const handleLoginSuccess = useCallback(async (tokens: AuthResponse) => {
-    try {
-      // Сохраняем токены в localStorage
-      localStorage.setItem('access_token', tokens.access_token);
-      localStorage.setItem('refresh_token', tokens.refresh_token);
-      
-      // Получаем свежие данные пользователя после входа
-      const userData = await getCurrentUser();
-      localStorage.setItem('user_data', JSON.stringify(userData));
-      setUser(userData);
-      return true;
-    } catch (error) {
-      console.error('Failed to get user after login:', error);
-      clearAuthData();
-      throw error;
-    }
-  }, []);
 
   const login = useCallback(async (tokens: AuthResponse) => {
     setIsLoading(true);

@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import Modal from "@/components/ui/modal";
 import { createMeeting, CreateMeetingData } from "@/lib/api/meetings";
-// import { useAuth } from "@/context/AuthContext";
 
 interface MeetingFormModalProps {
   isOpen: boolean;
@@ -20,7 +19,6 @@ export default function MeetingFormModal({ isOpen, onClose, teamId }: MeetingFor
   
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  // const { isAuthenticated } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

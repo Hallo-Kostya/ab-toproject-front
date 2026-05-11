@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Modal from "@/components/ui/modal";
-import { updateTeam, Team } from "@/lib/api/teams";
-// import { useAuth } from "@/context/AuthContext";
+import { updateTeam, Team, CreateTeamData } from "@/lib/api/teams";
 
 interface EditTeamFormProps {
   isOpen: boolean;
@@ -14,15 +13,14 @@ interface EditTeamFormProps {
 
 export default function EditTeamForm({ isOpen, onClose, teamId, initialData }: EditTeamFormProps) {
   const [name, setName] = useState(initialData.name);
-  const [groupLink, setGroupLink] = useState(initialData.group_link);
+  const [groupLink, setGroupLink] = useState(initialData.group_link ?? '');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  // const { refreshTokens } = useAuth();
 
   useEffect(() => {
     // обновляем данные формы при изменении initialData
     setName(initialData.name);
-    setGroupLink(initialData.group_link);
+    setGroupLink(initialData.group_link ?? '');
   }, [initialData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -31,9 +29,9 @@ export default function EditTeamForm({ isOpen, onClose, teamId, initialData }: E
     setIsLoading(true);
 
     try {
-      const teamData = {
+      const teamData: Partial<CreateTeamData> = {
         name,
-        group_link: groupLink
+        group_link: groupLink.trim() === '' ? null : groupLink.trim()
       };
 
       await updateTeam(teamId, teamData);

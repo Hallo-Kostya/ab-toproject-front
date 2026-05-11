@@ -282,7 +282,8 @@ export default function TeamPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                   </svg>
                 </button>
-
+                    
+                {/* TODO: Fix */}
                 <ul 
                   ref={meetingsScrollRef}
                   className="flex overflow-x-auto hide-scrollbar py-2 gap-6"

@@ -1,3 +1,5 @@
+// TODO: Check unusual ifaces
+
 import { Student } from "../students/student";
 
 export type Team = {
@@ -5,11 +7,7 @@ export type Team = {
   name: string;
   group_link: string;
   number?: number;
-  // Закомментировано, так как пока не реализовано в API
-  // curator?: string;
-  // team_artifacts?: string;
   participantIds?: string[];
-  // projectsIds?: string[];
 }
 
 export interface TeamStudent {

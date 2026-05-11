@@ -84,7 +84,6 @@ export const logout = async (): Promise<void> => {
   }
 
   try {
-    // Бекенд ожидает refresh_token как query-параметр и Authorization header
     const response = await fetch(
       `${API_BASE_URL}/auth/logout?refresh_token=${encodeURIComponent(refreshToken)}`,
       {
@@ -131,15 +130,14 @@ export const getCurrentUser = async (): Promise<User> => {
 };
 
 export const refreshToken = async (): Promise<AuthResponse> => {
-  const refreshTokenValue = localStorage.getItem('refresh_token');
+  const storedRefreshToken = localStorage.getItem('refresh_token');
   
-  if (!refreshTokenValue) {
+  if (!storedRefreshToken) {
     throw new Error('No refresh token');
   }
 
-  // Бекенд ожидает refresh_token как query-параметр
   const response = await fetch(
-    `${API_BASE_URL}/auth/refresh?refresh_token=${encodeURIComponent(refreshTokenValue)}`,
+    `${API_BASE_URL}/auth/refresh?refresh_token=${encodeURIComponent(storedRefreshToken)}`,
     {
       method: 'POST',
       headers: {
@@ -166,7 +164,7 @@ export const uploadAvatar = async (file: File): Promise<User> => {
   const formData = new FormData();
   formData.append('file', file);
 
-  const response = await fetch(`${API_BASE_URL}/auth/avatar`, {
+  const response = await fetch(`${API_BASE_URL}/auth/me/avatar`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${accessToken}`

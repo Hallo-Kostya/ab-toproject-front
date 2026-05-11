@@ -1,7 +1,6 @@
 'use client';
 
-import Image from "next/image";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { formatShortName } from "@/utils/formatName";
 import AvatarModal from "./avatarModal";
 
@@ -20,11 +19,37 @@ interface UserMenuProps {
 
 export default function UserMenu({ user, onLogout }: UserMenuProps) {
   const displayName = formatShortName(user.firstName, user.lastName);
-  const avatarUrl = user.avatar && user.avatar.trim() !== '' 
-    ? user.avatar 
-    : "/default_user.png";
+
+  const avatarErrorRef = useRef(false);
+  const [avatarKey, setAvatarKey] = useState(0);
   
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
+
+  // ПостроениеURL для аватара
+  const buildAvatarUrl = () => {
+    if (!user.avatar || user.avatar.trim() === '') {
+      return "/default_user.png";
+    }
+    
+    // полный URL
+    if (user.avatar.startsWith('http://') || user.avatar.startsWith('https://')) {
+      return user.avatar;
+    }
+    
+    // S3 URL
+    const s3BaseUrl = process.env.NEXT_PUBLIC_S3_BASE_URL;
+    if (s3BaseUrl) {
+      const cleanPath = user.avatar.replace(/^\/+/, '');
+      return `${s3BaseUrl}/${cleanPath}`;
+    }
+    
+    // Прокси-эндпоинт бекенда
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:9000/curators';
+    const cleanPath = user.avatar.replace(/^\/+/, '');
+    return `${apiBaseUrl}/${cleanPath}`;
+  };
+
+  const avatarUrl = buildAvatarUrl();
 
   const handleLogout = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -50,6 +75,16 @@ export default function UserMenu({ user, onLogout }: UserMenuProps) {
     setIsAvatarModalOpen(true);
   };
 
+  const handleImageError = () => {
+    if (!avatarErrorRef.current) {
+      avatarErrorRef.current = true;
+      setAvatarKey(prev => prev + 1);
+    }
+  };
+
+  // TODO: Fix
+  const displayUrl = avatarErrorRef.current ? "/default_user.png" : avatarUrl;
+
   return (
     <>
       <div className="flex gap-1.5 items-center">
@@ -68,15 +103,12 @@ export default function UserMenu({ user, onLogout }: UserMenuProps) {
           title="Изменить аватар"
         >
           <div className="relative w-full h-full rounded-full overflow-hidden border-2 border-white shadow-sm mt-0.5">
-            <Image
-              src={avatarUrl}
+            <img
+              key={avatarKey}
+              src={displayUrl}
               alt={`${displayName} avatar`}
-              fill
-              className="object-cover"
-              priority
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = "/default_user.png";
-              }}
+              className="object-cover w-full h-full"
+              onError={handleImageError}
             />
           </div>
         </div>

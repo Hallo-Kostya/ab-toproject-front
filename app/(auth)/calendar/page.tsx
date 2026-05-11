@@ -135,6 +135,7 @@ export default function CalendarPage() {
         setLoading(true);
         setError(null);
         
+        // TODO: Fix
         const filters: { start_date: string; end_date: string; team_id?: string } = {
           start_date: dateRange.from.toISOString(),
           end_date: dateRange.to.toISOString()

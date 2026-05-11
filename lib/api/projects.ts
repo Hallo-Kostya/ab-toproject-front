@@ -2,16 +2,15 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8
 import { Team } from "@/types/teams/team";
 import { TeamSummary, TeamSummaryResponse } from "./teams";
 
-// TODO: Проверка запросов и переработка интерфейсов
 export interface Project {
   teams_count: number;
   members_count: number;
   id: string;
   name: string;
   description: string;
-  goal: string;
-  requirements: string;
-  eval_criteria: string;
+  goal?: string | null;
+  requirements?: string | null;
+  eval_criteria?: string | null;
   semester: string;
   status: string;
   year: number;
@@ -83,8 +82,6 @@ export const createProject = async (data: CreateProjectData): Promise<Project> =
   return response.json();
 };
 
-// TODO: team_id - параметр для запроса со страницы команды для получения проектов для текущей команды
-// TODO: к URL не относится
 export const getProjects = async (filters?: {
   year?: number;
   semester?: string;
