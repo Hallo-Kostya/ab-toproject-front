@@ -25,11 +25,8 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      // apiLogin возвращает токены в теле ответа
       const authResponse = await apiLogin({ email, password });
-      // Передаём токены в контекст для сохранения и загрузки профиля
       await authLogin(authResponse);
-      
     } catch (err: any) {
       setError(err.message || 'Неверный email или пароль');
       console.error('Login error:', err);

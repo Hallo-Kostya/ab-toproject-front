@@ -41,19 +41,24 @@ export default function EditProjectForm({ isOpen, onClose, projectId, initialDat
 
     try {
       const projectData: UpdateProjectData = {
-        ...(description.trim() !== '' && { description: description.trim() }),
-        ...(goal.trim() !== '' && { goal: goal.trim() }),
-        ...(requirements.trim() !== '' && { requirements: requirements.trim() }),
-        ...(evalCriteria.trim() !== '' && { eval_criteria: evalCriteria.trim() }),
+        name: name.trim(),
+
+        description: description.trim() !== '' ? description.trim() : null,
+        goal: goal.trim() !== '' ? goal.trim() : null,
+        requirements: requirements.trim() !== '' ? requirements.trim() : null,
+        eval_criteria: evalCriteria.trim() !== '' ? evalCriteria.trim() : null,
+
         ...(year !== undefined && { year }),
         ...(semester !== undefined && { semester }),
         ...(status !== undefined && { status })
       };
 
+      console.log('[EditProjectForm] Sending update:', projectData);
+      
       await updateProject(projectId, projectData);
 
       onClose();
-      
+
       setTimeout(() => {
         window.location.reload();
       }, 300);

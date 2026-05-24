@@ -1,4 +1,5 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001/api';
+
 import { Team } from "@/types/teams/team";
 import { TeamSummary, TeamSummaryResponse } from "./teams";
 
@@ -35,10 +36,14 @@ export interface CreateProjectData {
 }
 
 export interface UpdateProjectData {
-  description?: string;
-  goal?: string;
-  requirements?: string;
-  eval_criteria?: string;
+  name?: string;
+  description?: string | null;
+  goal?: string | null;
+  requirements?: string | null;
+  eval_criteria?: string | null;
+  year?: number;
+  semester?: string;
+  status?: string;
 }
 
 export interface ProjectTeam {
@@ -60,6 +65,7 @@ export interface AssignTeamData {
   status?: string;
 }
 
+// --- API Functions ---
 
 export const createProject = async (data: CreateProjectData): Promise<Project> => {
   const accessToken = localStorage.getItem('access_token');
@@ -145,6 +151,8 @@ export const updateProject = async (projectId: string, data: UpdateProjectData):
   const accessToken = localStorage.getItem('access_token');
   if (!accessToken) throw new Error('No access token');
 
+  console.log('[Projects] updateProject payload:', JSON.stringify(data, null, 2));
+
   const response = await fetch(`${API_BASE_URL}/projects/${projectId}`, {
     method: 'PATCH',
     headers: {
@@ -156,6 +164,7 @@ export const updateProject = async (projectId: string, data: UpdateProjectData):
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
+    console.error('[Projects] updateProject failed:', response.status, errorData);
     throw new Error(errorData.detail || 'Failed to update project');
   }
 

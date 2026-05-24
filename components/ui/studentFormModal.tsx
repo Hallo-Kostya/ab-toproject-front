@@ -127,6 +127,7 @@ export default function StudentFormModal({ isOpen, onClose }: { isOpen: boolean,
                 id="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                required
                 className="w-full px-4 py-2 rounded-xl border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
                 placeholder="email@example.com (необязательно)"
               />

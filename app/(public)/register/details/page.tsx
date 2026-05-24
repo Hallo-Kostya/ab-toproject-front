@@ -59,14 +59,11 @@ export default function RegistrationDetailsPage() {
           tg_link: tgLink || undefined
         };
 
-        // register() возвращает токены в теле ответа
         const authResponse = await register(registerData);
-        
-        // Передаём токены в контекст для сохранения и загрузки профиля
         await login(authResponse);
         
         localStorage.removeItem('registration-step1');
-        router.push('/projects');
+        // Router push handled in auth context login()
         
     } catch (err: any) {
         setError(err.message || 'Ошибка регистрации. Попробуйте еще раз.');

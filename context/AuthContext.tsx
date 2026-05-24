@@ -1,13 +1,20 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { 
   User, 
   AuthResponse, 
   getCurrentUser, 
   logout as apiLogout,
-  refreshToken as apiRefreshToken
+  refreshToken as apiRefreshToken,
+  saveAuthTokens,
+  clearAuthStorage,
+  getStoredAccessExpiresAt,
+  isTokenExpired,
+  USE_COOKIES,
+  getCachedUserData,
+  cacheUserData,
 } from '@/lib/api/auth';
 
 interface AuthState {
@@ -30,61 +37,90 @@ const AuthContext = createContext<AuthState>({
   updateUser: () => {},
 });
 
+const REFRESH_BUFFER_MS = 5 * 60 * 1000;
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
-  
+  const pathname = usePathname();
+  const refreshPromiseRef = useRef<Promise<boolean> | null>(null);
+
   const handleLoginSuccess = useCallback(async (tokens: AuthResponse) => {
     try {
-      // Сохраняем токены в localStorage
-      localStorage.setItem('access_token', tokens.access_token);
-      localStorage.setItem('refresh_token', tokens.refresh_token);
+      // 1. Очищаем старое состояние
+      if (!USE_COOKIES) {
+        clearAuthStorage();
+      }
       
-      // Получаем свежие данные пользователя после входа
+      // 2. Сохраняем новые токены
+      if (!USE_COOKIES) {
+        saveAuthTokens(tokens);
+      }
+      
+      // 3. Загружаем профиль пользователя
       const userData = await getCurrentUser();
-      localStorage.setItem('user_data', JSON.stringify(userData));
+      cacheUserData(userData);
       setUser(userData);
       return true;
     } catch (error) {
       console.error('Failed to get user after login:', error);
-      clearAuthData();
+      if (!USE_COOKIES) clearAuthStorage();
       throw error;
     }
   }, []);
 
-  // Инициализация при загрузке приложения
+  // Инициализация при загрузке
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        const storedAccessToken = localStorage.getItem('access_token');
-        
-        if (storedAccessToken) {
+        if (USE_COOKIES) {
           try {
-            // Получаем свежие данные пользователя при инициализации
             const userData = await getCurrentUser();
-            localStorage.setItem('user_data', JSON.stringify(userData));
+            cacheUserData(userData);
             setUser(userData);
-          } catch (error) {
-            // Если токен истёк — пытаемся рефрешнуть
-            console.log('Token expired, attempting refresh...');
-            const storedRefreshToken = localStorage.getItem('refresh_token');
-            if (storedRefreshToken) {
+          } catch {
+            setUser(null);
+          }
+        } else {
+          const expiresAt = getStoredAccessExpiresAt();
+          const shouldRefresh = !expiresAt || Date.now() + REFRESH_BUFFER_MS >= expiresAt;
+          
+          if (shouldRefresh) {
+            const refreshToken = localStorage.getItem('refresh_token')?.trim();
+            if (refreshToken && !isTokenExpired(refreshToken, REFRESH_BUFFER_MS)) {
               try {
                 const newTokens = await apiRefreshToken();
                 await handleLoginSuccess(newTokens);
-              } catch (refreshError) {
-                console.log('Token refresh failed, clearing tokens');
-                clearAuthData();
+              } catch {
+                clearAuthStorage();
               }
             } else {
-              clearAuthData();
+              clearAuthStorage();
+            }
+          } else {
+            try {
+              const userData = await getCurrentUser();
+              cacheUserData(userData);
+              setUser(userData);
+            } catch {
+              const refreshToken = localStorage.getItem('refresh_token')?.trim();
+              if (refreshToken) {
+                try {
+                  const newTokens = await apiRefreshToken();
+                  await handleLoginSuccess(newTokens);
+                } catch {
+                  clearAuthStorage();
+                }
+              } else {
+                clearAuthStorage();
+              }
             }
           }
         }
       } catch (error) {
         console.error('Auth initialization error:', error);
-        clearAuthData();
+        if (!USE_COOKIES) clearAuthStorage();
       } finally {
         setIsLoading(false);
       }
@@ -93,19 +129,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     initializeAuth();
   }, [handleLoginSuccess]);
 
-  const clearAuthData = () => {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('user_data');
-    setUser(null);
-  };
+  // Прокативный рефреш
+  useEffect(() => {
+    if (!user || USE_COOKIES) return;
+
+    const checkAndRefresh = async () => {
+      const expiresAt = getStoredAccessExpiresAt();
+      if (expiresAt && Date.now() + REFRESH_BUFFER_MS >= expiresAt) {
+        const refreshToken = localStorage.getItem('refresh_token')?.trim();
+        if (refreshToken && !isTokenExpired(refreshToken)) {
+          await refreshTokens();
+        }
+      }
+    };
+
+    const interval = setInterval(checkAndRefresh, 60_000);
+    return () => clearInterval(interval);
+  }, [user]);
 
   const login = useCallback(async (tokens: AuthResponse) => {
     setIsLoading(true);
     try {
-      clearAuthData();
       await handleLoginSuccess(tokens);
       router.push('/projects');
+    } catch (err) {
+      console.error('Login failed:', err);
     } finally {
       setIsLoading(false);
     }
@@ -118,85 +166,129 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('Logout API error:', error);
     } finally {
-      clearAuthData();
+      if (!USE_COOKIES) clearAuthStorage();
+      setUser(null);
       router.push('/login');
     }
   }, [router]);
 
   const refreshTokens = useCallback(async (): Promise<boolean> => {
-    try {
-      const newTokens = await apiRefreshToken();
-      
-      // Сохраняем новые токены
-      localStorage.setItem('access_token', newTokens.access_token);
-      localStorage.setItem('refresh_token', newTokens.refresh_token);
-      
-      // Обновляем данные пользователя
-      const userData = await getCurrentUser();
-      localStorage.setItem('user_data', JSON.stringify(userData));
-      setUser(userData);
-      
-      return true;
-    } catch (error) {
-      console.error('Token refresh failed:', error);
-      clearAuthData();
-      return false;
+    if (refreshPromiseRef.current) {
+      return refreshPromiseRef.current;
     }
+
+    refreshPromiseRef.current = (async () => {
+      try {
+        const newTokens = await apiRefreshToken();
+        
+        if (!USE_COOKIES) {
+          saveAuthTokens(newTokens);
+        }
+        
+        const userData = await getCurrentUser();
+        cacheUserData(userData);
+        setUser(userData);
+        return true;
+      } catch (error) {
+        console.error('Token refresh failed:', error);
+        if (!USE_COOKIES) clearAuthStorage();
+        return false;
+      } finally {
+        refreshPromiseRef.current = null;
+      }
+    })();
+
+    return refreshPromiseRef.current;
   }, []);
 
   const updateUser = useCallback((userData: Partial<User>) => {
     if (user) {
       const updatedUser = { ...user, ...userData };
       setUser(updatedUser);
-      localStorage.setItem('user_data', JSON.stringify(updatedUser));
+      cacheUserData(updatedUser);
     }
   }, [user]);
 
-  const value = {
-    user,
-    isLoading,
-    isAuthenticated: !!user,
-    login,
-    logout,
-    refreshTokens,
-    updateUser,
-  };
-
-  // Обработчик ошибки 401 Unauthorized
+  // Глобальный интерцептор 401
   useEffect(() => {
-    const handleUnauthorized = async () => {
-      console.log('Unauthorized error detected, attempting to refresh tokens...');
-      const refreshToken = localStorage.getItem('refresh_token');
-      
-      if (refreshToken) {
-        try {
-          const success = await refreshTokens();
-          if (success) {
-            console.log('Tokens refreshed successfully');
-            return;
-          }
-        } catch (error) {
-          console.error('Token refresh failed during unauthorized handling:', error);
-        }
-      }
-      
-      console.log('Token refresh failed or no refresh token, redirecting to login...');
-      clearAuthData();
-      setTimeout(() => {
-        window.location.href = '/login';
-      }, 300);
+    let isRefreshing = false;
+    const failedQueue: Array<() => void> = [];
+
+    const processQueue = (error: Error | null = null) => {
+      failedQueue.forEach(cb => cb());
+      failedQueue.length = 0;
     };
 
-    // Глобальный обработчик ошибок fetch
+    const handleUnauthorized = async () => {
+      if (isRefreshing) {
+        return new Promise<void>((resolve, reject) => {
+          failedQueue.push(() => {
+            if (!USE_COOKIES) {
+              const token = localStorage.getItem('access_token')?.trim();
+              if (token && !isTokenExpired(token)) {
+                resolve();
+              } else {
+                reject(new Error('Token refresh failed'));
+              }
+            } else {
+              resolve();
+            }
+          });
+        });
+      }
+
+      isRefreshing = true;
+      try {
+        if (USE_COOKIES) {
+          const success = await refreshTokens();
+          if (!success) throw new Error('Refresh failed');
+          processQueue();
+          return true;
+        } else {
+          const refreshToken = localStorage.getItem('refresh_token')?.trim();
+          if (!refreshToken || isTokenExpired(refreshToken)) {
+            throw new Error('No valid refresh token');
+          }
+          const success = await refreshTokens();
+          if (!success) throw new Error('Refresh failed');
+          processQueue();
+          return true;
+        }
+      } catch (error) {
+        console.error('Unauthorized handler failed:', error);
+        if (!USE_COOKIES) clearAuthStorage();
+        setUser(null);
+        processQueue(new Error('Auth failed'));
+        setTimeout(() => {
+          if (typeof window !== 'undefined') {
+            window.location.href = '/login';
+          }
+        }, 100);
+        return false;
+      } finally {
+        isRefreshing = false;
+      }
+    };
+
     const originalFetch = window.fetch;
     window.fetch = async (...args) => {
+      const [resource, config] = args;
+      const url = typeof resource === 'string' ? resource : resource instanceof URL ? resource.href : '';
+      const isAuthEndpoint = url.includes('/auth/login') || url.includes('/auth/register') || url.includes('/auth/refresh');
+      
+      if (isAuthEndpoint) {
+        return originalFetch.apply(window, args);
+      }
+
       try {
-        const response = await originalFetch(...args);
+        const response = await originalFetch.apply(window, args);
         
         if (response.status === 401) {
-          handleUnauthorized();
+          const refreshed = await handleUnauthorized();
+          if (refreshed) {
+            return originalFetch.apply(window, args);
+          }
         }
-        
         return response;
       } catch (error) {
         console.error('Fetch error:', error);
@@ -209,6 +301,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [refreshTokens]);
 
+  // Редирект неавторизованных
+  useEffect(() => {
+    if (!isLoading && !user && pathname && !pathname.startsWith('/login') && !pathname.startsWith('/register')) {
+      router.push('/login');
+    }
+  }, [isLoading, user, pathname, router]);
+
+  const value = {
+    user,
+    isLoading,
+    isAuthenticated: !!user,
+    login,
+    logout,
+    refreshTokens,
+    updateUser,
+  };
+
   return (
     <AuthContext.Provider value={value}>
       {children}
@@ -216,4 +325,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within AuthProvider');
+  }
+  return context;
+};

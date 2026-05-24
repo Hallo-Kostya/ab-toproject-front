@@ -34,19 +34,11 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      console.log('Registration:', {
-        email,
-        password: '[HIDDEN]'
-      });
-
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
       localStorage.setItem('registration-step1', JSON.stringify({ email, password }));
-
       router.push('/register/details');
 
     } catch (err) {
-      setError('Registration failed. Try again later.');
+      setError('Ошибка регистрации. Попробуйте еще раз.');
       console.error('Registration error:', err);
     } finally {
       setIsLoading(false);
@@ -75,7 +67,7 @@ export default function RegisterPage() {
             </label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 transform -translate-y-1/2">
-                <Image src={"/mail.svg"} alt={"Пароль"} width={27} height={27}/>
+                <Image src={"/mail.svg"} alt={"Почта"} width={27} height={27}/>
               </span>
               <input
                 type="email"
