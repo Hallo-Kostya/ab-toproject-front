@@ -24,9 +24,9 @@ export default function SearchResultsList({ results, query, onClose, onResultCli
     switch (result.type) {
       case 'project': router.push(`/projects/${result.id}`); break;
       case 'team': router.push(`/teams/${result.id}`); break;
-      // case 'student':
-      //   alert(`Студент "${result.name}"\nПереход на страницу команды пока недоступен`);
-      //   break;
+      case 'student':
+        alert(`Студент "${result.name}"\nПереход на страницу команды пока недоступен`);
+        break;
     }
     onClose?.();
   };
