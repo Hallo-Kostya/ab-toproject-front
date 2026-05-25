@@ -2,7 +2,6 @@ import { Project } from "./projects";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001/api';
 
-
 export interface Team {
   id: string;
   name: string;
@@ -103,12 +102,18 @@ export const createTeam = async (data: CreateTeamData): Promise<Team> => {
 
 export const getTeams = async (filters?: {
   project_id?: string;
+  project_team_status?: 'ACTIVE' | 'COMPLETED' | 'WITHDRAWN' | 'PENDING';
 }): Promise<TeamSummaryResponse> => {
   const accessToken = localStorage.getItem('access_token');
   if (!accessToken) throw new Error('No access token');
 
   const queryParams = new URLSearchParams();
   if (filters?.project_id) queryParams.append('project_id', filters.project_id);
+  
+  // Добавляем фильтр по статусу команд
+  if (filters?.project_team_status) {
+    queryParams.append('project_team_status', filters.project_team_status);
+  }
 
   const queryString = queryParams.toString();
   const url = `${API_BASE_URL}/teams${queryString ? `?${queryString}` : ''}`;

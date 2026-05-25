@@ -92,6 +92,7 @@ export const getProjects = async (filters?: {
   year?: number;
   semester?: string;
   team_id?: string;
+  project_team_status?: 'ACTIVE' | 'COMPLETED' | 'WITHDRAWN' | 'PENDING';
 }): Promise<ProjectsResponse> => {
   const accessToken = localStorage.getItem('access_token');
   if (!accessToken) throw new Error('No access token');
@@ -100,6 +101,11 @@ export const getProjects = async (filters?: {
   if (filters?.year) queryParams.append('year', filters.year.toString());
   if (filters?.semester) queryParams.append('semester', filters.semester);
   if (filters?.team_id) queryParams.append('team_id', filters.team_id);
+  
+  // ← Добавляем параметр статуса команд
+  if (filters?.project_team_status) {
+    queryParams.append('project_team_status', filters.project_team_status);
+  }
 
   const queryString = queryParams.toString();
   const url = `${API_BASE_URL}/projects${queryString ? `?${queryString}` : ''}`;
@@ -171,11 +177,26 @@ export const updateProject = async (projectId: string, data: UpdateProjectData):
   return response.json();
 };
 
-export const getProjectTeams = async (projectId: string): Promise<TeamSummary[]> => {
+export const getProjectTeams = async (
+  projectId: string, 
+  options?: { 
+    project_team_status?: 'ACTIVE' | 'COMPLETED' | 'WITHDRAWN' | 'PENDING' 
+  }
+): Promise<TeamSummary[]> => {
   const accessToken = localStorage.getItem('access_token');
   if (!accessToken) throw new Error('No access token');
 
-  const response = await fetch(`${API_BASE_URL}/teams?project_id=${projectId}`, {
+  // Формируем query params
+  const queryParams = new URLSearchParams({
+    project_id: projectId
+  });
+  
+  // ← Добавляем фильтр по статусу, если передан
+  if (options?.project_team_status) {
+    queryParams.append('project_team_status', options.project_team_status);
+  }
+
+  const response = await fetch(`${API_BASE_URL}/teams?${queryParams.toString()}`, {
     headers: { 'Authorization': `Bearer ${accessToken}` }
   });
 

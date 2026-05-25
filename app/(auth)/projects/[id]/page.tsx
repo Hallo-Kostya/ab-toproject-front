@@ -51,7 +51,11 @@ export default function ProjectPage() {
         setTeamsLoading(true);
         setTeamsError(null);
         
-        const teamsData = await getProjectTeams(id);
+        // Добавляем фильтр по статусу команд
+        const teamsData = await getProjectTeams(id, {
+          project_team_status: 'ACTIVE'
+        });
+        
         setProjectTeams(teamsData);
         
       } catch (err: any) {
@@ -70,7 +74,9 @@ export default function ProjectPage() {
 
   const handleTeamAssigned = async () => {
     try {
-      const teamsData = await getProjectTeams(id);
+      const teamsData = await getProjectTeams(id, {
+        project_team_status: 'ACTIVE'
+      });
       setProjectTeams(teamsData);
     } catch (err: any) {
       console.warn('Failed to refresh project teams:', err);
@@ -80,7 +86,9 @@ export default function ProjectPage() {
 
   const handleTeamRemoved = async () => {
     try {
-      const teamsData = await getProjectTeams(id);
+      const teamsData = await getProjectTeams(id, {
+        project_team_status: 'ACTIVE'
+      });
       setProjectTeams(teamsData);
     } catch (err: any) {
       console.warn('Failed to refresh project teams after removal:', err);

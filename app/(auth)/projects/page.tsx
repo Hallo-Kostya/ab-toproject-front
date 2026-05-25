@@ -47,7 +47,13 @@ export default function ProjectsPage() {
     try {
       setLoading(true);
       setError(null);
-      const response: ProjectsResponse = await getProjects(filters);
+      
+      // Добавляем фильтр по статусу команд для счётчиков
+      const response: ProjectsResponse = await getProjects({
+        ...filters,
+        project_team_status: 'ACTIVE'
+      });
+      
       const projectsWithCounts: ProjectWithCounts[] = response.projects.map(project => ({
         ...project,
         teams_count: project.teams_count ?? 0,
