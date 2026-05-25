@@ -8,7 +8,7 @@ import DeleteStudentModal from '@/components/ui/deleteStudentModal';
 import EditStudentForm from '@/components/forms/editStudentForm';
 import StudentFormModal from '@/components/ui/studentFormModal';
 import StudentSearchBar from '@/components/ui/search/studentSearchBar';
-import { StudentSearchResult } from '@/lib/api/search';
+// import { StudentSearchResult } from '@/lib/api/search';
 
 export default function StudentsPage() {
   const [students, setStudents] = useState<Student[]>([]);
@@ -127,9 +127,12 @@ const scrollToStudent = useCallback((studentId: string) => {
             <p>Всего студентов найдено: <span className="font-semibold text-[#000150]">{students.length}</span></p>
             <button
                 onClick={() => setIsAddModalOpen(true)}
-                className="px-4 py-2 bg-[#000150]/90 text-white text-[16px] rounded-2xl hover:bg-[#000150]/80 hover:shadow-md hover:inset-shadow-xs transition-colors whitespace-nowrap"
+                className="flex gap-2 items-center px-4 py-2 bg-[#000150]/90 text-white text-[16px] rounded-2xl hover:bg-[#000150]/80 hover:shadow-md hover:inset-shadow-xs transition-colors whitespace-nowrap"
               >
-              + Добавить студента
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Добавить студента
             </button>
           </div>
           <div className="w-80">

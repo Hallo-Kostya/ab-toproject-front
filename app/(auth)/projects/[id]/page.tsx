@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Project, getProjectById, getProjectTeams } from "@/lib/api/projects";
 import { TeamSummary } from "@/lib/api/teams";
 import { useAuth } from "@/context/AuthContext";
@@ -9,6 +9,243 @@ import DeleteProjectModal from '@/components/ui/deleteProjectModal';
 import EditProjectForm from '@/components/forms/editProjectForm';
 import AssignTeamToProjectModal from '@/components/ui/assignTeamToProjectModal';
 import ProjectTeamCard from '@/components/ui/cards/projectTeamCard';
+import { 
+  Artifact, 
+  getArtifacts, 
+  uploadProjectArtifact, 
+  detachArtifact, 
+  formatFileSize, 
+  getFileIconType,
+  FileIconType, 
+  downloadArtifact,
+  getArtifactDownloadUrl,
+  addMeetingLinkArtifact
+} from "@/lib/api/artifacts";
+
+// ─────────────────────────────────────────────
+// Модальные окна для артефактов
+// ─────────────────────────────────────────────
+
+interface AddLinkArtifactModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: (linkUrl: string, name?: string) => Promise<void>;
+  isLoading?: boolean;
+}
+
+function AddLinkArtifactModal({ isOpen, onClose, onConfirm, isLoading }: AddLinkArtifactModalProps) {
+  const [linkUrl, setLinkUrl] = useState('');
+  const [name, setName] = useState('');
+
+  if (!isOpen) return null;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!linkUrl.trim()) return;
+    await onConfirm(linkUrl.trim(), name.trim() || undefined);
+    setLinkUrl('');
+    setName('');
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+      <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6 w-full max-w-md mx-4 shadow-xl">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-full bg-[#000150]/10 flex items-center justify-center">
+            <svg className="w-6 h-6 text-[#000150]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+            </svg>
+          </div>
+          <h3 className="text-xl font-semibold text-[#000150]">Добавить ссылку</h3>
+        </div>
+        
+        <div className="space-y-4 mb-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">URL *</label>
+            <input
+              type="url"
+              value={linkUrl}
+              onChange={(e) => setLinkUrl(e.target.value)}
+              placeholder="https://example.com/document"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#000150] focus:border-transparent"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Название (опционально)</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Описание ссылки"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#000150] focus:border-transparent"
+            />
+          </div>
+        </div>
+        
+        <div className="flex gap-3">
+          <button 
+            type="button" 
+            onClick={onClose} 
+            className="flex-1 py-2.5 px-4 bg-gray-200 text-gray-800 rounded-xl font-medium hover:bg-gray-300 transition-colors"
+            disabled={isLoading}
+          >
+            Отмена
+          </button>
+          <button 
+            type="submit" 
+            className="flex-1 py-2.5 px-4 bg-[#000150] text-white rounded-xl font-medium hover:bg-blue-900 transition-colors disabled:opacity-50"
+            disabled={isLoading || !linkUrl.trim()}
+          >
+            {isLoading ? 'Добавление...' : 'Добавить'}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// Компонент иконки файла (ЛОКАЛЬНЫЙ, рендерит JSX)
+// ─────────────────────────────────────────────
+
+function FileIcon({ type }: { type: Exclude<FileIconType, 'link'> }) {
+  const icons = {
+    pdf: (
+      <svg className="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+      </svg>
+    ),
+    doc: (
+      <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+    ),
+    excel: (
+      <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+    ),
+    image: (
+      <svg className="w-5 h-5 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+      </svg>
+    ),
+    file: (
+      <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+    ),
+  };
+  return icons[type];
+}
+
+// ─────────────────────────────────────────────
+// Компонент карточки артефакта
+// ─────────────────────────────────────────────
+
+interface ArtifactCardProps {
+  artifact: Artifact;
+  projectId: string;
+  onDetach: (artifactId: string) => void;
+  isDetaching?: boolean;
+}
+
+function ArtifactCard({ artifact, projectId, onDetach, isDetaching }: ArtifactCardProps) {
+  const iconType = getFileIconType(artifact);
+  const isLink = artifact.type === 'LINK' || (!!artifact.link_url && !artifact.s3_key);
+  const downloadUrl = getArtifactDownloadUrl(artifact);
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest('button')) return;
+    
+    if (isLink && artifact.link_url) {
+      e.preventDefault();
+      window.open(artifact.link_url, '_blank', 'noopener,noreferrer');
+    } else if (downloadUrl) {
+      e.preventDefault();
+      downloadArtifact(downloadUrl, artifact.name);
+    }
+  };
+
+  return (
+    <li 
+      className="p-4 bg-white rounded-xl border border-gray-200 hover:shadow-md transition-shadow group cursor-pointer"
+      onClick={handleCardClick}
+    >
+      <div className="flex items-start gap-3">
+        {/* Иконка файла или ссылки */}
+        <div className="shrink-0 p-2 bg-gray-100 rounded-lg">
+          {iconType === 'link' ? (
+            <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+            </svg>
+          ) : (
+            <FileIcon type={iconType as Exclude<FileIconType, 'link'>} />
+          )}
+        </div>
+        
+        {/* Информация */}
+        <div className="flex-1 min-w-0">
+          <h4 className="font-medium text-[#000150] truncate" title={artifact.name}>
+            {artifact.name}
+          </h4>
+          
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-sm text-gray-500">
+            {artifact.file_size && !isLink && <span>{formatFileSize(artifact.file_size)}</span>}
+            {/* {artifact.content_type && !isLink && <span className="uppercase">{artifact.content_type.split('/')[1] || artifact.content_type}</span>} */}
+            {artifact.created_at && <span>{new Date(artifact.created_at).toLocaleDateString('ru-RU')}</span>}
+          </div>
+          
+          {/* Подсказка действия */}
+          <span className={`inline-flex items-center gap-1 text-sm mt-2 ${isLink ? 'text-blue-600' : 'text-[#000150]/70'}`}>
+            {isLink ? (
+              <>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+                Открыть ссылку
+              </>
+            ) : null}
+          </span>
+        </div>
+        
+        {/* Кнопка удаления */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onDetach(artifact.id);
+          }}
+          disabled={isDetaching}
+          className="opacity-0 group-hover:opacity-100 p-1.5 text-gray-400 hover:text-red-500 transition-all rounded-lg hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          title="Удалить артефакт из проекта"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </li>
+  );
+}
+
+// ─────────────────────────────────────────────
+// Вспомогательный компонент секции
+// ─────────────────────────────────────────────
+
+function Section({ title, content }: { title: string; content: string }) {
+  return (
+    <div className="border-b border-gray-300/40 pb-4.5">
+      <h2 className="text-[24px] text-[#000150] font-medium mb-3">{title}</h2>
+      <p className="text-[22px] leading-relaxed whitespace-pre-wrap">{content || 'Не указано'}</p>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// Основной компонент страницы
+// ─────────────────────────────────────────────
 
 export default function ProjectPage() {
   const params = useParams();
@@ -21,11 +258,35 @@ export default function ProjectPage() {
   const [error, setError] = useState<string | null>(null);
   const [teamsError, setTeamsError] = useState<string | null>(null);
   
+  // Состояние для артефактов проекта
+  const [artifacts, setArtifacts] = useState<Artifact[]>([]);
+  const [artifactsLoading, setArtifactsLoading] = useState(false);
+  const [artifactsError, setArtifactsError] = useState<string | null>(null);
+  const [detachingArtifactId, setDetachingArtifactId] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isAddLinkModalOpen, setIsAddLinkModalOpen] = useState(false);
+  
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAssignTeamModalOpen, setIsAssignTeamModalOpen] = useState(false);
   
   const { isAuthenticated, user } = useAuth();
+
+  // Загрузка артефактов проекта
+  const fetchArtifacts = useCallback(async () => {
+    try {
+      setArtifactsLoading(true);
+      setArtifactsError(null);
+      const artifactsData = await getArtifacts({ project_id: id });
+      setArtifacts(artifactsData);
+    } catch (err: any) {
+      console.warn('Failed to load artifacts (soft failure):', err);
+      setArtifactsError('Не удалось загрузить артефакты');
+      setArtifacts([]);
+    } finally {
+      setArtifactsLoading(false);
+    }
+  }, [id]);
 
   useEffect(() => {
     if (!isAuthenticated || !id) return;
@@ -51,7 +312,6 @@ export default function ProjectPage() {
         setTeamsLoading(true);
         setTeamsError(null);
         
-        // Добавляем фильтр по статусу команд
         const teamsData = await getProjectTeams(id, {
           project_team_status: 'ACTIVE'
         });
@@ -71,6 +331,13 @@ export default function ProjectPage() {
     fetchProjectTeamsData();
     
   }, [isAuthenticated, id]);
+
+  // Загрузка артефактов после загрузки проекта
+  useEffect(() => {
+    if (project?.id) {
+      fetchArtifacts();
+    }
+  }, [project, fetchArtifacts]);
 
   const handleTeamAssigned = async () => {
     try {
@@ -93,6 +360,57 @@ export default function ProjectPage() {
     } catch (err: any) {
       console.warn('Failed to refresh project teams after removal:', err);
       setTeamsError('Ошибка обновления списка команд');
+    }
+  };
+
+  // Загрузка файла-артефакта для проекта
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !project) return;
+
+    try {
+      setArtifactsLoading(true);
+      setArtifactsError(null);
+      await uploadProjectArtifact(project.id, file);
+      await fetchArtifacts();
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    } catch (err: any) {
+      console.error('Artifact upload error:', err);
+      setArtifactsError(err.message || 'Ошибка при загрузке файла');
+    } finally {
+      setArtifactsLoading(false);
+    }
+  };
+
+  // Добавление ссылки-артефакта для проекта
+  const handleAddLinkArtifact = async (linkUrl: string, name?: string) => {
+    if (!project) return;
+    try {
+      setArtifactsLoading(true);
+      setArtifactsError(null);
+      // Требуется поддержка JSON-запросов на бэкенде для project-эндпоинта
+      await addMeetingLinkArtifact(project.id, linkUrl, name);
+      await fetchArtifacts();
+    } catch (err: any) {
+      console.error('Link artifact error:', err);
+      setArtifactsError(err.message || 'Ошибка при добавлении ссылки');
+    } finally {
+      setArtifactsLoading(false);
+    }
+  };
+
+  // Открепление артефакта от проекта
+  const handleDetachArtifact = async (artifactId: string) => {
+    if (!project) return;
+    try {
+      setDetachingArtifactId(artifactId);
+      await detachArtifact(artifactId, 'PROJECT', project.id);
+      await fetchArtifacts();
+    } catch (err: any) {
+      console.error('Artifact detach error:', err);
+      setArtifactsError(err.message || 'Ошибка при удалении артефакта');
+    } finally {
+      setDetachingArtifactId(null);
     }
   };
 
@@ -180,17 +498,100 @@ export default function ProjectPage() {
           <Section title={"Требования"} content={project.requirements || 'Не указаны'} />
           <Section title={"Критерии оценки"} content={project.eval_criteria || 'Не указаны'} />
         </div>
+
+        {/* Артефакты проекта */}
+        <div className="mt-9">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-[24px] text-[#000150] font-medium">Артефакты проекта</h2>
+            {isAuthenticated && user && (
+              <div className="relative">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileSelect}
+                  className="hidden"
+                  accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.png,.jpg,.jpeg,.gif,.webp,.txt,.zip,.rar"
+                />
+                <div className="flex gap-2">
+                  {/* Кнопка загрузки файла */}
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={artifactsLoading}
+                    className="px-4 py-2 bg-[#000150] text-white rounded-[20px] hover:bg-[#000150]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    title="Загрузить файл"
+                  >
+                    {artifactsLoading ? (
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                    )}
+                    Файл
+                  </button>
+                  
+                  {/* Кнопка добавления ссылки */}
+                  <button
+                    onClick={() => setIsAddLinkModalOpen(true)}
+                    disabled={artifactsLoading}
+                    className="px-4 py-2 bg-white text-[#000150] border border-[#000150] rounded-[20px] hover:bg-[#000150]/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    title="Добавить ссылку"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                    </svg>
+                    Ссылка
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          <div className="flex items-center mb-6">
+            <p className="text-[18px] text-[#353535]">Артефактов найдено: <span className="text-[18px] text-[#000150] font-semibold">{artifacts.length}</span></p>
+          </div>
+          
+          {artifactsError && (
+            <div className="mb-4 p-3 bg-yellow-50 text-yellow-800 rounded text-sm">{artifactsError}</div>
+          )}
+          
+          {artifactsLoading && artifacts.length === 0 ? (
+            <p className="text-gray-500">Загрузка артефактов...</p>
+          ) : artifacts.length > 0 ? (
+            <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {artifacts.map((artifact) => (
+                <ArtifactCard
+                  key={artifact.id}
+                  artifact={artifact}
+                  projectId={project.id}
+                  onDetach={handleDetachArtifact}
+                  isDetaching={detachingArtifactId === artifact.id}
+                />
+              ))}
+            </ul>
+          ) : (
+            <div className="text-gray-500">
+              <p>К этому проекту еще не прикреплены артефакты</p>
+              {isAuthenticated && user && (
+                <p className="mt-2 text-sm text-[#000150]/70">Нажмите «Файл» или «Ссылка» чтобы добавить артефакт</p>
+              )}
+            </div>
+          )}
+        </div>
         
-        {/* Блок команд проекта с мягкой защитой */}
+        {/* Блок команд проекта */}
         <div className="mt-9">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-[24px] text-[#000150] font-medium">Команды-исполнители</h2>
             {isAuthenticated && user && (
               <button
                 onClick={() => setIsAssignTeamModalOpen(true)}
-                className="px-4 py-2 bg-[#000150] text-white rounded-[20px] hover:bg-blue-900 transition-colors"
+                className="flex gap-2 items-center px-4 py-2 bg-[#000150] text-white rounded-[20px] hover:bg-blue-900 transition-colors"
               >
-                + Команда
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Команда
               </button>
             )}
           </div>
@@ -257,15 +658,14 @@ export default function ProjectPage() {
         projectId={project.id}
         onTeamAssigned={handleTeamAssigned}
       />
-    </>
-  );
-}
 
-function Section({ title, content }: { title: string; content: string }) {
-  return (
-    <div className="border-b border-gray-300/40 pb-4.5">
-      <h2 className="text-[24px] text-[#000150] font-medium mb-3">{title}</h2>
-      <p className="text-[22px] leading-relaxed whitespace-pre-wrap">{content || 'Не указано'}</p>
-    </div>
+      {/* Модальное окно добавления ссылки-артефакта */}
+      <AddLinkArtifactModal 
+        isOpen={isAddLinkModalOpen} 
+        onClose={() => setIsAddLinkModalOpen(false)} 
+        onConfirm={handleAddLinkArtifact}
+        isLoading={artifactsLoading} 
+      />
+    </>
   );
 }

@@ -111,7 +111,7 @@ export default function TeamsPage() {
         list={teams}
         cardComponent={renderTeamCard}
         addButton={{
-          label: '+ Добавить команду',
+          label: 'Добавить команду',
           onClick: () => setIsTeamModalOpen(true)
         }}
       />

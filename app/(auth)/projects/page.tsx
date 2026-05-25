@@ -163,7 +163,7 @@ export default function ProjectsPage() {
         onYearChange={handleYearChange}
         onSemesterChange={handleSemesterChange}
         addButton={{
-          label: '+ Добавить проект',
+          label: 'Добавить проект',
           onClick: () => setIsProjectModalOpen(true)
         }}
       />

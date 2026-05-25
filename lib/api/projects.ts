@@ -102,7 +102,7 @@ export const getProjects = async (filters?: {
   if (filters?.semester) queryParams.append('semester', filters.semester);
   if (filters?.team_id) queryParams.append('team_id', filters.team_id);
   
-  // ← Добавляем параметр статуса команд
+  // Добавляем параметр статуса команд
   if (filters?.project_team_status) {
     queryParams.append('project_team_status', filters.project_team_status);
   }
@@ -191,7 +191,7 @@ export const getProjectTeams = async (
     project_id: projectId
   });
   
-  // ← Добавляем фильтр по статусу, если передан
+  // Добавляем фильтр по статусу, если передан
   if (options?.project_team_status) {
     queryParams.append('project_team_status', options.project_team_status);
   }
@@ -243,4 +243,26 @@ export const removeTeamFromProject = async (projectId: string, teamId: string): 
     const errorData = await response.json().catch(() => ({ detail: response.statusText }));
     throw new Error(errorData.detail || 'Failed to remove team from project');
   }
+};
+
+export const autoFillProjectWithAI = async (
+  data: Partial<CreateProjectData>
+): Promise<CreateProjectData> => {
+  const accessToken = localStorage.getItem('access_token');
+
+  const response = await fetch(`${API_BASE_URL}/ai/auto-fill-data`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(accessToken && { 'Authorization': `Bearer ${accessToken}` })
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || 'AI auto-fill failed');
+  }
+
+  return response.json();
 };
