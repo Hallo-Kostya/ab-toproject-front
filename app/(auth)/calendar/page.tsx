@@ -11,75 +11,112 @@ import { getTeams, TeamSummaryResponse } from '@/lib/api/teams';
 import 'react-day-picker/style.css';
 
 // Маппинг статусов для отображения
-// const getStatusConfig = (status: string) => {
-//   switch (status?.toUpperCase()) {
-//     case 'SCHEDULED':
-//       return { label: 'Запланирована', color: 'bg-[#E79E00]/20 text-[#E79E00]' };
-//     case 'COMPLETED':
-//       return { label: 'Завершена', color: 'bg-green-100 text-green-700' };
-//     case 'CANCELED':
-//       return { label: 'Отменена', color: 'bg-red-100 text-red-700' };
-//     case 'IN_PROGRESS':
-//       return { label: 'В работе', color: 'bg-blue-100 text-blue-700' };
-//     default:
-//       return { label: 'Запланирована', color: 'bg-[#E79E00]/20 text-[#E79E00]' };
-//   }
-// };
+const getStatusConfig = (status: string) => {
+  switch (status?.toUpperCase()) {
+    case 'SCHEDULED':
+      return { label: 'Запланирована', color: 'bg-[#E79E00]/20 text-[#E79E00] border border-[#E79E00]/30' };
+    case 'COMPLETED':
+      return { label: 'Завершена', color: 'bg-green-100 text-green-700 border border-green-200' };
+    case 'CANCELED':
+      return { label: 'Отменена', color: 'bg-red-100 text-red-700 border border-red-200' };
+    case 'IN_PROGRESS':
+      return { label: 'В работе', color: 'bg-blue-100 text-blue-700 border border-blue-200' };
+    default:
+      return { label: 'Запланирована', color: 'bg-[#E79E00]/20 text-[#E79E00] border border-[#E79E00]/30' };
+  }
+};
 
 // Компонент карточки встречи в календаре
-function MeetingItem({ meeting }: { meeting: Meeting }) {
-//   const status = getStatusConfig(meeting.status);
+function MeetingItem({ 
+  meeting, 
+  teamName 
+}: { 
+  meeting: Meeting; 
+  teamName?: string 
+}) {
+  const status = getStatusConfig(meeting.status);
   const time = format(new Date(meeting.date), 'HH:mm');
 
   return (
     <Link
       href={`/meeting/${meeting.id}`}
-      className="block p-2 rounded-lg bg-[#000150]/2 hover:bg-[#000150]/5 transition-colors group"
+      className="block p-3 rounded-xl bg-[#000150]/5 hover:bg-[#000150]/10 transition-colors group border border-gray-100 hover:border-[#000150]/20"
     >
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex-1 min-w-0">
-          <p className="text-[13px] font-medium text-[#000150] truncate group-hover:underline">
+      <div className="flex flex-col gap-2">
+        {/* Верхняя строка: название */}
+        <div className="flex items-start justify-between gap-2">
+          <p className="text-[13px] font-semibold text-[#000150] truncate group-hover:underline leading-tight">
             {meeting.name}
           </p>
-          <p className="text-[11px] text-gray-500 mt-0.5">{time}</p>
         </div>
-        {/* <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium whitespace-nowrap ${status.color}`}>
-          {status.label}
-        </span> */}
+        
+        {/* Средняя строка: команда */}
+        {teamName && (
+          <p className="text-[11px] text-gray-500 truncate">
+            <span className="font-medium text-gray-600">Команда:</span> {teamName}
+          </p>
+        )}
+        
+        {/* Нижняя строка: время + статус в одну строку */}
+        <div className="">
+          <p className="text-[11px] text-[#000150]/50 flex items-center gap-1">
+            <svg className="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            {time}
+          </p>
+          <span className={`text-[10px] px-2 py-0.5 pb-1 rounded-full font-medium whitespace-nowrap shrink-0 ${status.color}`}>
+            {status.label}
+          </span>
+        </div>
       </div>
     </Link>
   );
 }
 
 // Компонент ячейки дня с встречами
-function DayCell({ date, meetings }: { date: Date; meetings: Meeting[] }) {
+function DayCell({ 
+  date, 
+  meetings, 
+  teamNamesMap 
+}: { 
+  date: Date; 
+  meetings: Meeting[]; 
+  teamNamesMap: Record<string, string> 
+}) {
   const isToday = format(date, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
+  
   const dayMeetings = useMemo(() => 
-    meetings.filter(m => format(new Date(m.date), 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd'))
+    meetings
+      .filter(m => format(new Date(m.date), 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd'))
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
     [meetings, date]
   );
 
   return (
-    <div className={`min-h-28 p-2 border border-gray-100 rounded-lg ${isToday ? 'bg-[#000150]/5 border-[#000150]/30' : 'bg-white'}`}>
-      <div className="flex items-center justify-between mb-1">
-        <span className={`text-[12px] font-medium ${isToday ? 'text-[#000150]' : 'text-gray-600'}`}>
+    <div className={`min-h-56 p-2.5 border border-gray-100 rounded-xl ${isToday ? 'bg-[#000150]/5 border-[#000150]/30' : 'bg-white'} flex flex-col`}>
+      {/* Заголовок дня */}
+      <div className="flex items-center justify-between mb-2 pb-2 border-b border-gray-100">
+        <span className={`text-[13px] font-semibold ${isToday ? 'text-[#000150]' : 'text-gray-600'}`}>
           {format(date, 'd')}
         </span>
-        {isToday && (
-          <span className="text-[10px] px-1.5 py-0.5 bg-[#000150] text-white rounded-full">
-            Сегодня
-          </span>
-        )}
+        <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${isToday ? 'bg-[#000150] text-white' : 'bg-gray-100 text-gray-500'}`}>
+          {format(date, 'EEE', { locale: ru })}
+        </span>
       </div>
       
-      <div className="space-y-1">
+      {/* Список встреч — скролл скрыт, но работает */}
+      <div className="flex-1 space-y-2 overflow-y-auto max-h-44 custom-scrollbar scrollbar-hide">
         {dayMeetings.length > 0 ? (
           dayMeetings.map(meeting => (
-            <MeetingItem key={meeting.id} meeting={meeting} />
+            <MeetingItem 
+              key={meeting.id} 
+              meeting={meeting} 
+              teamName={teamNamesMap[meeting.team_id]} 
+            />
           ))
         ) : (
-          <p className="text-[11px] text-gray-400 italic">Нет встреч</p>
+          <p className="text-[11px] text-gray-400 italic text-center py-3">Нет встреч</p>
         )}
       </div>
     </div>
@@ -125,6 +162,14 @@ export default function CalendarPage() {
     
     fetchTeams();
   }, [isAuthenticated]);
+
+  const teamNamesMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    teams.forEach(team => {
+      map[team.id] = team.name;
+    });
+    return map;
+  }, [teams]);
 
   // Загрузка встреч при изменении диапазона или фильтра
   useEffect(() => {
@@ -203,11 +248,11 @@ export default function CalendarPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto space-y-5">
+    <div className="max-w-full mx-auto space-y-5">
         {/* Заголовок и навигация */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <h1 className="text-[20px] text-[#000150] font-semibold">Календарь встреч</h1>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
                 {/* Навигация по неделям */}
                 <div className="flex items-center gap-2">
                 <button
@@ -295,8 +340,8 @@ export default function CalendarPage() {
         
         {/* Статус загрузки/ошибки */}
         {loading && (
-        <div className="text-center py-8">
-            <div className="inline-flex items-center gap-2 text-[#000150]">
+        <div className="text-center py-4">
+            <div className="inline-flex items-center gap-1 text-[#000150]">
                 <div className="w-5 h-5 border-2 border-[#000150]/20 border-t-[#000150] rounded-full animate-spin" />
                 <span>Загрузка встреч...</span>
             </div>
@@ -317,9 +362,9 @@ export default function CalendarPage() {
         )}
         {/* Календарь */}
         {!loading && !error && (
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-2">
                 {/* Дни недели */}
-                <div className="grid grid-cols-7 gap-2 mb-2">
+                <div className="grid grid-cols-7 gap-1 mb-2">
                     {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map(day => (
                         <div key={day} className="text-center text-[13px] font-medium text-gray-500">
                             {day}
@@ -328,9 +373,14 @@ export default function CalendarPage() {
                 </div>
                 
                 {/* Сетка дней */}
-                <div className="grid grid-cols-7 gap-2">
+                <div className="grid grid-cols-7 gap-1">
                     {weekDays.map(day => (
-                        <DayCell key={day.toISOString()} date={day} meetings={meetings} />
+                      <DayCell 
+                        key={day.toISOString()} 
+                        date={day} 
+                        meetings={meetings} 
+                        teamNamesMap={teamNamesMap}
+                      />
                     ))}
                 </div>
             </div>

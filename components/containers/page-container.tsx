@@ -97,7 +97,7 @@ function ListHeaderComponent({
         {addButton && (
           <button
             onClick={addButton.onClick}
-            className="ml-4 px-4 py-2 bg-[#000150]/90 text-white text-[16px] rounded-2xl hover:bg-[#000150]/80 transition-colors"
+            className="ml-4 px-4 py-2 bg-[#000150]/90 text-white text-[16px] rounded-2xl hover:bg-[#000150]/80 hover:shadow-md hover:inset-shadow-xs transition-colors"
           >
             {addButton.label}
           </button>

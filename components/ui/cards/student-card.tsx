@@ -7,14 +7,17 @@ interface StudentCardProps {
   student: Student;
   onDelete: () => void;
   onEdit?: () => void;
+  isHighlighted?: boolean;
 }
 
-export default function StudentCard({ student, onDelete, onEdit }: StudentCardProps) {
+export default function StudentCard({ student, onDelete, onEdit, isHighlighted }: StudentCardProps) {
   const [showActions, setShowActions] = useState(false);
 
   return (
     <div 
-      className="flex flex-col w-full min-h-42 px-6 py-6 shadow-md inset-shadow-xs rounded-xl bg-[#FBFAFF] border border-gray-200 hover:shadow-lg transition-shadow relative"
+      className={`flex flex-col w-full min-h-42 px-6 py-6 shadow-md inset-shadow-xs rounded-xl bg-[#FBFAFF] border border-gray-200 hover:shadow-lg transition-all relative ${
+        isHighlighted ? 'ring-2 ring-[#000150] bg-[#000150]/5 scale-[1.02]' : ''
+      }`}
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
     >

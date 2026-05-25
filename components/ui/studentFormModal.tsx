@@ -61,8 +61,7 @@ export default function StudentFormModal({ isOpen, onClose }: { isOpen: boolean,
         
         <h2 className="text-2xl text-[#000150] font-bold mb-4">Создать студента</h2>
         <p className="mb-6 text-gray-600">
-          Заполните обязательные поля <span className="text-red-500">*</span>. 
-          Остальные можно оставить пустыми.
+          Заполните обязательные поля <span className="text-red-500">*</span> 
         </p>
         
         {error && (
@@ -121,7 +120,9 @@ export default function StudentFormModal({ isOpen, onClose }: { isOpen: boolean,
             </div>
             
             <div>
-              <label htmlFor="email" className="block mb-1 text-[16px] font-medium text-[#000150]">Почта</label>
+              <label htmlFor="email" className="block mb-1 text-[16px] font-medium text-[#000150]">
+                Почта <span className="text-red-500">*</span>
+              </label>
               <input
                 type="email"
                 id="email"
@@ -129,7 +130,7 @@ export default function StudentFormModal({ isOpen, onClose }: { isOpen: boolean,
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 className="w-full px-4 py-2 rounded-xl border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
-                placeholder="email@example.com (необязательно)"
+                placeholder="email@example.com"
               />
             </div>
           </div>

@@ -129,14 +129,16 @@ export default function EditStudentForm({ isOpen, onClose, studentId, initialDat
                         </div>
                         
                         <div>
-                            <label htmlFor="email" className="block mb-1 text-[16px] font-medium text-[#000150]">Почта</label>
+                            <label htmlFor="email" className="block mb-1 text-[16px] font-medium text-[#000150]">
+                                Почта <span className="text-red-500">*</span>
+                            </label>
                             <input
                                 type="email"
                                 id="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 className="w-full px-4 py-2 rounded-xl border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20"
-                                placeholder="email@example.com (необязательно)"
+                                placeholder="email@example.com"
                             />
                         </div>
                     </div>

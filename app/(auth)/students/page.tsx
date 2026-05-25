@@ -7,6 +7,8 @@ import StudentCard from '@/components/ui/cards/student-card';
 import DeleteStudentModal from '@/components/ui/deleteStudentModal';
 import EditStudentForm from '@/components/forms/editStudentForm';
 import StudentFormModal from '@/components/ui/studentFormModal';
+import StudentSearchBar from '@/components/ui/search/studentSearchBar';
+import { StudentSearchResult } from '@/lib/api/search';
 
 export default function StudentsPage() {
   const [students, setStudents] = useState<Student[]>([]);
@@ -15,6 +17,7 @@ export default function StudentsPage() {
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState<Student | null>(null);
+  const [highlightedStudentId, setHighlightedStudentId] = useState<string | null>(null);
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [studentToEdit, setStudentToEdit] = useState<Student | null>(null);
@@ -43,6 +46,23 @@ export default function StudentsPage() {
 
     fetchStudents();
   }, [isAuthenticated]);
+
+  // Функция для скролла и подсветки:
+const scrollToStudent = useCallback((studentId: string) => {
+  const element = document.getElementById(`student-card-${studentId}`);
+  if (element) {
+    // Подсвечиваем
+    setHighlightedStudentId(studentId);
+    
+    // Скроллим
+    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    
+    // Убираем подсветку через 3 секунды
+    setTimeout(() => {
+      setHighlightedStudentId(null);
+    }, 3000);
+  }
+}, []);
 
   const handleDeleteStudent = async () => {
     if (!studentToDelete) return;
@@ -102,24 +122,32 @@ export default function StudentsPage() {
     <>
       <div className="space-y-5">
         <h1 className="text-[20px] text-[#000150] font-semibold mb-4">Список всех студентов</h1>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <div className="flex gap-6 items-center">
             <p>Всего студентов найдено: <span className="font-semibold text-[#000150]">{students.length}</span></p>
-          <button
-            onClick={() => setIsAddModalOpen(true)}
-            className="px-4 py-2 bg-[#000150]/90 text-white text-[16px] rounded-2xl hover:bg-[#000150]/80 transition-colors"
-          >
-            + Добавить студента
-          </button>
+            <button
+                onClick={() => setIsAddModalOpen(true)}
+                className="px-4 py-2 bg-[#000150]/90 text-white text-[16px] rounded-2xl hover:bg-[#000150]/80 hover:shadow-md hover:inset-shadow-xs transition-colors whitespace-nowrap"
+              >
+              + Добавить студента
+            </button>
+          </div>
+          <div className="w-80">
+            <StudentSearchBar 
+              onStudentSelect={(student) => scrollToStudent(student.id)}
+            />
+          </div>
         </div>
         
         {students.length > 0 ? (
           <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {students.map((student) => (
-              <li key={student.id}>
+              <li key={student.id} id={`student-card-${student.id}`}>
                 <StudentCard 
                   student={student} 
                   onDelete={() => handleStudentDeleteClick(student)}
-                  onEdit={() => handleStudentEditClick(student)} 
+                  onEdit={() => handleStudentEditClick(student)}
+                  isHighlighted={highlightedStudentId === student.id}
                 />
               </li>
             ))}

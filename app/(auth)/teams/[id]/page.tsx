@@ -229,10 +229,10 @@ export default function TeamPage() {
                     {student.last_name} {student.first_name} {student.patronymic || ''}
                   </span>
                   <div className="mr-10 flex gap-4">
-                    <span className="flex-1 text-[16px] p-1 px-3 bg-[#000150]/20 rounded-xl text-[#000150] font-medium text-nowrap">
+                    <span className="flex-1 w-30 text-center text-[16px] p-1 px-3 bg-[#000150]/20 rounded-xl text-[#000150] font-medium text-nowrap">
                       {student.role || 'Не указано'}
                     </span>
-                    <span className="flex-1 text-[16px] p-1 px-3 bg-[#000150]/20 rounded-xl text-[#000150] font-medium text-nowrap">
+                    <span className="flex-1 w-30 text-center text-[16px] p-1 px-3 bg-[#000150]/20 rounded-xl text-[#000150] font-medium text-nowrap">
                       {student.study_group || 'Не указано'}
                     </span>
                   </div>
