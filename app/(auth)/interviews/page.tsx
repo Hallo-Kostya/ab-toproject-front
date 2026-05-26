@@ -9,6 +9,7 @@ import {
 } from '@/lib/api/projectApplications';
 import { getProjectApplications } from '@/lib/api/projectApplications';
 import { getProjects, Project as ProjectType } from '@/lib/api/projects';
+import Image from 'next/image';
 
 type TabType = 'applications' | 'interviews';
 type SortDirection = 'asc' | 'desc' | null;
@@ -186,13 +187,13 @@ export default function InterviewsPage() {
       <TabSwitcher activeTab={activeTab} onTabChange={setActiveTab} />
 
       {/* Шапка таблицы с фильтрами */}
-      <div className="grid grid-cols-3 gap-4 px-4 py-3 bg-[#000150]/5 rounded-t-xl border-b border-gray-200">
+      <div className="flex justify-between gap-4 px-4 py-3 rounded-xl border-b border-gray-200 shadow-sm">
         {/* Команда + сортировка */}
         <div className="flex items-center gap-2">
-          <span className="text-[16px] font-semibold text-[#000150]">Команда</span>
+          <span className="text-[20px] font-semibold text-[#000150]">Команда</span>
           <button 
             onClick={toggleSort}
-            className="p-1 hover:bg-[#000150]/10 rounded transition-colors"
+            className="p-1 mt-0.5 hover:bg-[#000150]/10 rounded transition-colors"
             title="Сортировать по алфавиту"
           >
             <SortIcon direction={teamSort} />
@@ -201,17 +202,17 @@ export default function InterviewsPage() {
         
         {/* Проект + фильтр */}
         <div className="flex items-center gap-2 relative" ref={projectFilterRef}>
-          <span className="text-[16px] font-semibold text-[#000150]">Проект</span>
+          <span className="text-[20px] font-semibold text-[#000150]">Проект</span>
           <div className="relative">
             <button 
               onClick={() => {
                 setIsProjectFilterOpen(!isProjectFilterOpen);
                 setIsStatusFilterOpen(false);
               }}
-              className={`p-1.5 rounded-lg transition-colors ${
+              className={`p-1.5 mt-0.5 rounded-lg transition-colors ${
                 selectedProjectId 
-                  ? 'bg-[#000150]/20 text-[#000150]' 
-                  : 'hover:bg-[#000150]/10 text-gray-500'
+                  ? 'bg-[#000150]/10 text-[#000150]' 
+                  : 'hover:bg-[#000150]/10 text-gray-400'
               }`}
               title="Фильтр по проекту"
             >
@@ -241,7 +242,7 @@ export default function InterviewsPage() {
                         className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
                         selectedProjectId === project.id
                             ? 'bg-[#000150]/10 text-[#000150] font-medium'
-                            : 'hover:bg-gray-50 text-[#000150]/80'
+                            : 'hover:bg-[#000150]/10 text-[#000150]/60'
                         }`}
                     >
                         {project.name}
@@ -256,7 +257,7 @@ export default function InterviewsPage() {
           
           {/* Бейдж выбранного проекта */}
             {selectedProjectId && (
-            <span className="text-xs px-2 py-0.5 bg-[#000150]/10 text-[#000150] rounded-full">
+            <span className="text-[16px] px-2 py-0.5 mt-0.5 bg-[#000150]/5 text-[#000150] rounded-2xl">
                 {projectFilterOptions.find(p => p.id === selectedProjectId)?.name || 'Выбран'}
             </span>
             )}
@@ -264,17 +265,17 @@ export default function InterviewsPage() {
         
         {/* Статус + фильтр */}
         <div className="flex items-center justify-end gap-2 relative" ref={statusFilterRef}>
-          <span className="text-[16px] font-semibold text-[#000150]">Статус</span>
+          <span className="text-[20px] font-semibold text-[#000150]">Статус</span>
           <div className="relative">
             <button 
               onClick={() => {
                 setIsStatusFilterOpen(!isStatusFilterOpen);
                 setIsProjectFilterOpen(false);
               }}
-              className={`p-1.5 rounded-lg transition-colors ${
+              className={`p-1.5 mt-0.5 rounded-lg transition-colors ${
                 statusFilter !== 'ALL'
-                  ? 'bg-[#000150]/20 text-[#000150]' 
-                  : 'hover:bg-[#000150]/10 text-gray-500'
+                  ? 'bg-[#000150]/10 text-[#000150]' 
+                  : 'hover:bg-[#000150]/5 text-gray-500'
               }`}
               title="Фильтр по статусу"
             >
@@ -283,7 +284,7 @@ export default function InterviewsPage() {
             
             {/* Dropdown списка статусов */}
             {isStatusFilterOpen && (
-              <div className="absolute top-full right-0 mt-2 w-48 bg-white border border-gray-200 rounded-xl shadow-lg z-20">
+              <div className="absolute top-full right-0 mt-2 w-48 bg-white border border-gray-100 rounded-xl shadow-lg z-20">
                 <div className="p-1">
                   {[
                     { value: 'ALL' as const, label: 'Все' },
@@ -297,7 +298,7 @@ export default function InterviewsPage() {
                       onClick={() => handleStatusSelect(option.value)}
                       className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
                         statusFilter === option.value
-                          ? 'bg-[#000150]/10 text-[#000150] font-medium'
+                          ? 'bg-[#000150]/5 text-[#000150] font-medium'
                           : 'hover:bg-gray-50 text-[#000150]/80'
                       }`}
                     >
@@ -312,7 +313,7 @@ export default function InterviewsPage() {
       </div>
 
       {/* Список заявок */}
-      <div className="flex flex-col gap-3 px-4">
+      <div className="flex flex-col gap-3">
         {filteredApplications.length === 0 ? (
           <div className="text-center py-12 text-[#000150]/60">
             {(statusFilter !== 'ALL' || selectedProjectId) 
@@ -343,12 +344,12 @@ function TabSwitcher({
   onTabChange: (tab: TabType) => void 
 }) {
   return (
-    <div className="flex gap-2 p-1 bg-gray-100 rounded-xl w-fit">
+    <div className="flex gap-2 p-1 bg-gray-100 rounded-2xl w-fit text-[20px]">
       <button
         onClick={() => onTabChange('applications')}
-        className={`px-6 py-2 rounded-lg font-medium transition-all ${
+        className={`px-6 py-2 rounded-2xl font-medium transition-all ${
           activeTab === 'applications' 
-            ? 'bg-white text-[#000150] shadow-sm' 
+            ? 'bg-[#000150] text-white shadow-sm' 
             : 'text-[#000150]/60 hover:text-[#000150]'
         }`}
       >
@@ -356,9 +357,9 @@ function TabSwitcher({
       </button>
       <button
         onClick={() => onTabChange('interviews')}
-        className={`px-6 py-2 rounded-lg font-medium transition-all ${
+        className={`px-6 py-2 rounded-2xl font-medium transition-all ${
           activeTab === 'interviews' 
-            ? 'bg-white text-[#000150] shadow-sm' 
+            ? 'bg-[#000150] text-white shadow-sm' 
             : 'text-[#000150]/60 hover:text-[#000150]'
         }`}
       >
@@ -372,7 +373,7 @@ function TabSwitcher({
 function SortIcon({ direction }: { direction: SortDirection }) {
   return (
     <svg 
-      className={`w-4 h-4 transition-transform ${direction === 'asc' ? 'rotate-180' : ''}`} 
+      className={`w-5 h-5 transition-transform ${direction === 'asc' ? 'rotate-180' : ''}`} 
       fill="none" 
       viewBox="0 0 24 24" 
       stroke="currentColor"
@@ -386,7 +387,7 @@ function SortIcon({ direction }: { direction: SortDirection }) {
 function FilterIcon({ isActive }: { isActive: boolean }) {
   return (
     <svg 
-      className={`w-4 h-4 ${isActive ? 'text-[#000150]' : 'text-gray-500'}`} 
+      className={`w-5 h-5 ${isActive ? 'text-[#000150]' : 'text-gray-500'}`} 
       fill="none" 
       viewBox="0 0 24 24" 
       stroke="currentColor"
@@ -421,21 +422,24 @@ function ApplicationRow({
   const status = statusConfig[application.status];
 
   return (
-    <div className={`border rounded-xl overflow-hidden transition-all ${isExpanded ? 'bg-[#000150]/5' : 'bg-white hover:bg-gray-50'}`}>
+    <div className={`shadow-md rounded-xl overflow-hidden transition-all ${isExpanded ? '' : 'bg-white hover:bg-gray-50'}`}>
       {/* Сжатая строка */}
       <button 
         onClick={onToggleExpand}
         className="w-full grid grid-cols-3 gap-4 px-4 py-4 text-left"
       >
-        <div className="flex flex-col">
-          <span className="font-medium text-[#000150]">{application.team_name}</span>
-          <span className="text-sm text-[#000150]/60">{application.members.length} участн.</span>
+        <div className="flex gap-3 items-center">
+          <span className="font-semibold text-[#000150] text-[18px]">{application.team_name}</span>
+          <div className="flex gap-1 bg-[#000150]/15 px-2 py-0.5 rounded-md">
+            <Image src={"/user-round.svg"} alt={"К-во участников"} width={20} height={20}/>
+            <span className="text-[18px] text-[#000150]">{application.members.length}</span>
+          </div>
         </div>
-        <div className="text-[#000150] font-medium truncate">
+        <div className="text-[#000150] text-[18px] font-medium truncate mt-1.5">
           {application.project?.name || 'Проект не загружен'}
         </div>
         <div className="flex justify-end">
-          <span className={`px-3 py-1 rounded-full text-sm font-medium ${status.color}`}>
+          <span className={`px-3 py-1 rounded-xl pt-1.5 text-[16px] font-medium ${status.color}`}>
             {status.label}
           </span>
         </div>
@@ -475,16 +479,18 @@ function ApplicationRow({
           )}
 
           {/* Кнопки действий (заглушки) */}
-          <div className="flex gap-3 pt-2">
-            <button className="px-4 py-2 bg-red-100 text-red-700 rounded-xl font-medium hover:bg-red-200 transition-colors">
-              Отказ
-            </button>
-            <button className="px-4 py-2 bg-yellow-100 text-yellow-800 rounded-xl font-medium hover:bg-yellow-200 transition-colors">
-              Собеседование
-            </button>
-            <button className="px-4 py-2 bg-green-100 text-green-700 rounded-xl font-medium hover:bg-green-200 transition-colors">
+          <div className="flex gap-3 pt-2 text-[16px]">
+            <div className="ml-auto"/>
+              <button className="px-4 py-1.5 bg-red-100 text-red-700 rounded-xl font-medium hover:bg-red-200 transition-colors">
+                Отказ
+              </button>
+              <button className="px-4 py-1.5 bg-yellow-100 text-yellow-800 rounded-xl font-medium hover:bg-yellow-200 transition-colors">
+                Собеседование
+              </button>
+
+            {/* <button className="px-4 py-1.5 bg-green-100 text-green-700 rounded-xl font-medium hover:bg-green-200 transition-colors">
               Принять
-            </button>
+            </button> */}
           </div>
         </div>
       )}

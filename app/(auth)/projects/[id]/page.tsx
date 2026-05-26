@@ -199,7 +199,7 @@ function ArtifactCard({ artifact, projectId, onDetach, isDetaching }: ArtifactCa
           </div>
           
           {/* Подсказка действия */}
-          <span className={`inline-flex items-center gap-1 text-sm mt-2 ${isLink ? 'text-blue-600' : 'text-[#000150]/70'}`}>
+          {/* <span className={`inline-flex items-center gap-1 text-sm mt-2 ${isLink ? 'text-blue-600' : 'text-[#000150]/70'}`}>
             {isLink ? (
               <>
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -208,7 +208,7 @@ function ArtifactCard({ artifact, projectId, onDetach, isDetaching }: ArtifactCa
                 Открыть ссылку
               </>
             ) : null}
-          </span>
+          </span> */}
         </div>
         
         {/* Кнопка удаления */}
@@ -558,7 +558,7 @@ export default function ProjectPage() {
           {artifactsLoading && artifacts.length === 0 ? (
             <p className="text-gray-500">Загрузка артефактов...</p>
           ) : artifacts.length > 0 ? (
-            <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <ul className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {artifacts.map((artifact) => (
                 <ArtifactCard
                   key={artifact.id}
