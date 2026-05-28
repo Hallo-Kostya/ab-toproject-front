@@ -1,7 +1,7 @@
 // /app/interview/page.tsx
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   ProjectApplication,
   ApplicationStatus,
@@ -9,11 +9,13 @@ import {
   ProjectApplicationFilters,
   InterviewFilters,
   Project,
+  InterviewUpdatePayload,
 } from '@/lib/api/projectApplications';
 import {
   getProjectApplications,
   getInterviews,
   changeApplicationStatus,
+  updateInterview,
 } from '@/lib/api/projectApplications';
 import { getProjects } from '@/lib/api/projects';
 import Image from 'next/image';
@@ -38,10 +40,9 @@ const APPLICATION_STATUS_OPTIONS: {
 ];
 
 const INTERVIEW_STATUS_OPTIONS: {
-  value: InterviewStatus | 'ALL';
+  value: InterviewStatus;
   label: string;
 }[] = [
-  { value: 'ALL', label: 'Все' },
   { value: 'NEW', label: 'Новое' },
   { value: 'WAITING', label: 'Ожидание' },
   { value: 'RATING', label: 'Оценивается' },
@@ -84,7 +85,6 @@ function ApplicationsTab() {
   const projectFilterRef = useRef<HTMLDivElement>(null);
   const statusFilterRef = useRef<HTMLDivElement>(null);
 
-  // Загрузка проектов для фильтра
   useEffect(() => {
     if (!isProjectFilterOpen || projectFilterOptions.length > 0) return;
     const fetchProjects = async () => {
@@ -107,7 +107,6 @@ function ApplicationsTab() {
     fetchProjects();
   }, [isProjectFilterOpen, projectFilterOptions.length]);
 
-  // Закрытие дропдаунов
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -127,7 +126,7 @@ function ApplicationsTab() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const loadApplications = async () => {
+  const loadApplications = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -144,12 +143,11 @@ function ApplicationsTab() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [statusFilter, selectedProjectId]);
 
   useEffect(() => {
     loadApplications();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statusFilter, selectedProjectId]);
+  }, [loadApplications]);
 
   const toggleSort = () => {
     setTeamSort((prev) =>
@@ -215,7 +213,6 @@ function ApplicationsTab() {
 
   return (
     <>
-      {/* Шапка таблицы */}
       <div className="flex justify-between gap-4 px-4 py-3 rounded-xl border-b border-gray-200 shadow-sm">
         <div className="flex items-center gap-2">
           <span className="text-[20px] font-semibold text-[#000150]">Команда</span>
@@ -336,7 +333,6 @@ function ApplicationsTab() {
         </div>
       </div>
 
-      {/* Список заявок */}
       <div className="flex flex-col gap-3">
         {filteredApplications.length === 0 ? (
           <div className="text-center py-12 text-[#000150]/60">
@@ -426,7 +422,7 @@ function InterviewsTab() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const loadInterviews = async () => {
+  const loadInterviews = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -444,12 +440,11 @@ function InterviewsTab() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedProjectId, selectedStatuses]);
 
   useEffect(() => {
     loadInterviews();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedProjectId, selectedStatuses]);
+  }, [loadInterviews]);
 
   const toggleTeamSort = () =>
     setTeamSort((prev) =>
@@ -479,13 +474,11 @@ function InterviewsTab() {
   const clearStatusFilter = () => setSelectedStatuses([]);
 
   const sortedInterviews = [...interviews].sort((a, b) => {
-    // Сортировка по дате (приоритет)
     if (dateSort) {
       const dateA = a.interview?.date ? new Date(a.interview.date).getTime() : 0;
       const dateB = b.interview?.date ? new Date(b.interview.date).getTime() : 0;
       if (dateA !== dateB) return dateSort === 'asc' ? dateA - dateB : dateB - dateA;
     }
-    // Затем по названию команды
     if (teamSort) {
       const nameA = a.team_name.toLowerCase();
       const nameB = b.team_name.toLowerCase();
@@ -513,7 +506,6 @@ function InterviewsTab() {
 
   return (
     <>
-      {/* Шапка таблицы */}
       <div className="grid grid-cols-4 gap-4 px-4 py-3 rounded-xl border-b border-gray-200 shadow-sm">
         <div className="flex items-center gap-2">
           <span className="text-[20px] font-semibold text-[#000150]">Команда</span>
@@ -586,7 +578,7 @@ function InterviewsTab() {
           </div>
 
           {selectedProjectId && (
-            <span className="text-[16px] px-2 py-0.5 mt-0.5 bg-[#000150]/5 text-[#000150] rounded-2xl truncate max-w-[140px]">
+            <span className="text-[16px] px-2 py-0.5 mt-0.5 bg-[#000150]/5 text-[#000150] rounded-2xl truncate max-w-35">
               {projectFilterOptions.find((p) => p.id === selectedProjectId)?.name ||
                 'Выбран'}
             </span>
@@ -636,26 +628,24 @@ function InterviewsTab() {
                       ✕ Сбросить фильтры
                     </button>
                   )}
-                  {INTERVIEW_STATUS_OPTIONS.filter((o) => o.value !== 'ALL').map(
-                    (option) => {
-                      const value = option.value as InterviewStatus;
-                      const isSelected = selectedStatuses.includes(value);
-                      return (
-                        <button
-                          key={option.value}
-                          onClick={() => toggleStatusFilter(value)}
-                          className={`w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors ${
-                            isSelected
-                              ? 'bg-[#000150]/5 text-[#000150] font-medium'
-                              : 'hover:bg-gray-50 text-[#000150]/80'
-                          }`}
-                        >
-                          <span>{option.label}</span>
-                          {isSelected && <span className="text-[#000150]">✓</span>}
-                        </button>
-                      );
-                    }
-                  )}
+                  {INTERVIEW_STATUS_OPTIONS.map((option) => {
+                    const value = option.value;
+                    const isSelected = selectedStatuses.includes(value);
+                    return (
+                      <button
+                        key={option.value}
+                        onClick={() => toggleStatusFilter(value)}
+                        className={`w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors ${
+                          isSelected
+                            ? 'bg-[#000150]/5 text-[#000150] font-medium'
+                            : 'hover:bg-gray-50 text-[#000150]/80'
+                        }`}
+                      >
+                        <span>{option.label}</span>
+                        {isSelected && <span className="text-[#000150]">✓</span>}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -663,11 +653,12 @@ function InterviewsTab() {
         </div>
       </div>
 
-      {/* Список собеседований */}
       <div className="flex flex-col gap-3">
         {sortedInterviews.length === 0 ? (
           <div className="text-center py-12 text-[#000150]/60">
-            Собеседований не найдено
+            {selectedStatuses.length > 0 || selectedProjectId
+              ? 'По выбранным фильтрам собеседований не найдено'
+              : 'Собеседований не найдено'}
           </div>
         ) : (
           sortedInterviews.map((app) => (
@@ -795,9 +786,9 @@ function ApplicationRow({
   };
 
   const canAccept =
-    application.status === 'UNSEEN' || application.status === 'INTERVIEW';
+    application.status === 'UNSEEN' || application.status === 'INTERVIEW' || application.status === 'WAITING_FOR_ACK';
   const canInterview =
-    application.status === 'UNSEEN' || application.status === 'WAITING_FOR_ACK';
+    application.status === 'UNSEEN';
   const canDecline =
     application.status !== 'DECLINED' && application.status !== 'ACCEPTED';
 
@@ -950,27 +941,9 @@ function InterviewRow({
   onRefresh: () => Promise<void>;
 }) {
   const interview = application.interview;
+  const [isEditing, setIsEditing] = useState(false);
+
   if (!interview) return null;
-
-  const [actionLoading, setActionLoading] = useState<ApplicationStatus | null>(null);
-
-  const handleApplicationAction = async (newStatus: ApplicationStatus) => {
-    setActionLoading(newStatus);
-    try {
-      await changeApplicationStatus(application.id, newStatus);
-      await onRefresh();
-    } catch (err) {
-      console.error('Status change error:', err);
-      alert('Не удалось изменить статус. Попробуйте ещё раз.');
-    }
-    setActionLoading(null);
-  };
-
-  const canAccept =
-    application.status === 'INTERVIEW' ||
-    application.status === 'WAITING_FOR_ACK';
-  const canDecline =
-    application.status !== 'DECLINED' && application.status !== 'ACCEPTED';
 
   return (
     <div
@@ -1011,127 +984,281 @@ function InterviewRow({
 
       {isExpanded && (
         <div className="px-4 pb-4 pt-2 border-t border-gray-100 space-y-4">
-          {/* Информация о собеседовании */}
-          <div className="bg-purple-50/40 rounded-lg p-3 border border-purple-100 space-y-2">
-            <h4 className="text-[16px] font-semibold text-[#000150]">
-              Детали собеседования
-            </h4>
-            <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-[15px]">
-              <InfoLine label="Дата" value={formatDateTime(interview.date)} />
-              <InfoLine
-                label="Оценка куратора"
-                value={
-                  interview.curators_rate !== null && interview.curators_rate !== undefined
-                    ? `${interview.curators_rate} / 10`
-                    : '—'
-                }
-              />
-              <InfoLine
-                label="Ссылка"
-                value={
-                  interview.url ? (
-                    <a
-                      href={interview.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-purple-700 underline break-all"
-                    >
-                      {interview.url}
-                    </a>
-                  ) : (
-                    '—'
-                  )
-                }
-              />
-              <InfoLine
-                label="Средний балл команды"
-                value={application.mean_project_score.toFixed(2)}
-              />
-            </div>
-            {interview.resume && (
-              <div className="pt-2">
-                <div className="text-[14px] font-semibold text-[#000150]/80 mb-1">
-                  Резюме
+          {isEditing ? (
+            <InterviewEditForm
+              interview={interview}
+              onCancel={() => setIsEditing(false)}
+              onSaved={async () => {
+                setIsEditing(false);
+                await onRefresh();
+              }}
+            />
+          ) : (
+            <>
+              <div className="bg-purple-50/40 rounded-lg p-3 border border-purple-100 space-y-2">
+                <h4 className="text-[16px] font-semibold text-[#000150]">
+                  Детали собеседования
+                </h4>
+                <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-[15px]">
+                  <InfoLine label="Дата" value={formatDateTime(interview.date)} />
+                  <InfoLine
+                    label="Оценка куратора"
+                    value={
+                      interview.curators_rate !== null &&
+                      interview.curators_rate !== undefined
+                        ? `${interview.curators_rate} / 100`
+                        : '—'
+                    }
+                  />
+                  <InfoLine
+                    label="Ссылка на встречу"
+                    value={
+                      interview.url ? (
+                        <a
+                          href={interview.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-purple-700 underline break-all"
+                        >
+                          {interview.url}
+                        </a>
+                      ) : (
+                        '—'
+                      )
+                    }
+                  />
+                  <InfoLine
+                    label="Средний балл команды"
+                    value={application.mean_project_score.toFixed(2)}
+                  />
                 </div>
-                <p className="text-[15px] text-[#000150]/80 leading-relaxed whitespace-pre-wrap">
-                  {interview.resume}
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Участники команды */}
-          <div>
-            <h4 className="text-[16px] font-semibold text-[#000150] mb-2">
-              Участники команды
-            </h4>
-            <ul className="space-y-2">
-              {application.members.map((member, idx) => (
-                <li key={member.id || idx} className="flex gap-3 text-[15px]">
-                  <span className="w-6 h-6 flex items-center justify-center bg-[#000150]/10 rounded-full text-[#000150] text-xs font-medium">
-                    {idx + 1}
-                  </span>
-                  <div className="flex-1">
-                    <span className="font-medium text-[#000150]">
-                      {member.fullname}
-                    </span>
-                    <div className="text-[#000150]/60 text-sm">
-                      {member.role} • {member.study_group}
+                {interview.resume && (
+                  <div className="pt-2">
+                    <div className="text-[14px] font-semibold text-[#000150]/80 mb-1">
+                      Резюме
                     </div>
+                    <p className="text-[15px] text-[#000150]/80 leading-relaxed whitespace-pre-wrap">
+                      {interview.resume}
+                    </p>
                   </div>
-                </li>
-              ))}
-            </ul>
-          </div>
+                )}
+              </div>
 
-          {/* Описание заявки */}
-          {application.description && (
-            <div>
-              <h4 className="text-[16px] font-semibold text-[#000150] mb-2">
-                Описание заявки
-              </h4>
-              <p className="text-[15px] text-[#000150]/80 leading-relaxed">
-                {application.description}
-              </p>
-            </div>
+              <div>
+                <h4 className="text-[16px] font-semibold text-[#000150] mb-2">
+                  Участники команды
+                </h4>
+                <ul className="space-y-2">
+                  {application.members.map((member, idx) => (
+                    <li key={member.id || idx} className="flex gap-3 text-[15px]">
+                      <span className="w-6 h-6 flex items-center justify-center bg-[#000150]/10 rounded-full text-[#000150] text-xs font-medium">
+                        {idx + 1}
+                      </span>
+                      <div className="flex-1">
+                        <span className="font-medium text-[#000150]">
+                          {member.fullname}
+                        </span>
+                        <div className="text-[#000150]/60 text-sm">
+                          {member.role} • {member.study_group}
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {application.description && (
+                <div>
+                  <h4 className="text-[16px] font-semibold text-[#000150] mb-2">
+                    Описание заявки
+                  </h4>
+                  <p className="text-[15px] text-[#000150]/80 leading-relaxed">
+                    {application.description}
+                  </p>
+                </div>
+              )}
+
+              <div className="flex gap-3 pt-2 text-[16px]">
+                <div className="ml-auto">
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    className="px-4 py-1.5 bg-[#000150] text-white rounded-xl font-medium hover:bg-[#000150]/90 transition-colors"
+                  >
+                    Редактировать
+                  </button>
+                </div>
+              </div>
+            </>
           )}
-
-          {/* Действия */}
-          <div className="flex gap-3 pt-2 text-[16px]">
-            <div className="ml-auto flex gap-3">
-              {canDecline && (
-                <button
-                  onClick={() => handleApplicationAction('DECLINED')}
-                  disabled={actionLoading !== null}
-                  className="px-4 py-1.5 bg-red-100 text-red-700 rounded-xl font-medium hover:bg-red-200 transition-colors disabled:opacity-50"
-                >
-                  {actionLoading === 'DECLINED' ? '...' : 'Отказ'}
-                </button>
-              )}
-              {canAccept && (
-                <button
-                  onClick={() => handleApplicationAction('ACCEPTED')}
-                  disabled={actionLoading !== null}
-                  className="px-4 py-1.5 bg-green-100 text-green-700 rounded-xl font-medium hover:bg-green-200 transition-colors disabled:opacity-50"
-                >
-                  {actionLoading === 'ACCEPTED' ? '...' : 'Принять'}
-                </button>
-              )}
-            </div>
-          </div>
         </div>
       )}
     </div>
   );
 }
 
-function InfoLine({
-  label,
-  value,
+/* =========================================================
+ *  ФОРМА РЕДАКТИРОВАНИЯ СОБЕСЕДОВАНИЯ
+ * ========================================================= */
+function InterviewEditForm({
+  interview,
+  onCancel,
+  onSaved,
 }: {
-  label: string;
-  value: React.ReactNode;
+  interview: NonNullable<ProjectApplication['interview']>;
+  onCancel: () => void;
+  onSaved: () => Promise<void>;
 }) {
+  const [url, setUrl] = useState(interview.url || '');
+  const [curatorsRate, setCuratorsRate] = useState<string>(
+    interview.curators_rate !== null && interview.curators_rate !== undefined
+      ? String(interview.curators_rate)
+      : ''
+  );
+  const [resume, setResume] = useState(interview.resume || '');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    const rateNumber = curatorsRate.trim() === '' ? undefined : Number(curatorsRate);
+    if (rateNumber !== undefined && (isNaN(rateNumber) || rateNumber < 0 || rateNumber > 100)) {
+      setError('Оценка должна быть числом от 0 до 100');
+      return;
+    }
+
+    if (url.trim() !== '') {
+      try {
+        new URL(url.trim());
+      } catch {
+        setError('Введите корректную ссылку (например, https://...)');
+        return;
+      }
+    }
+
+    const payload: InterviewUpdatePayload = {};
+    if (url.trim() !== (interview.url || '')) {
+      payload.url = url.trim();
+    }
+    const prevRate =
+      interview.curators_rate !== null && interview.curators_rate !== undefined
+        ? interview.curators_rate
+        : null;
+    const nextRate = rateNumber !== undefined ? rateNumber : null;
+    if (nextRate !== prevRate) {
+      payload.curators_rate = rateNumber;
+    }
+    // if (resume !== (interview.resume || '')) {
+    //   payload.resume = resume;
+    // }
+
+    if (Object.keys(payload).length === 0) {
+      onCancel();
+      return;
+    }
+
+    try {
+      setSaving(true);
+      await updateInterview(interview.id, payload);
+      await onSaved();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
+      setError(err.message || 'Не удалось сохранить изменения');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <form
+      onSubmit={handleSubmit}
+      className="bg-purple-50/40 rounded-lg p-4 border border-purple-100 space-y-3"
+    >
+      <div className="flex items-center justify-between">
+        <h4 className="text-[16px] font-semibold text-[#000150]">
+          Редактирование собеседования
+        </h4>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="text-[#000150]/60 hover:text-[#000150] transition-colors"
+          title="Отмена"
+        >
+          ✕
+        </button>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <label className="flex flex-col gap-1">
+          <span className="text-[14px] text-[#000150]/80 font-medium">
+            Ссылка на онлайн-встречу
+          </span>
+          <input
+            type="text"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder="https://..."
+            className="px-3 py-2 border border-gray-200 rounded-lg text-[15px] focus:outline-none focus:border-[#000150]/40 focus:ring-2 focus:ring-[#000150]/10"
+          />
+        </label>
+
+        <label className="flex flex-col gap-1">
+          <span className="text-[14px] text-[#000150]/80 font-medium">
+            Оценка куратора (0–100)
+          </span>
+          <input
+            type="number"
+            min={0}
+            max={100}
+            step={5}
+            value={curatorsRate}
+            onChange={(e) => setCuratorsRate(e.target.value)}
+            placeholder="—"
+            className="px-3 py-2 border border-gray-200 rounded-lg text-[15px] focus:outline-none focus:border-[#000150]/40 focus:ring-2 focus:ring-[#000150]/10"
+          />
+        </label>
+      </div>
+
+      {/* <label className="flex flex-col gap-1">
+        <span className="text-[14px] text-[#000150]/80 font-medium">Резюме</span>
+        <textarea
+          value={resume}
+          onChange={(e) => setResume(e.target.value)}
+          rows={3}
+          placeholder="Краткие выводы по итогам собеседования..."
+          className="px-3 py-2 border border-gray-200 rounded-lg text-[15px] focus:outline-none focus:border-[#000150]/40 focus:ring-2 focus:ring-[#000150]/10 resize-none"
+        />
+      </label> */}
+
+      {error && (
+        <div className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+          {error}
+        </div>
+      )}
+
+      <div className="flex justify-end gap-2 pt-1">
+        <button
+          type="button"
+          onClick={onCancel}
+          disabled={saving}
+          className="px-4 py-1.5 bg-gray-100 text-[#000150]/80 rounded-xl font-medium hover:bg-gray-200 transition-colors disabled:opacity-50"
+        >
+          Отмена
+        </button>
+        <button
+          type="submit"
+          disabled={saving}
+          className="px-4 py-1.5 bg-[#000150] text-white rounded-xl font-medium hover:bg-[#000150]/90 transition-colors disabled:opacity-50"
+        >
+          {saving ? 'Сохранение...' : 'Сохранить'}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function InfoLine({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex flex-col">
       <span className="text-[13px] text-[#000150]/60">{label}</span>
