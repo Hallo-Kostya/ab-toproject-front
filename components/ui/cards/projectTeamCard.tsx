@@ -123,6 +123,7 @@ export default function ProjectTeamCard({ team, projectId, onTeamRemoved }: Proj
         
         {/* Список студентов */}
         <div className="">
+          <h3 className="text-[14px] font-semibold text-[#000150] mb-2">Список участников:</h3>
           {students.length > 0 ? (
             <ul className="flex flex-col gap-1">
               {students.map((student, index) => (
