@@ -28,6 +28,7 @@ export default function TaskFormModal({ isOpen, onClose, onAddTask }: TaskFormMo
       await onAddTask(description.trim());
       setDescription('');
       onClose();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message || 'Ошибка при создании задачи');
     } finally {

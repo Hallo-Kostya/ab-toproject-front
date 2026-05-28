@@ -50,6 +50,7 @@ export default function AddStudentToTeamModal({ isOpen, onClose, teamId, onStude
       const data = await getStudents();
       setStudents(data);
       setFilteredStudents(data);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message || 'Ошибка загрузки студентов');
       console.error('Students fetch error:', err);
@@ -116,6 +117,7 @@ export default function AddStudentToTeamModal({ isOpen, onClose, teamId, onStude
       setRole('Участник');
       setStudyGroup('');
       
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message || 'Ошибка при добавлении студента в команду');
       console.error('Add student to team error:', err);

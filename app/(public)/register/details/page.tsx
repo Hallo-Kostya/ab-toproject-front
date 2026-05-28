@@ -65,6 +65,7 @@ export default function RegistrationDetailsPage() {
         localStorage.removeItem('registration-step1');
         // Router push handled in auth context login()
         
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
         setError(err.message || 'Ошибка регистрации. Попробуйте еще раз.');
         console.error('Registration error:', err);

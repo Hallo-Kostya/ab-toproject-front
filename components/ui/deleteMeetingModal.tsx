@@ -21,6 +21,7 @@ export default function DeleteMeetingModal({ isOpen, onClose, meetingName, onCon
     
     try {
       await onConfirm();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message || 'Ошибка при удалении встречи');
     } finally {

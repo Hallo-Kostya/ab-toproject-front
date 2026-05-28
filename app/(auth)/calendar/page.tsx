@@ -152,6 +152,7 @@ export default function CalendarPage() {
         const response: TeamSummaryResponse = await getTeams();
         const teamList = response.teams.map(t => ({ id: t.id, name: t.name }));
         setTeams(teamList);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         console.error('Failed to load teams:', err);
         setTeams([]);
@@ -192,6 +193,7 @@ export default function CalendarPage() {
         
         const data = await getMeetings(filters);
         setMeetings(data);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         setError(err.message || 'Ошибка загрузки встреч');
         console.error('Failed to load meetings:', err);

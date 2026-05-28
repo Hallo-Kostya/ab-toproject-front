@@ -21,6 +21,7 @@ export default function DeleteTaskModal({ isOpen, onClose, taskDescription, onCo
     
     try {
       await onConfirm();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message || 'Ошибка при удалении задачи');
     } finally {

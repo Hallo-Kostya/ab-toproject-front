@@ -254,7 +254,7 @@ interface ArtifactCardProps {
   isDetaching?: boolean;
 }
 
-function ArtifactCard({ artifact, meetingId, onDetach, isDetaching }: ArtifactCardProps) {
+function ArtifactCard({ artifact, onDetach, isDetaching }: ArtifactCardProps) {
   const iconType = getFileIconType(artifact);
   const isLink = artifact.type === 'LINK' || (!!artifact.link_url && !artifact.s3_key);
 
@@ -411,6 +411,7 @@ export default function MeetingPage() {
       const tasksData = await getTasks({ meeting_id: id });
       const uniqueTasks = Array.from(new Map(tasksData.map(task => [task.id, task])).values());
       setTasks(uniqueTasks);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.warn('Failed to load tasks (soft failure):', err);
       setTasksError(err.message || 'Не удалось загрузить задачи');
@@ -426,6 +427,7 @@ export default function MeetingPage() {
       setStudentsError(null);
       const studentsData = await getTeamStudents(meeting!.team_id);
       setStudents(studentsData);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.warn('Failed to load students (soft failure):', err);
       setStudentsError('Не удалось загрузить участников');
@@ -440,6 +442,7 @@ export default function MeetingPage() {
       setArtifactsError(null);
       const artifactsData = await getArtifacts({ meeting_id: id });
       setArtifacts(artifactsData);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.warn('Failed to load artifacts (soft failure):', err);
       setArtifactsError('Не удалось загрузить артефакты');
@@ -461,6 +464,7 @@ export default function MeetingPage() {
         setMeeting(meetingData);
         const teamData = await getTeamById(meetingData.team_id);
         setTeam(teamData);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         setError(err.message || 'Ошибка загрузки данных встречи');
         console.error('Critical data fetch error:', err);
@@ -486,6 +490,7 @@ export default function MeetingPage() {
     try {
       await deleteMeeting(id);
       router.push('/teams');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error('Meeting deletion error:', err);
       setError(err.message || 'Ошибка при удалении встречи');
@@ -499,6 +504,7 @@ export default function MeetingPage() {
       await new Promise(resolve => setTimeout(resolve, 300));
       await fetchTasks();
       setIsTaskModalOpen(false);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error('Task creation error:', err);
       fetchTasks().catch(() => {});
@@ -514,6 +520,7 @@ export default function MeetingPage() {
       await fetchTasks();
       setIsDeleteTaskModalOpen(false);
       setTaskToDelete(null);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error('Task removal error:', err);
       setTasksError(err.message || 'Ошибка при удалении задачи');
@@ -536,6 +543,7 @@ export default function MeetingPage() {
       setIsMoveSuccessModalOpen(true);
       await fetchTasks();
       setTaskToMove(null);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error('Task move error:', err);
       setTasksError(err.message || 'Ошибка при переносе задачи');
@@ -548,6 +556,7 @@ export default function MeetingPage() {
     try {
       await updateTask(taskId, { is_completed: true });
       await fetchTasks();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error('Task completion error:', err);
       setTasksError(err.message || 'Ошибка при отметке задачи как выполненной');
@@ -566,6 +575,7 @@ export default function MeetingPage() {
       await fetchArtifacts();
       // Сброс input, чтобы можно было выбрать тот же файл повторно
       if (fileInputRef.current) fileInputRef.current.value = '';
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error('Artifact upload error:', err);
       setArtifactsError(err.message || 'Ошибка при загрузке файла');
@@ -582,6 +592,7 @@ export default function MeetingPage() {
       setArtifactsError(null);
       await addMeetingLinkArtifact(meeting.id, linkUrl, name);
       await fetchArtifacts();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error('Link artifact error:', err);
       setArtifactsError(err.message || 'Ошибка при добавлении ссылки');
@@ -597,6 +608,7 @@ export default function MeetingPage() {
       setDetachingArtifactId(artifactId);
       await detachArtifact(artifactId, 'MEETING', meeting.id);
       await fetchArtifacts();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error('Artifact detach error:', err);
       setArtifactsError(err.message || 'Ошибка при удалении артефакта');

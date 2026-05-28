@@ -22,6 +22,7 @@ export default function DeleteStudentModal({ isOpen, onClose, studentName, onCon
     try {
       await onConfirm();
       onClose();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message || 'Ошибка при удалении студента');
     } finally {

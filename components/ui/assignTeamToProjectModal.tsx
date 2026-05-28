@@ -34,6 +34,7 @@ export default function AssignTeamToProjectModal({ isOpen, onClose, projectId, o
       const response = await getTeams();
 
       setTeams(response.teams);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message || 'Ошибка загрузки команд');
       console.error('Teams fetch error:', err);
@@ -66,6 +67,7 @@ export default function AssignTeamToProjectModal({ isOpen, onClose, projectId, o
       // сбрасываем форму
       setSelectedTeamId(null);
       
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message || 'Ошибка при назначении команды на проект');
       console.error('Assign team to project error:', err);

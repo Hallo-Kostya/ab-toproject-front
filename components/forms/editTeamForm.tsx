@@ -43,6 +43,7 @@ export default function EditTeamForm({ isOpen, onClose, teamId, initialData }: E
         window.location.reload();
       }, 300);
       
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message || 'Ошибка при редактировании команды');
       console.error('Team update error:', err);

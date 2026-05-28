@@ -35,6 +35,7 @@ export default function StudentsPage() {
 
         const studentsData: Student[] = await getStudents();
         setStudents(studentsData);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         setError(err.message || 'Ошибка загрузки студентов');
         console.error('Students fetch error:', err);
@@ -72,6 +73,7 @@ const scrollToStudent = useCallback((studentId: string) => {
 
       setStudents(prevStudents => prevStudents.filter(student => student.id !== studentToDelete.id));
       setIsDeleteModalOpen(false);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error('Student deletion error:', err);
       setError(err.message || 'Ошибка при удалении студента');
@@ -93,6 +95,7 @@ const scrollToStudent = useCallback((studentId: string) => {
       try {
         const studentsData: Student[] = await getStudents();
         setStudents(studentsData);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         console.error('Failed to refresh students:', err);
       }

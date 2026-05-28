@@ -63,6 +63,7 @@ export default function EditProjectForm({ isOpen, onClose, projectId, initialDat
         window.location.reload();
       }, 300);
       
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message || 'Ошибка при редактировании проекта');
       console.error('Project update error:', err);

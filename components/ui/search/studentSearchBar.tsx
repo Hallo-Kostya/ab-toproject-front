@@ -37,6 +37,7 @@ export default function StudentSearchBar({
         const data = await searchStudents(query, { limit: 10 });
         setResults(data);
         setIsOpen(true);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         console.error('Student search error:', err);
       } finally {

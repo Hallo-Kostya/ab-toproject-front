@@ -83,6 +83,7 @@ export default function UserMenu({ user, onLogout }: UserMenuProps) {
   };
 
   // TODO: Fix
+  // eslint-disable-next-line react-hooks/refs
   const displayUrl = avatarErrorRef.current ? "/default_user.png" : avatarUrl;
 
   return (

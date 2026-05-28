@@ -199,7 +199,7 @@ export const getCurrentUser = async (): Promise<User> => {
   return response.json();
 };
 
-export const refreshToken = async (): Promise<AuthResponse> => {
+export const refreshToken = async (refreshTokenValue: string): Promise<AuthResponse> => {
   if (USE_COOKIES) {
     const response = await fetch(`${API_BASE_URL}/auth/refresh`, getFetchOptions('POST', undefined, true));
     

@@ -97,6 +97,7 @@ export default function ProjectFormModal({ isOpen, onClose, onSuccess }: Project
       const aiResponse = await autoFillProjectWithAI(formData);
       fillFormWithAIResponse(aiResponse);
       
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       // Более понятные сообщения об ошибках
       let userMessage = err.message || 'Ошибка при получении данных от ИИ';
@@ -138,6 +139,7 @@ export default function ProjectFormModal({ isOpen, onClose, onSuccess }: Project
       onSuccess?.();
       onClose();
       
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message || 'Ошибка при создании проекта');
       console.error('Project creation error:', err);

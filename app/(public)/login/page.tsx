@@ -27,6 +27,7 @@ export default function LoginPage() {
     try {
       const authResponse = await apiLogin({ email, password });
       await authLogin(authResponse);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message || 'Неверный email или пароль');
       console.error('Login error:', err);

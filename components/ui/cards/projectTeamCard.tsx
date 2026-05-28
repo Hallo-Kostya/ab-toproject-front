@@ -50,6 +50,7 @@ export default function ProjectTeamCard({ team, projectId, onTeamRemoved }: Proj
         } else {
           setStudents([]);
         }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         console.warn(`Failed to load team ${team.id}:`, err);
         setError('Не удалось загрузить данные команды');

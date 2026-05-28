@@ -60,6 +60,7 @@ export default function ProjectsPage() {
         members_count: project.members_count ?? 0
       }));
       setProjects(projectsWithCounts);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message || 'Ошибка загрузки проектов');
       console.error('Projects fetch error:', err);

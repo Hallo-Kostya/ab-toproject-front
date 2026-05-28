@@ -37,6 +37,7 @@ export default function EditTaskModal({ isOpen, onClose, task, onTaskUpdated }: 
       const updated = await updateTask(task.id, updateData);
       onTaskUpdated(updated);
       onClose();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message || 'Ошибка при сохранении задачи');
       console.error('Task update error:', err);

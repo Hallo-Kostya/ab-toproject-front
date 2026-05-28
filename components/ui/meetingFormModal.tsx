@@ -49,6 +49,7 @@ export default function MeetingFormModal({ isOpen, onClose, teamId }: MeetingFor
         window.location.reload();
       }, 300);
       
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message || 'Ошибка при создании встречи');
       console.error('Meeting creation error:', err);

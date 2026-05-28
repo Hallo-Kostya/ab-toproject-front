@@ -64,6 +64,7 @@ export default function AvatarModal({ isOpen, onClose }: AvatarModalProps) {
 
       onClose();
       
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message || 'Ошибка загрузки аватара. Попробуйте еще раз.');
       console.error('Avatar upload error:', err);

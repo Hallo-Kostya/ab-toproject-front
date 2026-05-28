@@ -72,6 +72,7 @@ export default function TeamPage() {
         const meetingsData = await getMeetings({ team_id: id });
         setMeetings(meetingsData);
         
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         setError(err.message || 'Ошибка загрузки данных команды');
         console.error('Team data fetch error:', err);
@@ -132,6 +133,7 @@ export default function TeamPage() {
       setStudents(updatedStudents);
       setIsDeleteStudentModalOpen(false);
       setStudentToDelete(null);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error('Failed to remove student from team:', err);
       setError(err.message || 'Ошибка при удалении студента из команды');
@@ -365,6 +367,7 @@ export default function TeamPage() {
           try {
             const updatedStudents = await getTeamStudents(team.id);
             setStudents(updatedStudents);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
           } catch (err: any) {
             console.error('Failed to refresh team students:', err);
             setError('Ошибка обновления списка студентов');

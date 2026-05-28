@@ -64,6 +64,7 @@ export default function MeetingList() {
         );
 
         setMeetings([...meetingsWithTeams]);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         setError(err.message || 'Ошибка загрузки встреч');
         console.error('Error fetching meetings:', err);

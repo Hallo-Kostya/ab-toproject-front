@@ -27,6 +27,7 @@ export default function DeleteStudentFromTeamModal({
     try {
       await onConfirm();
       onClose();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message || 'Ошибка при удалении студента из команды');
     } finally {

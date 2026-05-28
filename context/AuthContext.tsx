@@ -13,7 +13,6 @@ import {
   getStoredAccessExpiresAt,
   isTokenExpired,
   USE_COOKIES,
-  getCachedUserData,
   cacheUserData,
 } from '@/lib/api/auth';
 

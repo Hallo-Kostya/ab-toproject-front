@@ -31,6 +31,7 @@ export default function TeamFormModal({ isOpen, onClose, onSuccess }: TeamFormMo
 
       onSuccess?.();
       
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message || 'Ошибка при создании команды');
       console.error('Team creation error:', err);

@@ -8,7 +8,7 @@ import {
   ProjectApplicationFilters 
 } from '@/lib/api/projectApplications';
 import { getProjectApplications } from '@/lib/api/projectApplications';
-import { getProjects, Project as ProjectType } from '@/lib/api/projects';
+import { getProjects } from '@/lib/api/projects';
 import Image from 'next/image';
 
 type TabType = 'applications' | 'interviews';
@@ -28,7 +28,7 @@ export default function InterviewsPage() {
   
   // Данные проектов для фильтра
   const [projectFilterOptions, setProjectFilterOptions] = useState<ProjectFilterOption[]>([]);
-  const [projectsLoading, setProjectsLoading] = useState(false);
+  const [, setProjectsLoading] = useState(false);
   
   // Состояния сортировки и фильтрации
   const [teamSort, setTeamSort] = useState<SortDirection>(null);
@@ -58,6 +58,7 @@ export default function InterviewsPage() {
           name: p.name 
         }));
         setProjectFilterOptions(options);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         console.error('Failed to load projects for filter:', err);
       } finally {
@@ -99,6 +100,7 @@ export default function InterviewsPage() {
         
         const data = await getProjectApplications(filters);
         setApplications(data);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         setError(err.message || 'Ошибка загрузки заявок');
         console.error('Applications fetch error:', err);

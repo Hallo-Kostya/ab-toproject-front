@@ -36,6 +36,7 @@ export default function StudentFormModal({ isOpen, onClose }: { isOpen: boolean,
         window.location.reload();
       }, 300);
       
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       const errorMsg = err.message || 'Ошибка при создании студента';
       setError(errorMsg);

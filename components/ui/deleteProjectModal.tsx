@@ -28,6 +28,7 @@ export default function DeleteProjectModal({ isOpen, onClose, projectId, project
 
       router.push('/projects');
       
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message || 'Ошибка при удалении проекта');
       console.error('Project deletion error:', err);

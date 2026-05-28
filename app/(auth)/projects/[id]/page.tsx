@@ -152,7 +152,7 @@ interface ArtifactCardProps {
   isDetaching?: boolean;
 }
 
-function ArtifactCard({ artifact, projectId, onDetach, isDetaching }: ArtifactCardProps) {
+function ArtifactCard({ artifact, onDetach, isDetaching }: ArtifactCardProps) {
   const iconType = getFileIconType(artifact);
   const isLink = artifact.type === 'LINK' || (!!artifact.link_url && !artifact.s3_key);
   const downloadUrl = getArtifactDownloadUrl(artifact);
@@ -279,6 +279,7 @@ export default function ProjectPage() {
       setArtifactsError(null);
       const artifactsData = await getArtifacts({ project_id: id });
       setArtifacts(artifactsData);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.warn('Failed to load artifacts (soft failure):', err);
       setArtifactsError('Не удалось загрузить артефакты');
@@ -298,7 +299,7 @@ export default function ProjectPage() {
 
         const projectData = await getProjectById(id);
         setProject(projectData);
-        
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         setError(err.message || 'Ошибка загрузки данных проекта');
         console.error('Project fetch error:', err);
@@ -317,7 +318,7 @@ export default function ProjectPage() {
         });
         
         setProjectTeams(teamsData);
-        
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         console.warn('Failed to load project teams (soft failure):', err);
         setTeamsError('Не удалось загрузить команды проекта');
@@ -345,6 +346,7 @@ export default function ProjectPage() {
         project_team_status: 'ACTIVE'
       });
       setProjectTeams(teamsData);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.warn('Failed to refresh project teams:', err);
       setTeamsError('Ошибка обновления списка команд');
@@ -357,6 +359,7 @@ export default function ProjectPage() {
         project_team_status: 'ACTIVE'
       });
       setProjectTeams(teamsData);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.warn('Failed to refresh project teams after removal:', err);
       setTeamsError('Ошибка обновления списка команд');
@@ -374,6 +377,7 @@ export default function ProjectPage() {
       await uploadProjectArtifact(project.id, file);
       await fetchArtifacts();
       if (fileInputRef.current) fileInputRef.current.value = '';
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error('Artifact upload error:', err);
       setArtifactsError(err.message || 'Ошибка при загрузке файла');
@@ -391,6 +395,7 @@ export default function ProjectPage() {
       // Требуется поддержка JSON-запросов на бэкенде для project-эндпоинта
       await addMeetingLinkArtifact(project.id, linkUrl, name);
       await fetchArtifacts();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error('Link artifact error:', err);
       setArtifactsError(err.message || 'Ошибка при добавлении ссылки');
@@ -406,6 +411,7 @@ export default function ProjectPage() {
       setDetachingArtifactId(artifactId);
       await detachArtifact(artifactId, 'PROJECT', project.id);
       await fetchArtifacts();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error('Artifact detach error:', err);
       setArtifactsError(err.message || 'Ошибка при удалении артефакта');

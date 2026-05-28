@@ -28,6 +28,7 @@ export default function DeleteTeamModal({ isOpen, onClose, teamId, teamName }: D
 
       router.push('/teams');
       
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message || 'Ошибка при удалении команды');
       console.error('Team deletion error:', err);

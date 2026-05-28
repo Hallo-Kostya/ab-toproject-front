@@ -53,6 +53,7 @@ export default function TeamsPage() {
       const response: TeamSummaryResponse = await getTeams();
       const teamsWithStudents = processTeamsWithStudents(response.teams);
       setTeams(teamsWithStudents);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message || 'Ошибка загрузки команд');
       console.error('Teams fetch error:', err);

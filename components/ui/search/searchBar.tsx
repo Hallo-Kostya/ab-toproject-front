@@ -48,6 +48,7 @@ export default function SearchBar({
         const data = await searchEntities(query, { limit: 10 });
         setResults(data);
         setIsOpen(true);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         setError(err.message || 'Ошибка поиска');
         console.error('Search error:', err);

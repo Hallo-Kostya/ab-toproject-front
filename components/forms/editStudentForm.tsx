@@ -49,6 +49,7 @@ export default function EditStudentForm({ isOpen, onClose, studentId, initialDat
             onEditSuccess?.();
             onClose();
             
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
             setError(err.message || 'Ошибка при редактировании студента');
             console.error('Student update error:', err);
