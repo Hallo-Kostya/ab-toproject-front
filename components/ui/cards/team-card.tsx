@@ -26,7 +26,7 @@ export default function TeamCard({ name, teamNumber, participants = [] }: TeamCa
                   {index + 1}
                 </span>
                 <span className="text-[14px] flex-1 wrap-break-word mt-0.5">
-                  {participant.last_name} {participant.first_name} {participant.patronymic || ''}
+                  {participant.first_name} {participant.last_name} {participant.patronymic || ''}
                 </span>
               </li>
             ))}

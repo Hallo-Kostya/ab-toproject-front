@@ -47,6 +47,7 @@ export interface LoginData {
 }
 
 // JWT Utils
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const decodeJWT = (token: string): { exp?: number; [key: string]: any } | null => {
   try {
     const base64Url = token.split('.')[1];
@@ -91,6 +92,7 @@ export const normalizeAuthResponse = (raw: AuthResponseRaw): AuthResponse => {
 };
 
 // Fetch Options Helper
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const getFetchOptions = (method: string, body?: any, includeAuth: boolean = true): RequestInit => {
   const options: RequestInit = {
     method,

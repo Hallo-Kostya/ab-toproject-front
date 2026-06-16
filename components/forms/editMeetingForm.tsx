@@ -25,7 +25,11 @@ export default function EditMeetingForm({ isOpen, onClose, meetingId, initialDat
 
   function formatDateForInput(isoDate: string): string {
     if (!isoDate) return '';
-    return new Date(isoDate).toISOString().slice(0, 16);
+    const d = new Date(isoDate);
+    
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
   }
 
   useEffect(() => {

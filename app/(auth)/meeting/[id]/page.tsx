@@ -628,6 +628,21 @@ export default function MeetingPage() {
     }
   };
 
+  const getMeetingStatusClasses = (status: string) => {
+    switch (status?.toUpperCase()) {
+      case 'SCHEDULED':
+        return 'bg-blue-100 text-blue-800';
+      case 'IN_PROGRESS':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'COMPLETED':
+        return 'bg-green-100 text-green-800';
+      case 'CANCELED':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-blue-100 text-blue-800';
+    }
+  };
+
   // Заглушки
   if (loading) {
     return (
@@ -701,13 +716,13 @@ export default function MeetingPage() {
           </div>
           <div className="flex flex-wrap items-center gap-6">
             <p><span className="text-[24px] text-[#000150]">Команда: <span className="font-medium">{team.name}</span></span></p>
-            <div className="px-3 py-px bg-[#E79E00]/20 rounded-lg">
-              <span className="text-[#E79E00] text-[20px] font-medium">
+            <div className="px-3 py-px bg-[#000150]/10 rounded-lg">
+              <span className="text-[#000150] text-[20px] font-medium">
                 {new Date(meeting.date).toLocaleDateString('ru-RU')} в {new Date(meeting.date).toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'})}
               </span>
             </div>
-            <div className="px-3 py-px bg-[#000150]/10 rounded-lg">
-              <span className="text-[#000150] text-[18px] font-medium">
+            <div className={`px-3 py-px rounded-lg ${getMeetingStatusClasses(meeting.status)}`}>
+              <span className="text-[18px] font-medium">
                 {getMeetingStatusDisplay(meeting.status)}
               </span>
             </div>
@@ -851,7 +866,7 @@ export default function MeetingPage() {
                   </button>
                   
                   {/* Кнопка добавления ссылки */}
-                  <button
+                  {/* <button
                     onClick={() => setIsAddLinkModalOpen(true)}
                     disabled={artifactsLoading}
                     className="px-4 py-2 bg-white text-[#000150] border border-[#000150] rounded-[20px] hover:bg-[#000150]/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
@@ -861,7 +876,7 @@ export default function MeetingPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                     </svg>
                     Ссылка
-                  </button>
+                  </button> */}
                 </div>
               </div>
             )}
@@ -953,12 +968,12 @@ export default function MeetingPage() {
       taskDescription={movedTaskDescription} />
 
       {/* Модальное окно добавления ссылки */}
-      <AddLinkArtifactModal 
+      {/* <AddLinkArtifactModal 
         isOpen={isAddLinkModalOpen} 
         onClose={() => setIsAddLinkModalOpen(false)} 
         onConfirm={handleAddLinkArtifact}
         isLoading={artifactsLoading} 
-      />
+      /> */}
     </>
   );
 }

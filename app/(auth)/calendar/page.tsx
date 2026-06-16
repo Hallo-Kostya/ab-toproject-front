@@ -14,15 +14,15 @@ import 'react-day-picker/style.css';
 const getStatusConfig = (status: string) => {
   switch (status?.toUpperCase()) {
     case 'SCHEDULED':
-      return { label: 'Запланирована', color: 'bg-[#E79E00]/20 text-[#E79E00] border border-[#E79E00]/30' };
+      return { label: 'Запланирована', color: 'bg-blue-100 text-blue-700 border border-blue-200' };
     case 'COMPLETED':
       return { label: 'Завершена', color: 'bg-green-100 text-green-700 border border-green-200' };
     case 'CANCELED':
       return { label: 'Отменена', color: 'bg-red-100 text-red-700 border border-red-200' };
     case 'IN_PROGRESS':
-      return { label: 'В работе', color: 'bg-blue-100 text-blue-700 border border-blue-200' };
+      return { label: 'В работе', color: 'bg-yellow-100 text-[#E79E00] border border-[#E79E00]/30' };
     default:
-      return { label: 'Запланирована', color: 'bg-[#E79E00]/20 text-[#E79E00] border border-[#E79E00]/30' };
+      return { label: 'Запланирована', color: 'bg-blue-100 text-blue-700 border border-blue-200' };
   }
 };
 
@@ -100,8 +100,8 @@ function DayCell({
         <span className={`text-[13px] font-semibold ${isToday ? 'text-[#000150]' : 'text-gray-600'}`}>
           {format(date, 'd')}
         </span>
-        <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${isToday ? 'bg-[#000150] text-white' : 'bg-gray-100 text-gray-500'}`}>
-          {format(date, 'EEE', { locale: ru })}
+        <span className={`text-[12px] px-1.5 py-0.5 rounded-full ${isToday ? 'bg-[#000150] text-white' : 'bg-gray-100 text-gray-500'}`}>
+          {format(date, 'eeee', { locale: ru })}
         </span>
       </div>
       
@@ -366,13 +366,13 @@ export default function CalendarPage() {
         {!loading && !error && (
             <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-2">
                 {/* Дни недели */}
-                <div className="grid grid-cols-7 gap-1 mb-2">
-                    {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map(day => (
+                {/* <div className="grid grid-cols-7 gap-1 mb-2">
+                    {['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'].map(day => (
                         <div key={day} className="text-center text-[13px] font-medium text-gray-500">
                             {day}
                         </div>
                     ))}
-                </div>
+                </div> */}
                 
                 {/* Сетка дней */}
                 <div className="grid grid-cols-7 gap-1">

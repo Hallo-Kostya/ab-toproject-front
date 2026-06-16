@@ -339,8 +339,8 @@ export default function TeamPage() {
                     <ProjectCard 
                       name={project.name || 'Без названия'}
                       description={project.description || 'Без описания'}
-                      teamsCnt={(project as Project).teams_count ?? 0}
-                      placesCnt={(project as Project).members_count ?? 0}
+                      // teamsCnt={(project as Project).teams_count ?? 0}
+                      // placesCnt={(project as Project).members_count ?? 0}
                     />
                   </Link>
                 </li>

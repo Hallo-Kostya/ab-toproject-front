@@ -70,7 +70,14 @@ export default function ProjectFormModal({ isOpen, onClose, onSuccess }: Project
 
   // Заполнение полей ответом от ИИ
   const fillFormWithAIResponse = (aiData: CreateProjectData) => {
-    if (aiData.name) setName(aiData.name);
+    if (aiData.name) {
+      if (aiData.name.length > 64) {
+        setName(aiData.name.slice(0, 64));
+        setAIError('Название проекта было автоматически сокращено до 64 символов из-за ограничений длины.');
+      } else {
+        setName(aiData.name);
+      }
+    }
     if (aiData.description) setDescription(aiData.description);
     if (aiData.goal) setGoal(aiData.goal);
     if (aiData.requirements) setRequirements(aiData.requirements);
@@ -99,7 +106,6 @@ export default function ProjectFormModal({ isOpen, onClose, onSuccess }: Project
       
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
-      // Более понятные сообщения об ошибках
       let userMessage = err.message || 'Ошибка при получении данных от ИИ';
       
       if (userMessage.includes('API key')) {
@@ -121,7 +127,11 @@ export default function ProjectFormModal({ isOpen, onClose, onSuccess }: Project
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setIsLoading(true);
+
+    if (name.length > 64) {
+      setError('Название проекта не должно превышать 64 символа');
+      return;
+    }
 
     try {
       const projectData: CreateProjectData = {
@@ -226,7 +236,6 @@ export default function ProjectFormModal({ isOpen, onClose, onSuccess }: Project
         {isAIFilling && (
           <div className="absolute inset-0 bg-white/80 backdrop-blur-sm rounded-3xl flex flex-col items-center justify-center z-30">
             <div className="flex flex-col items-center gap-4">
-              {/* Анимация "думающего" ИИ */}
               <div className="relative">
                 <div className="w-16 h-16 border-4 border-[#000150]/20 border-t-[#E79E00] rounded-full animate-spin" />
                 <div className="absolute inset-0 flex items-center justify-center">
@@ -250,11 +259,17 @@ export default function ProjectFormModal({ isOpen, onClose, onSuccess }: Project
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              maxLength={64}
               required
               disabled={isAIFilling}
               className="w-full px-4 py-2 rounded-xl border-2 border-gray-300 focus:border-[#000150] focus:ring-2 focus:ring-[#000150]/20 disabled:bg-gray-100 disabled:cursor-not-allowed"
               placeholder="Введите название проекта"
             />
+            <div className="flex justify-end mt-1">
+              <span className={`text-xs ${name.length >= 60 ? 'text-red-500 font-medium' : 'text-gray-400'}`}>
+                {name.length}/64
+              </span>
+            </div>
           </div>
           
           <div>

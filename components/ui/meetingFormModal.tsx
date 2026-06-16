@@ -35,7 +35,7 @@ export default function MeetingFormModal({ isOpen, onClose, teamId }: MeetingFor
       const meetingData: CreateMeetingData = {
         name,
         resume,
-        date,
+        date: new Date(date).toISOString(), 
         team_id: teamId,
         status,
         previous_meeting_id: previousMeetingId || undefined

@@ -47,17 +47,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const handleLoginSuccess = useCallback(async (tokens: AuthResponse) => {
     try {
-      // 1. Очищаем старое состояние
+      // Очищаем старое состояние
       if (!USE_COOKIES) {
         clearAuthStorage();
       }
       
-      // 2. Сохраняем новые токены
+      // Сохраняем новые токены
       if (!USE_COOKIES) {
         saveAuthTokens(tokens);
       }
       
-      // 3. Загружаем профиль пользователя
+      // Загружаем профиль пользователя
       const userData = await getCurrentUser();
       cacheUserData(userData);
       setUser(userData);

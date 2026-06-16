@@ -67,10 +67,10 @@ export interface TeamProjectWithDetails {
   project: Project;
 }
 
-export const parseFullName = (fullName: string): { first_name: string; last_name: string; patronymic?: string } => {
+export const parseFullName = (fullName: string): { last_name: string; first_name: string; patronymic?: string } => {
   const parts = fullName.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return { first_name: '', last_name: '' };
-  if (parts.length === 1) return { first_name: parts[0], last_name: '' };
+  if (parts.length === 0) return { last_name: '', first_name: '' };
+  if (parts.length === 1) return { last_name: parts[0], first_name: '' };
   if (parts.length === 2) return { last_name: parts[0], first_name: parts[1] };
   return {
     last_name: parts[0],

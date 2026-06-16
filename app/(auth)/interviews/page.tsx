@@ -62,8 +62,8 @@ export default function InterviewsPage() {
 }
 
 /* =========================================================
- *  ВКЛАДКА «ЗАЯВКИ»
- * ========================================================= */
+ ВКЛАДКА «ЗАЯВКИ»
+ ========================================================= */
 function ApplicationsTab() {
   const [applications, setApplications] = useState<ProjectApplication[]>([]);
   const [loading, setLoading] = useState(true);
@@ -94,6 +94,7 @@ function ApplicationsTab() {
         setProjectFilterOptions(
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (response as any).projects
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ? (response as any).projects.map((p: Project) => ({ id: p.id, name: p.name }))
             : (response as unknown as Project[]).map((p) => ({ id: p.id, name: p.name }))
         );
@@ -357,8 +358,8 @@ function ApplicationsTab() {
 }
 
 /* =========================================================
- *  ВКЛАДКА «СОБЕСЕДОВАНИЯ»
- * ========================================================= */
+ ВКЛАДКА «СОБЕСЕДОВАНИЯ»
+ ========================================================= */
 function InterviewsTab() {
   const [interviews, setInterviews] = useState<ProjectApplication[]>([]);
   const [loading, setLoading] = useState(true);
@@ -390,6 +391,7 @@ function InterviewsTab() {
         setProjectFilterOptions(
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (response as any).projects
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ? (response as any).projects.map((p: Project) => ({ id: p.id, name: p.name }))
             : (response as unknown as Project[]).map((p) => ({ id: p.id, name: p.name }))
         );
@@ -506,7 +508,7 @@ function InterviewsTab() {
 
   return (
     <>
-      <div className="grid grid-cols-4 gap-4 px-4 py-3 rounded-xl border-b border-gray-200 shadow-sm">
+      <div className="grid grid-cols-6 gap-4 px-4 py-3 rounded-xl border-b border-gray-200 shadow-sm">
         <div className="flex items-center gap-2">
           <span className="text-[20px] font-semibold text-[#000150]">Команда</span>
           <button
@@ -518,7 +520,7 @@ function InterviewsTab() {
           </button>
         </div>
 
-        <div className="flex items-center gap-2 relative" ref={projectFilterRef}>
+        <div className="flex items-center col-span-3 gap-2 relative" ref={projectFilterRef}>
           <span className="text-[20px] font-semibold text-[#000150]">Проект</span>
           <div className="relative">
             <button
@@ -578,7 +580,7 @@ function InterviewsTab() {
           </div>
 
           {selectedProjectId && (
-            <span className="text-[16px] px-2 py-0.5 mt-0.5 bg-[#000150]/5 text-[#000150] rounded-2xl truncate max-w-35">
+            <span className="text-[16px] px-2 py-0.5 mt-0.5 bg-[#000150]/5 text-[#000150] rounded-2xl truncate max-w-lg">
               {projectFilterOptions.find((p) => p.id === selectedProjectId)?.name ||
                 'Выбран'}
             </span>
@@ -677,8 +679,8 @@ function InterviewsTab() {
 }
 
 /* =========================================================
- *  ОБЩИЕ КОМПОНЕНТЫ
- * ========================================================= */
+ ОБЩИЕ КОМПОНЕНТЫ
+ ========================================================= */
 function TabSwitcher({
   activeTab,
   onTabChange,
@@ -751,8 +753,8 @@ function FilterIcon({ isActive }: { isActive: boolean }) {
 }
 
 /* =========================================================
- *  СТРОКА ЗАЯВКИ
- * ========================================================= */
+ СТРОКА ЗАЯВКИ
+ ========================================================= */
 function ApplicationRow({
   application,
   isExpanded,
@@ -798,12 +800,12 @@ function ApplicationRow({
         isExpanded ? 'bg-white' : 'bg-white hover:bg-gray-50'
       }`}
     >
-      <button onClick={onToggleExpand} className="w-full grid grid-cols-3 gap-4 px-4 py-4 text-left">
+      <button onClick={onToggleExpand} className="w-full flex justify-between gap-4 px-4 py-4 text-left">
         <div className="flex gap-3 items-center">
           <span className="font-semibold text-[#000150] text-[18px]">
             {application.team_name}
           </span>
-          <div className="flex gap-1 bg-[#000150]/15 px-2 py-0.5 rounded-md">
+          <div className="flex gap-1 bg-[#000150]/15 px-2 py-0.5 rounded-md min-w-12.5">
             <Image
               src={'/user-round.svg'}
               alt={'Количество участников'}
@@ -815,10 +817,10 @@ function ApplicationRow({
             </span>
           </div>
         </div>
-        <div className="text-[#000150] text-[18px] font-medium truncate mt-1.5">
+        <div className="text-[#000150] text-[18px] font-medium mt-1.5">
           {application.project?.name || 'Проект не загружен'}
         </div>
-        <div className="flex justify-end">
+        <div className="flex items-center">
           <span
             className={`px-3 py-1 rounded-xl pt-1.5 text-[16px] font-medium ${status.color}`}
           >
@@ -927,8 +929,8 @@ function ApplicationRow({
 }
 
 /* =========================================================
- *  СТРОКА СОБЕСЕДОВАНИЯ
- * ========================================================= */
+ СТРОКА СОБЕСЕДОВАНИЯ
+ ========================================================= */
 function InterviewRow({
   application,
   isExpanded,
@@ -1097,8 +1099,8 @@ function InterviewRow({
 }
 
 /* =========================================================
- *  ФОРМА РЕДАКТИРОВАНИЯ СОБЕСЕДОВАНИЯ
- * ========================================================= */
+ ФОРМА РЕДАКТИРОВАНИЯ СОБЕСЕДОВАНИЯ
+ ========================================================= */
 function InterviewEditForm({
   interview,
   onCancel,

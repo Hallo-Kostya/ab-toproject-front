@@ -26,85 +26,85 @@ import {
 // Модальные окна для артефактов
 // ─────────────────────────────────────────────
 
-interface AddLinkArtifactModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onConfirm: (linkUrl: string, name?: string) => Promise<void>;
-  isLoading?: boolean;
-}
+// interface AddLinkArtifactModalProps {
+//   isOpen: boolean;
+//   onClose: () => void;
+//   onConfirm: (linkUrl: string, name?: string) => Promise<void>;
+//   isLoading?: boolean;
+// }
 
-function AddLinkArtifactModal({ isOpen, onClose, onConfirm, isLoading }: AddLinkArtifactModalProps) {
-  const [linkUrl, setLinkUrl] = useState('');
-  const [name, setName] = useState('');
+// function AddLinkArtifactModal({ isOpen, onClose, onConfirm, isLoading }: AddLinkArtifactModalProps) {
+//   const [linkUrl, setLinkUrl] = useState('');
+//   const [name, setName] = useState('');
 
-  if (!isOpen) return null;
+//   if (!isOpen) return null;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!linkUrl.trim()) return;
-    await onConfirm(linkUrl.trim(), name.trim() || undefined);
-    setLinkUrl('');
-    setName('');
-    onClose();
-  };
+//   const handleSubmit = async (e: React.FormEvent) => {
+//     e.preventDefault();
+//     if (!linkUrl.trim()) return;
+//     await onConfirm(linkUrl.trim(), name.trim() || undefined);
+//     setLinkUrl('');
+//     setName('');
+//     onClose();
+//   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6 w-full max-w-md mx-4 shadow-xl">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-full bg-[#000150]/10 flex items-center justify-center">
-            <svg className="w-6 h-6 text-[#000150]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-            </svg>
-          </div>
-          <h3 className="text-xl font-semibold text-[#000150]">Добавить ссылку</h3>
-        </div>
+//   return (
+//     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+//       <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6 w-full max-w-md mx-4 shadow-xl">
+//         <div className="flex items-center gap-3 mb-4">
+//           <div className="w-10 h-10 rounded-full bg-[#000150]/10 flex items-center justify-center">
+//             <svg className="w-6 h-6 text-[#000150]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+//               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+//             </svg>
+//           </div>
+//           <h3 className="text-xl font-semibold text-[#000150]">Добавить ссылку</h3>
+//         </div>
         
-        <div className="space-y-4 mb-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">URL *</label>
-            <input
-              type="url"
-              value={linkUrl}
-              onChange={(e) => setLinkUrl(e.target.value)}
-              placeholder="https://example.com/document"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#000150] focus:border-transparent"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Название (опционально)</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Описание ссылки"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#000150] focus:border-transparent"
-            />
-          </div>
-        </div>
+//         <div className="space-y-4 mb-6">
+//           <div>
+//             <label className="block text-sm font-medium text-gray-700 mb-1">URL *</label>
+//             <input
+//               type="url"
+//               value={linkUrl}
+//               onChange={(e) => setLinkUrl(e.target.value)}
+//               placeholder="https://example.com/document"
+//               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#000150] focus:border-transparent"
+//               required
+//             />
+//           </div>
+//           <div>
+//             <label className="block text-sm font-medium text-gray-700 mb-1">Название (опционально)</label>
+//             <input
+//               type="text"
+//               value={name}
+//               onChange={(e) => setName(e.target.value)}
+//               placeholder="Описание ссылки"
+//               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#000150] focus:border-transparent"
+//             />
+//           </div>
+//         </div>
         
-        <div className="flex gap-3">
-          <button 
-            type="button" 
-            onClick={onClose} 
-            className="flex-1 py-2.5 px-4 bg-gray-200 text-gray-800 rounded-xl font-medium hover:bg-gray-300 transition-colors"
-            disabled={isLoading}
-          >
-            Отмена
-          </button>
-          <button 
-            type="submit" 
-            className="flex-1 py-2.5 px-4 bg-[#000150] text-white rounded-xl font-medium hover:bg-blue-900 transition-colors disabled:opacity-50"
-            disabled={isLoading || !linkUrl.trim()}
-          >
-            {isLoading ? 'Добавление...' : 'Добавить'}
-          </button>
-        </div>
-      </form>
-    </div>
-  );
-}
+//         <div className="flex gap-3">
+//           <button 
+//             type="button" 
+//             onClick={onClose} 
+//             className="flex-1 py-2.5 px-4 bg-gray-200 text-gray-800 rounded-xl font-medium hover:bg-gray-300 transition-colors"
+//             disabled={isLoading}
+//           >
+//             Отмена
+//           </button>
+//           <button 
+//             type="submit" 
+//             className="flex-1 py-2.5 px-4 bg-[#000150] text-white rounded-xl font-medium hover:bg-blue-900 transition-colors disabled:opacity-50"
+//             disabled={isLoading || !linkUrl.trim()}
+//           >
+//             {isLoading ? 'Добавление...' : 'Добавить'}
+//           </button>
+//         </div>
+//       </form>
+//     </div>
+//   );
+// }
 
 // ─────────────────────────────────────────────
 // Компонент иконки файла (ЛОКАЛЬНЫЙ, рендерит JSX)
@@ -488,11 +488,34 @@ export default function ProjectPage() {
             </div>
           </div>
           <div className="flex items-center gap-6">
-            <p><span className="text-[24px] text-[#000150] font-medium">{project.year} год, {project.semester === 'AUTUMN' ? 'Осенний' : 'Весенний'} семестр</span></p>
-            <div className="px-3 py-px bg-[#E79E00]/20 rounded-lg">
-              <span className="text-[#E79E00] text-[20px] font-medium">
-                {project.status === 'PLANNED' ? 'Планируется' : 
-                 project.status === 'IN_PROGRESS' ? 'В работе' : 'Завершен'}
+            <p>
+              <span className="text-[24px] text-[#000150] font-medium">
+                {project.year} год, {project.semester === 'AUTUMN' ? 'Осенний' : 'Весенний'} семестр
+              </span>
+            </p>
+            <div
+              className={`px-3 py-px rounded-lg ${
+                project.status === 'PLANNED'
+                  ? 'bg-blue-100'
+                  : project.status === 'IN_PROGRESS'
+                  ? 'bg-yellow-100'
+                  : 'bg-red-100'
+              }`}
+            >
+              <span
+                className={`text-[20px] font-medium ${
+                  project.status === 'PLANNED'
+                    ? 'text-blue-800'
+                    : project.status === 'IN_PROGRESS'
+                    ? 'text-yellow-800'
+                    : 'text-red-800'
+                }`}
+              >
+                {project.status === 'PLANNED'
+                  ? 'Планируется'
+                  : project.status === 'IN_PROGRESS'
+                  ? 'В работе'
+                  : 'Завершен'}
               </span>
             </div>
           </div>
@@ -537,7 +560,7 @@ export default function ProjectPage() {
                   </button>
                   
                   {/* Кнопка добавления ссылки */}
-                  <button
+                  {/* <button
                     onClick={() => setIsAddLinkModalOpen(true)}
                     disabled={artifactsLoading}
                     className="px-4 py-2 bg-white text-[#000150] border border-[#000150] rounded-[20px] hover:bg-[#000150]/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
@@ -547,7 +570,7 @@ export default function ProjectPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                     </svg>
                     Ссылка
-                  </button>
+                  </button> */}
                 </div>
               </div>
             )}
@@ -666,12 +689,12 @@ export default function ProjectPage() {
       />
 
       {/* Модальное окно добавления ссылки-артефакта */}
-      <AddLinkArtifactModal 
+      {/* <AddLinkArtifactModal 
         isOpen={isAddLinkModalOpen} 
         onClose={() => setIsAddLinkModalOpen(false)} 
         onConfirm={handleAddLinkArtifact}
         isLoading={artifactsLoading} 
-      />
+      /> */}
     </>
   );
 }

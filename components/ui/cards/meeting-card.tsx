@@ -9,7 +9,7 @@ export default function MeetingCard({ teamName, name, resume, date, time, status
       case 'canceled':
         return 'bg-red-100 text-red-800';
       case 'in_progress':
-        return 'bg-red-100 text-yellow-800';
+        return 'bg-yellow-100 text-yellow-800';
       case 'scheduled':
         return 'bg-blue-100 text-blue-800';
       default:
