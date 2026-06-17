@@ -28,16 +28,17 @@ const nextConfig: NextConfig = {
     ];
   },
     images: {
+      unoptimized: true,
       remotePatterns: [
         {
           protocol: 'http',
-          hostname: 'localhost',
+          hostname: 'minio',
           port: '9000',
           pathname: '/curators/avatars/**',
         },
         {
           protocol: 'https',
-          hostname: 'localhost',
+          hostname: 'minio',
           port: '9000',
           pathname: '/curators/avatars/**',
         },
