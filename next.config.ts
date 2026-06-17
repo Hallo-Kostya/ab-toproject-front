@@ -27,22 +27,37 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-    images: {
-      unoptimized: true,
-      remotePatterns: [
-        {
-          protocol: 'http',
-          hostname: 'minio',
-          port: '9000',
-          pathname: '/curators/avatars/**',
-        },
-        {
-          protocol: 'https',
-          hostname: 'minio',
-          port: '9000',
-          pathname: '/curators/avatars/**',
-        },
-      ],
+  images: {
+    unoptimized: true,
+    remotePatterns: [
+      // MinIO по hostname 'minio' (для Docker network)
+      {
+        protocol: 'http',
+        hostname: 'minio',
+        port: '9000',
+        pathname: '/curators/avatars/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'minio',
+        port: '9000',
+        pathname: '/curators/avatars/**',
+      },
+      // MinIO по localhost (для локалки)
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '9000',
+        pathname: '/curators/avatars/**',
+      },
+      // MinIO по IP (для production)
+      {
+        protocol: 'http',
+        hostname: '51.250.17.41',
+        port: '9000',
+        pathname: '/curators/avatars/**',
+      },
+    ],
   },
 };
 

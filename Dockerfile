@@ -19,8 +19,11 @@ RUN pnpm install --ignore-scripts
 
 COPY . .
 
+# Передаём переменные окружения для сборки
 ARG NEXT_PUBLIC_API_BASE_URL
+ARG NEXT_PUBLIC_S3_BASE_URL
 ENV NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}
+ENV NEXT_PUBLIC_S3_BASE_URL=${NEXT_PUBLIC_S3_BASE_URL}
 
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN pnpm run build

@@ -31,22 +31,33 @@ export default function UserMenu({ user, onLogout }: UserMenuProps) {
       return "/default_user.png";
     }
     
-    // полный URL
+    // Если уже полный URL — вернуть как есть
     if (user.avatar.startsWith('http://') || user.avatar.startsWith('https://')) {
       return user.avatar;
     }
     
-    // S3 URL
+    // Очистить путь от ведущих слэшей
+    let cleanPath = user.avatar.replace(/^\/+/, '');
+    
+    // Если путь не содержит 'curators/', добавить его
+    if (!cleanPath.startsWith('curators/')) {
+      cleanPath = `curators/${cleanPath}`;
+    }
+    
+    // Приоритет 1: S3 URL (MinIO)
     const s3BaseUrl = process.env.NEXT_PUBLIC_S3_BASE_URL;
     if (s3BaseUrl) {
-      const cleanPath = user.avatar.replace(/^\/+/, '');
       return `${s3BaseUrl}/${cleanPath}`;
     }
     
-    // Прокси-эндпоинт бекенда
-    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:9000/curators';
-    const cleanPath = user.avatar.replace(/^\/+/, '');
-    return `${apiBaseUrl}/${cleanPath}`;
+    // Приоритет 2: Прокси через бэкенд (fallback)
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+    if (apiBaseUrl) {
+      return `${apiBaseUrl}/${cleanPath}`;
+    }
+    
+    // Если ничего не настроено — вернуть дефолтный аватар
+    return "/default_user.png";
   };
 
   const avatarUrl = buildAvatarUrl();

@@ -5,6 +5,7 @@ services:
       context: .
       args:
         NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL}
+        NEXT_PUBLIC_S3_BASE_URL: ${NEXT_PUBLIC_S3_BASE_URL}
     ports:
       - "3000:3000"
     env_file:

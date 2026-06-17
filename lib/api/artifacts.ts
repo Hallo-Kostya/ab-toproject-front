@@ -1,5 +1,5 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001/api';
-const S3_BASE_URL = 'http://localhost:9000';
+const S3_BASE_URL = process.env.NEXT_PUBLIC_S3_BASE_URL;
 const S3_BUCKET_NAME = 'artifacts';
 
 export interface Artifact {
