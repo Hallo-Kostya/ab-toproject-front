@@ -181,12 +181,15 @@ export default function CalendarPage() {
         setLoading(true);
         setError(null);
         
-        // TODO: Fix
+        const fromDate = dateRange.from;
+        const toDate = dateRange.to;
+        if (!fromDate || !toDate) return;
+
         const filters: { start_date: string; end_date: string; team_id?: string } = {
-          start_date: dateRange.from.toISOString(),
-          end_date: dateRange.to.toISOString()
+          start_date: fromDate.toISOString(),
+          end_date: toDate.toISOString()
         };
-        
+
         if (selectedTeamId) {
           filters.team_id = selectedTeamId;
         }

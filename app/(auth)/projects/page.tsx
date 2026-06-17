@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { Suspense, useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import ProjectCard from "@/components/ui/cards/project-card";
 import PageContainer from "@/components/containers/page-container";
@@ -14,7 +14,26 @@ interface ProjectWithCounts extends Project {
   members_count: number;
 }
 
+// Обёртка — экспортируется по умолчанию и содержит Suspense boundary
 export default function ProjectsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="flex items-center gap-2 text-[#000150]">
+            <div className="w-5 h-5 border-2 border-[#000150]/20 border-t-[#000150] rounded-full animate-spin" />
+            <span>Загрузка...</span>
+          </div>
+        </div>
+      }
+    >
+      <ProjectsContent />
+    </Suspense>
+  );
+}
+
+// Внутренний компонент — здесь используется useSearchParams
+function ProjectsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   

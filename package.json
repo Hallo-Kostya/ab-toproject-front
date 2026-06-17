@@ -9,6 +9,9 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "-": "^0.0.1-security.1",
+    "baseline-browser-mapping": "^2.10.38",
+    "date-fns": "^4.4.0",
     "next": "16.0.0",
     "react": "19.2.0",
     "react-day-picker": "^9.14.0",
