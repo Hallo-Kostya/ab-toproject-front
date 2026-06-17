@@ -1,4 +1,3 @@
-// /app/interview/page.tsx
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
@@ -990,7 +989,11 @@ function InterviewRow({
           {isEditing ? (
             <InterviewEditForm
               interview={interview}
-              onCancel={() => setIsEditing(false)}
+              onCancel={async () => {
+                setIsEditing(false);
+                // При закрытии формы обновляем карточку, чтобы отобразить сохранённые изменения
+                await onRefresh();
+              }}
               onSaved={async () => {
                 setIsEditing(false);
                 await onRefresh();
@@ -1118,20 +1121,21 @@ function InterviewEditForm({
   onCancel: () => void;
   onSaved: () => Promise<void>;
 }) {
-  const initialUrl = interview.url || '';
-  const [url, setUrl] = useState(initialUrl);
+  // Используем состояния для URL, чтобы отслеживать "последний сохранённый" URL
+  // и не считать его изменённым при повторных нажатиях "Сохранить"
+  const [currentUrl, setCurrentUrl] = useState(interview.url || '');
+  const [savedUrl, setSavedUrl] = useState(interview.url || '');
   const [curatorsRate, setCuratorsRate] = useState<string>(
     interview.curators_rate !== null && interview.curators_rate !== undefined
       ? String(interview.curators_rate)
       : ''
   );
-  const [resume, setResume] = useState(interview.resume || '');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Поле оценки разблокировано, если у собеседования уже есть сохранённая ссылка
-  const [isRateUnlocked, setIsRateUnlocked] = useState(!!initialUrl);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [isRateUnlocked, setIsRateUnlocked] = useState(!!interview.url);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1149,9 +1153,9 @@ function InterviewEditForm({
       return;
     }
 
-    if (url.trim() !== '') {
+    if (currentUrl.trim() !== '') {
       try {
-        new URL(url.trim());
+        new URL(currentUrl.trim());
       } catch {
         setError('Введите корректную ссылку (например, https://...)');
         return;
@@ -1161,9 +1165,9 @@ function InterviewEditForm({
     const payload: InterviewUpdatePayload = {};
     let urlChanged = false;
 
-    // Отправляем ссылку, если она изменилась
-    if (url.trim() !== initialUrl) {
-      payload.url = url.trim();
+    // Отправляем ссылку, если она изменилась относительно ПОСЛЕДНЕГО СОХРАНЁННОГО URL
+    if (currentUrl.trim() !== savedUrl) {
+      payload.url = currentUrl.trim();
       urlChanged = true;
     }
 
@@ -1187,8 +1191,11 @@ function InterviewEditForm({
       setSaving(true);
       await updateInterview(interview.id, payload);
 
-      // Если ссылка была сохранена — разблокируем поле оценки, но НЕ закрываем форму
+      // Если ссылка была сохранена — обновляем "последний сохранённый URL",
+      // разблокируем поле оценки и показываем сообщение.
+      // Форму НЕ закрываем, чтобы можно было сразу ввести оценку.
       if (urlChanged) {
+        setSavedUrl(currentUrl.trim());
         setIsRateUnlocked(true);
         setSuccessMessage('Ссылка сохранена. Теперь вы можете указать оценку куратора.');
       }
@@ -1233,8 +1240,8 @@ function InterviewEditForm({
           </span>
           <input
             type="text"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
+            value={currentUrl}
+            onChange={(e) => setCurrentUrl(e.target.value)}
             placeholder="https://..."
             className="px-3 py-2 border border-gray-200 rounded-lg text-[15px] focus:outline-none focus:border-[#000150]/40 focus:ring-2 focus:ring-[#000150]/10"
           />
@@ -1328,18 +1335,19 @@ function InterviewStatusBadge({ status }: { status: InterviewStatus }) {
   );
 }
 
-// Исправленная функция форматирования даты с учётом часовых поясов
+// Форматирование даты: бэкенд хранит время как "наивное" (без учёта TZ),
+// но отдаёт с суффиксом Z (UTC). Чтобы время отображалось "как установлено"
+// (10:00 → 10:00, а не 15:00 в UTC+5), используем timeZone: 'UTC'.
 function formatDateTime(iso: string): string {
   try {
     const d = new Date(iso);
-    // Конвертируем UTC время в локальный часовой пояс пользователя
     return d.toLocaleString('ru-RU', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
-      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      timeZone: 'UTC',
     });
   } catch {
     return iso;

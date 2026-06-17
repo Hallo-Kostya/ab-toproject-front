@@ -26,10 +26,8 @@ export type FileIconType = 'pdf' | 'doc' | 'excel' | 'image' | 'file' | 'link';
 
 // Функция получения полного URL для скачивания
 export const getArtifactDownloadUrl = (artifact: Artifact): string | null => {
-  // Если бэк уже вернул готовый URL — используем его
   if (artifact.file_url) return artifact.file_url;
   
-  // Если есть s3_key - конструируем URL с указанием бакета
   if (artifact.s3_key && S3_BASE_URL && S3_BUCKET_NAME) {
     return `${S3_BASE_URL}/${S3_BUCKET_NAME}/${artifact.s3_key}`;
   }
@@ -136,6 +134,8 @@ export const uploadMeetingArtifact = async (
 };
 
 // Загрузить файл-артефакт для собеседования
+// ⚠️ ВНИМАНИЕ: в бэкенде эндпоинт называется "/intervew/" (с опечаткой — пропущена "i")
+// Приводим URL в соответствие с бэкендом
 export const uploadInterviewArtifact = async (
   interviewId: string,
   file: File
@@ -146,7 +146,7 @@ export const uploadInterviewArtifact = async (
   const formData = new FormData();
   formData.append('file', file);
 
-  const response = await fetch(`${API_BASE_URL}/artifacts/interview/${interviewId}/artifacts`, {
+  const response = await fetch(`${API_BASE_URL}/artifacts/intervew/${interviewId}/artifacts`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${accessToken}`
@@ -215,7 +215,7 @@ export const formatFileSize = (bytes?: number): string => {
   return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} ГБ`;
 };
 
-// Универсальная функция скачивания файла (работает даже при CORS)
+// Универсальная функция скачивания файла
 export const downloadArtifact = async (
   fileUrl: string, 
   fileName: string, 
@@ -224,14 +224,9 @@ export const downloadArtifact = async (
   const token = accessToken || localStorage.getItem('access_token');
   
   try {
-    // Прямой fetch к хранилищу (требует, чтобы MinIO разрешал CORS и публичный доступ к объектам)
     const response = await fetch(fileUrl, {
       method: 'GET',
-      headers: {
-        // MinIO не понимает Bearer-токены приложения
-        // Если объекты приватные - нужен presigned URL от бэкенда
-        // Пока пробуем без авторизации, если бакет публичный
-      },
+      headers: {},
     });
 
     if (!response.ok) {
@@ -252,13 +247,11 @@ export const downloadArtifact = async (
     window.URL.revokeObjectURL(blobUrl);
   } catch (error) {
     console.warn('Blob download failed, trying direct open:', error);
-    
-    // Фолбэк: открыть в новой вкладке (если файл публичный - пользователь скачает вручную)
     window.open(fileUrl, '_blank', 'noopener,noreferrer');
   }
 };
 
-// Функция добавления link-артефакта (требует поддержки на бэкенде)
+// Функция добавления link-артефакта
 export const addMeetingLinkArtifact = async (
   meetingId: string,
   linkUrl: string,
@@ -267,7 +260,6 @@ export const addMeetingLinkArtifact = async (
   const accessToken = localStorage.getItem('access_token');
   if (!accessToken) throw new Error('No access token');
 
-  // Этот эндпоинт должен быть добавлен на бэкенде
   const response = await fetch(`${API_BASE_URL}/artifacts/meeting/${meetingId}/artifacts`, {
     method: 'POST',
     headers: {
