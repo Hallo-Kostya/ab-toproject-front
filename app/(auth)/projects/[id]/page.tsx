@@ -602,7 +602,7 @@ export default function ProjectPage() {
             <div className="text-gray-500">
               <p>К этому проекту еще не прикреплены артефакты</p>
               {isAuthenticated && user && (
-                <p className="mt-2 text-sm text-[#000150]/70">Нажмите «Файл» или «Ссылка» чтобы добавить артефакт</p>
+                <p className="mt-2 text-sm text-[#000150]/70">Нажмите «Файл», чтобы добавить артефакт</p>
               )}
             </div>
           )}

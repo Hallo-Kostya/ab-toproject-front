@@ -908,7 +908,7 @@ export default function MeetingPage() {
             <div className="text-gray-500">
               <p>К этой встрече еще не прикреплены артефакты</p>
               {isAuthenticated && (
-                <p className="mt-2 text-sm text-[#000150]/70">Нажмите «Файл» или «Ссылка» чтобы добавить артефакт</p>
+                <p className="mt-2 text-sm text-[#000150]/70">Нажмите «Файл», чтобы добавить артефакт</p>
               )}
             </div>
           )}
