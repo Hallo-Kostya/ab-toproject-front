@@ -19,6 +19,7 @@ import {
 } from '@/lib/api/projectApplications';
 import { getProjects } from '@/lib/api/projects';
 import Image from 'next/image';
+import InterviewArtifacts from '@/components/artifacts/interviewArtifacts';
 
 type TabType = 'applications' | 'interviews';
 type SortDirection = 'asc' | 'desc' | null;
@@ -34,7 +35,7 @@ const APPLICATION_STATUS_OPTIONS: {
   { value: 'ALL', label: 'Все' },
   { value: 'UNSEEN', label: 'Не просмотрена' },
   { value: 'INTERVIEW', label: 'Собеседование' },
-  { value: 'WAITING_FOR_ACK', label: 'Ожидает подтверждения' },
+  { value: 'WAITING_FOR_ACK', label: 'Ждёт решения' },
   { value: 'ACCEPTED', label: 'Принята' },
   { value: 'DECLINED', label: 'Отказано' },
 ];
@@ -772,7 +773,7 @@ function ApplicationRow({
     UNSEEN: { label: 'Не просмотрена', color: 'bg-yellow-100 text-yellow-800' },
     INTERVIEW: { label: 'Собеседование', color: 'bg-purple-100 text-purple-800' },
     WAITING_FOR_ACK: {
-      label: 'Ожидает подтверждения',
+      label: 'Ожидает решения',
       color: 'bg-indigo-100 text-indigo-800',
     },
     ACCEPTED: { label: 'Принята', color: 'bg-green-100 text-green-800' },
@@ -800,7 +801,7 @@ function ApplicationRow({
         isExpanded ? 'bg-white' : 'bg-white hover:bg-gray-50'
       }`}
     >
-      <button onClick={onToggleExpand} className="w-full flex justify-between gap-4 px-4 py-4 text-left">
+      <button onClick={onToggleExpand} className="w-full grid grid-cols-6 gap-4 px-4 py-4 text-left">
         <div className="flex gap-3 items-center">
           <span className="font-semibold text-[#000150] text-[18px]">
             {application.team_name}
@@ -817,10 +818,10 @@ function ApplicationRow({
             </span>
           </div>
         </div>
-        <div className="text-[#000150] text-[18px] font-medium mt-1.5">
+        <div className="col-start-3 col-span-3 text-[#000150] text-[18px] font-medium mt-1.5">
           {application.project?.name || 'Проект не загружен'}
         </div>
-        <div className="flex items-center">
+        <div className="flex items-center text-center justify-end">
           <span
             className={`px-3 py-1 rounded-xl pt-1.5 text-[16px] font-medium ${status.color}`}
           >
@@ -955,13 +956,13 @@ function InterviewRow({
     >
       <button
         onClick={onToggleExpand}
-        className="w-full grid grid-cols-4 gap-4 px-4 py-4 text-left"
+        className="w-full grid grid-cols-6 gap-4 px-4 py-4 text-left"
       >
         <div className="flex gap-3 items-center">
           <span className="font-semibold text-[#000150] text-[18px]">
             {application.team_name}
           </span>
-          <div className="flex gap-1 bg-[#000150]/15 px-2 py-0.5 rounded-md">
+          <div className="flex gap-1 bg-[#000150]/15 px-2 py-0.5 rounded-md min-w-12.5">
             <Image
               src={'/user-round.svg'}
               alt={'Количество участников'}
@@ -973,13 +974,13 @@ function InterviewRow({
             </span>
           </div>
         </div>
-        <div className="text-[#000150] text-[18px] font-medium truncate mt-1.5">
+        <div className="flex items-center col-span-2 text-[#000150] text-[18px] font-medium truncate">
           {application.project?.name || 'Проект не загружен'}
         </div>
-        <div className="text-[#000150]/80 text-[16px] font-medium mt-1.5">
+        <div className="col-start-5 text-[#000150]/80 text-[16px] font-medium mt-1.5">
           {formatDateTime(interview.date)}
         </div>
-        <div className="flex justify-end">
+        <div className="flex justify-end items-center">
           <InterviewStatusBadge status={interview.interview_status} />
         </div>
       </button>
@@ -1046,6 +1047,13 @@ function InterviewRow({
                 )}
               </div>
 
+              {/* Артефакты собеседования — берём из уже загруженных данных */}
+              <InterviewArtifacts
+                interviewId={interview.id}
+                artifacts={interview.artifacts ?? []}
+                onArtifactsChange={onRefresh}
+              />
+
               <div>
                 <h4 className="text-[16px] font-semibold text-[#000150] mb-2">
                   Участники команды
@@ -1110,7 +1118,8 @@ function InterviewEditForm({
   onCancel: () => void;
   onSaved: () => Promise<void>;
 }) {
-  const [url, setUrl] = useState(interview.url || '');
+  const initialUrl = interview.url || '';
+  const [url, setUrl] = useState(initialUrl);
   const [curatorsRate, setCuratorsRate] = useState<string>(
     interview.curators_rate !== null && interview.curators_rate !== undefined
       ? String(interview.curators_rate)
@@ -1120,13 +1129,23 @@ function InterviewEditForm({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Поле оценки разблокировано, если у собеседования уже есть сохранённая ссылка
+  const [isRateUnlocked, setIsRateUnlocked] = useState(!!initialUrl);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setSuccessMessage(null);
 
     const rateNumber = curatorsRate.trim() === '' ? undefined : Number(curatorsRate);
     if (rateNumber !== undefined && (isNaN(rateNumber) || rateNumber < 0 || rateNumber > 100)) {
       setError('Оценка должна быть числом от 0 до 100');
+      return;
+    }
+
+    if (!isRateUnlocked && curatorsRate.trim() !== '') {
+      setError('Сначала сохраните ссылку на встречу, чтобы выставить оценку');
       return;
     }
 
@@ -1140,20 +1159,24 @@ function InterviewEditForm({
     }
 
     const payload: InterviewUpdatePayload = {};
-    if (url.trim() !== (interview.url || '')) {
+    let urlChanged = false;
+
+    // Отправляем ссылку, если она изменилась
+    if (url.trim() !== initialUrl) {
       payload.url = url.trim();
+      urlChanged = true;
     }
+
     const prevRate =
       interview.curators_rate !== null && interview.curators_rate !== undefined
         ? interview.curators_rate
         : null;
     const nextRate = rateNumber !== undefined ? rateNumber : null;
-    if (nextRate !== prevRate) {
+
+    // Отправляем оценку только если поле разблокировано и значение изменилось
+    if (isRateUnlocked && nextRate !== prevRate) {
       payload.curators_rate = rateNumber;
     }
-    // if (resume !== (interview.resume || '')) {
-    //   payload.resume = resume;
-    // }
 
     if (Object.keys(payload).length === 0) {
       onCancel();
@@ -1163,7 +1186,19 @@ function InterviewEditForm({
     try {
       setSaving(true);
       await updateInterview(interview.id, payload);
-      await onSaved();
+
+      // Если ссылка была сохранена — разблокируем поле оценки, но НЕ закрываем форму
+      if (urlChanged) {
+        setIsRateUnlocked(true);
+        setSuccessMessage('Ссылка сохранена. Теперь вы можете указать оценку куратора.');
+      }
+
+      // Если была сохранена оценка — закрываем форму и обновляем данные
+      if (payload.curators_rate !== undefined) {
+        await onSaved();
+        return;
+      }
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message || 'Не удалось сохранить изменения');
@@ -1206,8 +1241,16 @@ function InterviewEditForm({
         </label>
 
         <label className="flex flex-col gap-1">
-          <span className="text-[14px] text-[#000150]/80 font-medium">
+          <span className="text-[14px] text-[#000150]/80 font-medium flex items-center gap-1.5">
             Оценка куратора (0–100)
+            {!isRateUnlocked && (
+              <span
+                className="text-[12px] text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-md font-normal"
+                title="Поле станет доступным после сохранения ссылки на встречу"
+              >
+                Сначала сохраните ссылку
+              </span>
+            )}
           </span>
           <input
             type="number"
@@ -1216,26 +1259,26 @@ function InterviewEditForm({
             step={5}
             value={curatorsRate}
             onChange={(e) => setCuratorsRate(e.target.value)}
-            placeholder="—"
-            className="px-3 py-2 border border-gray-200 rounded-lg text-[15px] focus:outline-none focus:border-[#000150]/40 focus:ring-2 focus:ring-[#000150]/10"
+            placeholder={isRateUnlocked ? '—' : 'Сначала сохраните ссылку'}
+            disabled={!isRateUnlocked}
+            className={`px-3 py-2 border border-gray-200 rounded-lg text-[15px] focus:outline-none focus:border-[#000150]/40 focus:ring-2 focus:ring-[#000150]/10 ${
+              !isRateUnlocked
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : ''
+            }`}
           />
         </label>
       </div>
 
-      {/* <label className="flex flex-col gap-1">
-        <span className="text-[14px] text-[#000150]/80 font-medium">Резюме</span>
-        <textarea
-          value={resume}
-          onChange={(e) => setResume(e.target.value)}
-          rows={3}
-          placeholder="Краткие выводы по итогам собеседования..."
-          className="px-3 py-2 border border-gray-200 rounded-lg text-[15px] focus:outline-none focus:border-[#000150]/40 focus:ring-2 focus:ring-[#000150]/10 resize-none"
-        />
-      </label> */}
-
       {error && (
         <div className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
           {error}
+        </div>
+      )}
+
+      {successMessage && (
+        <div className="text-sm text-green-700 bg-green-50 border border-green-100 rounded-lg px-3 py-2">
+          {successMessage}
         </div>
       )}
 
@@ -1285,15 +1328,18 @@ function InterviewStatusBadge({ status }: { status: InterviewStatus }) {
   );
 }
 
+// Исправленная функция форматирования даты с учётом часовых поясов
 function formatDateTime(iso: string): string {
   try {
     const d = new Date(iso);
+    // Конвертируем UTC время в локальный часовой пояс пользователя
     return d.toLocaleString('ru-RU', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
+      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     });
   } catch {
     return iso;
